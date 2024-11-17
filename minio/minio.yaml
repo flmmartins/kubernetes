@@ -1,0 +1,24 @@
+minioAPIPort: "9000"
+minioConsolePort: "9001"
+replicas: 2
+rootUser: minio
+additionalLabels:
+  component: minio
+  part-of: storage
+# By default minio requires tons of memory
+resources:
+  requests:
+    memory: 256Mi
+# It will create volume x replicas for redudant storage
+persistence: {
+  enabled: "true",
+  storageClass: persistent,
+  size: 10Gi
+}
+# Set user and group so it can create files in the volume with those
+securityContext:
+  enabled: true
+  runAsUser: 3000
+  runAsGroup: 3000
+  fsGroup: 3000
+  fsGroupChangePolicy: "OnRootMismatch"

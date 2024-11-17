@@ -1,0 +1,4 @@
+controller:
+  additionalLabels:
+    component: loadbalancer
+    part-of: loadbalancer

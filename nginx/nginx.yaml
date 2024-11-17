@@ -1,0 +1,6 @@
+commonLabels:
+  component: ingress-controller
+  part-of: ingress-controller
+tcp:
+  "9000": "minio/minio:9000"
+  "9001": "minio/minio-console:9001"
