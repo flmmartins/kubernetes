@@ -15,6 +15,6 @@ helm upgrade --install --version "~1.17.0" \
   --namespace 1password-connect \
   --create-namespace \
   --set-file connect.credentials=./1password-credentials.json \
-  -f 1password_connect.yaml \
+  -f 1password-connect.yaml \
   1password-connect 1password/connect
 ```

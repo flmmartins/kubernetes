@@ -41,8 +41,6 @@ server:
     - mountPath: /vault/userconfig/vault-ha-tls
       name: userconfig-vault-ha-tls
       readOnly: true
-  affinity: ""
-
   # This configures the Vault Statefulset to create a PVC for audit logs.
   # See https://www.vaultproject.io/docs/audit/index.html to know more
   auditStorage:
