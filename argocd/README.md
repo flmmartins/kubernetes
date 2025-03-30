@@ -11,5 +11,10 @@ helm install --version "~7.0.0" \
  --namespace argocd \
  --create-namespace \
  -f argo.yaml \
- argo-cd argo/argo-cd
+ argo argo/argo-cd
 ```
+
+kubectl port-forward service/argo-argocd-server -n argocd 8080:443
+
+http://localhost:8080
+User is `admin`

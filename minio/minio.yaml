@@ -8,7 +8,7 @@ additionalLabels:
 # By default minio requires tons of memory
 resources:
   requests:
-    memory: 256Mi
+    memory: 100Mi
 # It will create volume x replicas for redudant storage
 persistence: {
   enabled: "true",

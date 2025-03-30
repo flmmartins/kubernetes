@@ -1,0 +1,88 @@
+global:
+  enabled: true #Install all vault default components
+  tlsDisable: false
+injector: # Secret injector
+  enabled: true
+  securityContext:
+    pod:
+      runAsNonRoot: true
+      runAsUser: 3001 #vault user
+      runAsGroup: 3001 #vault group
+      fsGroup: 3000
+      fsGroupChangePolicy: "OnRootMismatch"
+    container: #vault defaults
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+          - ALL
+server:
+  # extraEnvironmentVars is a list of extra environment variables to set with the stateful set. These could be
+  # used to include variables required for auto-unseal.
+  extraEnvironmentVars:
+    VAULT_CACERT: /vault/userconfig/vault-ha-tls/vault.ca
+    VAULT_TLSCERT: /vault/userconfig/vault-ha-tls/vault.crt
+    VAULT_TLSKEY: /vault/userconfig/vault-ha-tls/vault.key
+  statefulSet:
+    securityContext:
+      pod:
+        runAsNonRoot: true
+        runAsUser: 3001 #vault user
+        runAsGroup: 3001 #vault group
+        fsGroup: 3000
+        fsGroupChangePolicy: "OnRootMismatch"
+      container: #vault defaults
+        allowPrivilegeEscalation: false
+  volumes:
+    - name: userconfig-vault-ha-tls
+      secret:
+        defaultMode: 420
+        secretName: vault-ha-tls # Secret containing certificates
+  volumeMounts:
+    - mountPath: /vault/userconfig/vault-ha-tls
+      name: userconfig-vault-ha-tls
+      readOnly: true
+  affinity: ""
+
+  # This configures the Vault Statefulset to create a PVC for audit logs.
+  # See https://www.vaultproject.io/docs/audit/index.html to know more
+  auditStorage:
+    enabled: true
+    size: 1Gi
+
+  standalone:
+    enabled: false
+
+  dataStorage:
+    storageClass: persistent
+    size: 10Gi
+    mountPath: /vault/data
+
+  # Run Vault in "HA" mode.
+  ha:
+    enabled: true
+    replicas: 2
+    raft: #aka integrated storage
+      enabled: true
+      setNodeId: true #Set raft id to the name of the pod
+      config: |
+        cluster_name = "vault-integrated-storage"
+          ui = true
+          listener "tcp" {
+            tls_disable = 0
+            address = "[::]:8200"
+            cluster_address = "[::]:8201"
+            tls_cert_file = "/vault/userconfig/vault-ha-tls/vault.crt"
+            tls_key_file  = "/vault/userconfig/vault-ha-tls/vault.key"
+            tls_client_ca_file = "/vault/userconfig/vault-ha-tls/vault.ca"
+          }
+          storage "raft" {
+            path = "/vault/data"
+          }
+          disable_mlock = true
+          service_registration "kubernetes" {}
+
+# Vault UI
+ui:
+  enabled: true
+  serviceType: ClusterIP
+  externalPort: 8200
