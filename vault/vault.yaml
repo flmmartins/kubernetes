@@ -16,8 +16,21 @@ injector: # Secret injector
         drop:
           - ALL
 server:
-  # extraEnvironmentVars is a list of extra environment variables to set with the stateful set. These could be
-  # used to include variables required for auto-unseal.
+  # Plugin needs to be installed on every pod
+  # Registration of plugin is only done once and remains in PV
+  extraInitContainers:
+    - name: plugin-installer
+      image: "alpine"
+      command: [sh, -c]
+      args:
+        - cd /tmp &&
+          wget https://github.com/1Password/vault-plugin-secrets-onepassword/releases/download/v1.1.0/vault-plugin-secrets-onepassword_1.1.0_linux_amd64.zip -O onepassword-plugin.zip &&
+          unzip onepassword-plugin.zip &&
+          mv vault-plugin-secrets-onepassword_v1.1.0 /usr/local/libexec/vault/op-connect &&
+          chmod +x /usr/local/libexec/vault/op-connect
+      volumeMounts:
+        - name: plugins
+          mountPath: /usr/local/libexec/vault
   extraEnvironmentVars:
     VAULT_CACERT: /vault/userconfig/vault-ha-tls/vault.ca
     VAULT_TLSCERT: /vault/userconfig/vault-ha-tls/vault.crt
@@ -37,9 +50,14 @@ server:
       secret:
         defaultMode: 420
         secretName: vault-ha-tls # Secret containing certificates
+    - name: plugins
+      emptyDir: {}
   volumeMounts:
     - mountPath: /vault/userconfig/vault-ha-tls
       name: userconfig-vault-ha-tls
+      readOnly: true
+    - mountPath: /usr/local/libexec/vault
+      name: plugins
       readOnly: true
   # This configures the Vault Statefulset to create a PVC for audit logs.
   # See https://www.vaultproject.io/docs/audit/index.html to know more
@@ -63,21 +81,22 @@ server:
       enabled: true
       setNodeId: true #Set raft id to the name of the pod
       config: |
-        cluster_name = "vault-integrated-storage"
-          ui = true
-          listener "tcp" {
-            tls_disable = 0
-            address = "[::]:8200"
-            cluster_address = "[::]:8201"
-            tls_cert_file = "/vault/userconfig/vault-ha-tls/vault.crt"
-            tls_key_file  = "/vault/userconfig/vault-ha-tls/vault.key"
-            tls_client_ca_file = "/vault/userconfig/vault-ha-tls/vault.ca"
-          }
-          storage "raft" {
-            path = "/vault/data"
-          }
-          disable_mlock = true
-          service_registration "kubernetes" {}
+        cluster_name     = "vault-integrated-storage"
+        plugin_directory = "/usr/local/libexec/vault"
+        ui = true
+        listener "tcp" {
+          tls_disable = 0
+          address = "[::]:8200"
+          cluster_address = "[::]:8201"
+          tls_cert_file = "/vault/userconfig/vault-ha-tls/vault.crt"
+          tls_key_file  = "/vault/userconfig/vault-ha-tls/vault.key"
+          tls_client_ca_file = "/vault/userconfig/vault-ha-tls/vault.ca"
+        }
+        storage "raft" {
+          path = "/vault/data"
+        }
+        disable_mlock = true
+        service_registration "kubernetes" {}
 
 # Vault UI
 ui:

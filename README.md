@@ -8,10 +8,18 @@ Applications in this repo assume Pod Security Adminission as `baseline` enabled 
 
 # Execution Order
 
+
+**Storage**
 1. storage
+
+**Autoscaling**
 2. autoscaling (optional for hpa otw you need redeploy)
+
+**Load Balancer**
 3. metallb
 4. nginx
+
+**Secret Management**
 5. 1password_connect
 6. vault
 
@@ -19,7 +27,13 @@ Applications in this repo assume Pod Security Adminission as `baseline` enabled 
 
 Below are some architecture ideas. Those marked with **Work In Progress** are not validated/implemented yet. 
 
-**Not all code will be stored in this repo: read CI/CD below for more!**
+## Storage
+
+      [ APP: Require storage]
+            |
+            v
+      [ Storage Class with CSI NFS Driver ]
+
 
 ## Network Load Balancer
 
@@ -28,6 +42,12 @@ Below are some architecture ideas. Those marked with **Work In Progress** are no
              v
      [ Nginx: Reverse Proxy / Load Balancer ]
 
+## Secret Management
+
+     [ Hashicorp Vault: reads from 1password ]
+             |
+             v
+     [ 1password Connect: 1password component]
 
 ## DNS Resolution
 
@@ -43,13 +63,6 @@ Below are some architecture ideas. Those marked with **Work In Progress** are no
              v
       [ Nginx: Reverse Proxy / Load Balancer ]
 
-## Storage
-
-      [ APP: Require storage]
-            |
-            v
-      [ Storage Class with CSI NFS Driver ]
-
 ## Certificates 
 
 
@@ -60,17 +73,7 @@ Below are some architecture ideas. Those marked with **Work In Progress** are no
     [ Cert Manager, using a self managed CA, generates certificate and rotates]
 
 
-**Future:** Hashicorp Vault can be used together with Cert Manager
-
-## Manage App Secrets
-
-Secrets are staticaly defined. They are geenrated by Kubernetes OR manually while running releases.
-
-**Future:** Make use of Hashicorp Vault
-
 ## Manage users and identity
-
-**Work in Progress**
 
       [ User: Creates user in Keycloak]
                  |

@@ -63,3 +63,32 @@ kubectl exec -n $VAULT_K8S_NAMESPACE vault-0 -- vault login $CLUSTER_ROOT_TOKEN
 vault operator raft list-peers
 vault status
 ```
+
+You need to remove the key afterwards
+
+# Installing 1password plugin
+
+The initContainer in Helm will install the binary. Afterwards you need to:
+
+```
+SHA256_CHECKSUM=$(sha256sum /usr/local/libexec/vault/op-connect | cut -d ' ' -f1)
+vault plugin register -sha256=$SHA256_CHECKSUM secret op-connect
+vault secrets enable --path="op" op-connect
+vault write op/config \
+  op_connect_host=http://onepassword-connect.1password-connect:8080 \
+  op_connect_token=$OP_CONNECT_TOKEN
+```
+Checks:
+
+Returns the names and UUIDs for the vault(s) that are accessible to the Connect access token:
+
+```
+vault list op/vaults
+vault list op/vaults/<vault_name_or_uuid_from_command_above>/items
+```
+
+Read item:
+
+```
+vault read op/vaults/<vault_name_or_uuid>/items/<item_title_or_uuid>
+```
