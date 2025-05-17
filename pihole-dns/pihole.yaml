@@ -1,0 +1,62 @@
+replicaCount: 2
+extraEnvVars:
+  TZ: Europe/Amsterdam
+serviceDns:
+  annotations:
+    metallb.universe.tf/address-pool: pihole-dns
+  mixedService: true #tcp and udp dns svc on same ip
+  type: LoadBalancer
+
+# Volumes are defined only so CSI Secret Driver can run
+extraVolumeMounts:
+  csi-secret-driver-for-admin-pwd:
+    mountPath: '/mnt/secrets-store'
+    readOnly: true
+
+extraVolumes:
+  csi-secret-driver-for-admin-pwd:
+    csi:
+      driver: 'secrets-store.csi.k8s.io'
+      readOnly: true
+      volumeAttributes:
+        secretProviderClass: 'pihole'
+
+admin:
+  enabled: true
+  existingSecret: "pihole-admin-password"
+  passwordKey: "password"
+
+# If podDnsConfig is set you cannot resolve kube service addresses
+podDnsConfig:
+  enabled: false
+
+serviceDhcp:
+  enabled: false
+
+serviceWeb:
+  http:
+    enabled: true
+  https:
+    enabled: true
+
+ingress:
+  enabled: true
+  hosts:
+  - pihole.talos.tamrieltower.local
+  ingressClassName: nginx
+
+antiaff:
+  # -- set to true to enable antiaffinity (example: 2 pihole DNS in the same cluster)
+  enabled: true
+  # -- Here you can set the pihole release (you set in `helm install <releasename> ...`)
+  # you want to avoid
+  avoidRelease: pihole
+  # -- Here you can choose between preferred or required
+  strict: false
+  # -- Here you can pass namespaces to be part of those inclueded in anti-affinity
+  namespaces: ['pihole']
+
+dnsmasq:
+  enableCustomDnsMasq: true
+  customDnsEntries:
+  - address=/talos.tamrieltower.local/NGINX_IP

@@ -10,11 +10,17 @@ injector: # Secret injector
       runAsGroup: 3001 #vault group
       fsGroup: 3000
       fsGroupChangePolicy: "OnRootMismatch"
-    container: #vault defaults
+    container:
       allowPrivilegeEscalation: false
+      seccompProfile:
+        type: RuntimeDefault
       capabilities:
         drop:
           - ALL
+csi:
+  enabled: true
+  agent:
+    enabled: false
 server:
   # Plugin needs to be installed on every pod
   # Registration of plugin is only done once and remains in PV
@@ -64,6 +70,7 @@ server:
   auditStorage:
     enabled: true
     size: 1Gi
+    mountPath: "/vault/audit"
 
   standalone:
     enabled: false

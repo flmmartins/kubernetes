@@ -1,31 +1,26 @@
-# Install
+# Accessing the UI
 
-# Vault Certificates
+Without ingress: `kubectl -n vault port-forward service/vault -n vault 8200:8200`
 
-Firstly it's necessary to generate certificates for TLS.. I generated vault certificates from the truenas tamrieltower CA.
-
-Used instructions from vault [website](https://developer.hashicorp.com/vault/tutorials/kubernetes/kubernetes-minikube-tls) to add certificate and to initiliase vault
-
-`kubectl create ns vault`
+# Upgrade
 
 ```
-kubectl create secret generic vault-ha-tls \
-   -n vault \
-   --from-file=vault.key=$(PWD)/hashicorp_vault.key \
-   --from-file=vault.crt=$(PWD)/hashicorp_vault.crt \
-   --from-file=vault.ca=$(PWD)/TamrielTower.crt
-```
-
-# Install Vault
-
-```
-helm upgrade --install --version "~0.29.1" \
+helm upgrade --install --version "~0.30.0" \
     --namespace vault \
     -f vault.yaml \
     vault hashicorp/vault
 ```
 
-# Initialise
+# Install
+
+TLDR: Run vault-install.sh
+
+Used instructions from vault [website](https://developer.hashicorp.com/vault/tutorials/kubernetes/kubernetes-minikube-tls) to add certificate and to initiliase vault
+
+When using Secret Injector we missed a [SAN](https://github.com/hashicorp/vault/issues/19131) (vault.vault.svc) to the certificate so I made a script that install vault and add the appropriate fixes.
+
+
+## Initialise
 
 ```
 kubectl exec -n vault vault-0 -- vault operator init \
@@ -41,7 +36,7 @@ This will output unseal key and root key
 
 Enter `vault-0` and unseal with `vault operator unseal` with the unseal b64 info from the file.
 
-# Joining another pod to vault
+## Joining another pod to vault
 
 Example where vault-1 is the joinee and vault-0 is the leader
 
@@ -54,8 +49,7 @@ vault operator raft join -address=https://vault-1.vault-internal:8200 -leader-ca
 After joining unseal vault-1 
 
 
-# Checks
-
+## Checks
 
 ```
 kubectl exec -n $VAULT_K8S_NAMESPACE vault-0 -- vault login $CLUSTER_ROOT_TOKEN
@@ -66,7 +60,7 @@ vault status
 
 You need to remove the key afterwards
 
-# Installing 1password plugin
+## Installing 1password plugin
 
 The initContainer in Helm will install the binary. Afterwards you need to:
 
@@ -91,4 +85,144 @@ Read item:
 
 ```
 vault read op/vaults/<vault_name_or_uuid>/items/<item_title_or_uuid>
+```
+
+## Configure Kubernetes Authentication
+
+```
+vault auth enable kubernetes
+
+vault write auth/kubernetes/config \
+  kubernetes_host=https://$KUBERNETES_SERVICE_HOST:$KUBERNETES_SERVICE_PORT \
+  token_reviewer_jwt="$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)" \
+  kubernetes_ca_cert=@/var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+```
+
+Although in the Vault [documentation](https://developer.hashicorp.com/vault/api-docs/auth/kubernetes#parameters) mentions `kubernetes_ca_cert` and `token_reviewer_jwt` assume the default valued from the command above somehow it was empty when not defining it explicitely.
+
+Now pods will be able to authenticate to vault using service accounts
+
+### How to troubeshoot
+
+Check auth:
+
+```
+vault read auth/kubernetes/config
+```
+
+Check if getting the token works:
+```
+KUBE_TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+
+TOKEN=$(curl --cacert /run/secrets/kubernetes.io/serviceaccount/ca.crt --request POST --data '{"jwt": "'"$KUBE_TOKEN"'", "role": "pihole"}' https://vault.vault.svc:8200/v1/auth/kubernetes/login | jq -r '.auth | .client_token')
+```
+
+Check if policy works:
+
+```
+curl -H "X-Vault-Token: $TOKEN" \
+     https://vault.vault.svc:8200/v1/op/vaults/<vault-id>/items/my_secret
+```
+
+```
+vault policy read my_policy
+vault read auth/kubernetes/role/my_role
+```
+
+# Vault Secret Injector
+
+It allows you to inject secret in the pod (unfortunately it doesn't support Kubernetes Secrets creation, read about CSI for that)
+
+In order to use Secret Injector you need:
+1. Create a Policy and Role in Vault
+2. Add annotations to pod as below:
+
+Example: The secret injector injects secret as file or environment variable
+```
+podAnnotations:
+  vault.hashicorp.com/agent-inject: 'true'
+  vault.hashicorp.com/role: 'pihole'
+  vault.hashicorp.com/agent-inject-secret-admin: 'op/vaults/bla/items/pihole'
+  vault.hashicorp.com/ca-cert: "/run/secrets/kubernetes.io/serviceaccount/ca.crt"
+  vault.hashicorp.com/agent-inject-template-webpassword: |
+    {{- with secret "op/vaults/bla/items/pihole" -}}
+    WEBPASSWORD="{{ .Data.password }}"
+    {{- end }}
+```
+
+# Using Vault CSI Driver
+
+We use Vault CSI Provider to create Kubernetes Secret Objects based on Vault content
+
+## Usage
+
+You need:
+1. Create a Policy and Role in Vault
+2. Mount the CSI driver to your pod
+3. Create a Secret Provider Class
+
+Examples can be found in [here](https://developer.hashicorp.com/vault/docs/deploy/kubernetes/csi/examples).
+
+Don't forget to pass the TLS cert and role as:
+
+
+```
+roleName: "pihole"
+vaultCACertPath: "/run/secrets/kubernetes.io/serviceaccount/ca.crt"
+```
+
+
+## Install
+
+The CSI Driver allows you to fetch and create kubernetes secrets
+
+First you need to install CSI Secret Driver:
+
+```
+helm repo add secrets-store-csi-driver https://kubernetes-sigs.github.io/secrets-store-csi-driver/charts
+
+helm upgrade --install csi-secrets-store secrets-store-csi-driver/secrets-store-csi-driver --namespace kube-system --set syncSecret.enabled=true
+```
+
+Once that installed you can use [Secret Provider Class](https://developer.hashicorp.com/vault/docs/deploy/kubernetes/csi) and point it to vault to create your Kubernetes Secret
+
+Requirement:
+
+You need to allow Vault CSI Provider to use hostpath by doing:
+
+```
+kubectl label ns vault pod-security.kubernetes.io/enforce=privileged \
+  --overwrite
+```
+
+In CSI you have:
+* CSI Container
+* Secret Class
+* App mounting CSI
+
+It was crazy to figure out how to pass the certificate. After multiple combination it was determined that you could do:
+
+```
+csi:
+  enabled: true
+  agent:
+    extraArgs:
+    - -ca-cert=/vault/tls/vault.ca
+  volumes:
+  - name: tls
+    secret:
+      secretName: vault-ha-tls
+  volumeMounts:
+  - name: tls
+    mountPath: /vault/tls
+    readOnly: true
+```
+
+However you can see CSI all over the place so I moved all that responsability to the Secret Provider Class and removed the agent. Now all CSI needs is defined in Secret Provider Class:
+
+Example:
+
+```
+roleName: "pihole"
+vaultCACertPath: "/run/secrets/kubernetes.io/serviceaccount/ca.crt"
 ```
