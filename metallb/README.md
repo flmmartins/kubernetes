@@ -19,10 +19,14 @@ helm upgrade --install --version "~0.14.9" \
   metallb metallb/metallb
 ```
 
+
+## IP Configuration
+IP pool and advertisement can only be created on metallb namespace
+
 IP configuration can be applied with:
 
 ```
-sed -e 's|CIDR|<IP>|g' ip_advertisement.yaml | kubectl apply -f -
+sed -e 's|CIDR|<IP>|g' nginx-ip.yaml | kubectl apply -f -
 ```
 
 CIDR can be a range or a single IP with /32.

@@ -10,6 +10,13 @@ Once NGINX is create it will request an IP from MetalLB.
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 ```
 
+Create IP Pool:
+
+```
+sed -e 's|CIDR|<IP>|g' nginx-ip.yaml | kubectl apply -f -
+```
+
+Install NGINX:
 ```
 helm upgrade --install --version "~4.12.1" \
   --namespace nginx \
