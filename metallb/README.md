@@ -19,6 +19,11 @@ helm upgrade --install --version "~0.14.9" \
   metallb metallb/metallb
 ```
 
+If pod security is enabled:
+
+```
+kubectl label namespace metallb pod-security.kubernetes.io/enforce=privileged pod-security.kubernetes.io/audit=privileged pod-security.kubernetes.io/warn=privileged
+```
 
 ## IP Configuration
 IP pool and advertisement can only be created on metallb namespace
@@ -30,10 +35,3 @@ sed -e 's|CIDR|<IP>|g' nginx-ip.yaml | kubectl apply -f -
 ```
 
 CIDR can be a range or a single IP with /32.
-
-## Pod Security Admission
-If pod security is enabled:
-
-````
-kubectl label namespace metallb pod-security.kubernetes.io/enforce=privileged
-```
