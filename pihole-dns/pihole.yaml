@@ -1,9 +1,12 @@
 replicaCount: 2
 extraEnvVars:
   TZ: Europe/Amsterdam
+  FTLCONF_dns_listeningMode: 'all'
+  FTLCONF_dns_dnssec: 'true'
 serviceDns:
   annotations:
     metallb.universe.tf/address-pool: pihole-dns
+    metallb.universe.tf/allow-shared-ip: pihole-services
   mixedService: true #tcp and udp dns svc on same ip
   type: LoadBalancer
 
@@ -34,16 +37,10 @@ serviceDhcp:
   enabled: false
 
 serviceWeb:
-  http:
-    enabled: true
-  https:
-    enabled: true
-
-ingress:
-  enabled: true
-  hosts:
-  - pihole.talos.tamrieltower.local
-  ingressClassName: nginx
+  annotations:
+    metallb.universe.tf/address-pool: pihole-dns
+    metallb.universe.tf/allow-shared-ip: pihole-services
+  type: LoadBalancer
 
 antiaff:
   # -- set to true to enable antiaffinity (example: 2 pihole DNS in the same cluster)

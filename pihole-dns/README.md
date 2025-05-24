@@ -4,7 +4,9 @@ Pihole can act as a local DNS
 
 ## Access the UI
 
-### Without ingress:
+http://IP/admin/login
+
+### Without IP
 
 kubectl -n pihole port-forward service/pihole-web 8080:80
 
@@ -23,11 +25,14 @@ sed -e 's|CIDR|<IP>/32|g' dns-ip-address.yaml | kubectl apply -f -
 ```
 
 ```
-helm upgrade --install --version "~2.30.0" \
+helm upgrade --install --version "~2.31.0" \
   --namespace pihole \
   -f pihole.yaml \
   pihole mojo2600/pihole
 ```
+
+### How to configure pihole.conf
+You can use FTL variables and convert them to environment variables as described in [here](https://docs.pi-hole.net/docker/configuration/?h=environment+variables#environment-variables)
 
 ### Fetch Admin Secret from Hashicorp Vault
 
