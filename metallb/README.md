@@ -27,6 +27,7 @@ kubectl label namespace metallb pod-security.kubernetes.io/enforce=privileged po
 
 ## IP Configuration
 IP pool and advertisement can only be created on metallb namespace
+It's always necessary to create both and an advertisement points to a pool
 
 IP configuration can be applied with:
 

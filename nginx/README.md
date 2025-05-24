@@ -18,7 +18,7 @@ sed -e 's|CIDR|<IP>|g' nginx-ip.yaml | kubectl apply -f -
 
 Install NGINX:
 ```
-helm upgrade --install --version "~4.12.1" \
+helm upgrade --install --version "~4.12.2" \
   --namespace nginx \
   --create-namespace \
   -f nginx.yaml \

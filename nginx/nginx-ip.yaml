@@ -16,4 +16,4 @@ metadata:
   namespace: metallb
 spec:
   ipAddressPools:
-  - default
+  - default # Advertise IPAddressPoolDefault
