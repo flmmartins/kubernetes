@@ -1,2 +1,5 @@
 **/**1password-credentials.json
 **/**vault_certs.yaml
+**/**.crt
+**/**.key
+**/**.pem

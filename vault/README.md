@@ -226,3 +226,21 @@ Example:
 roleName: "pihole"
 vaultCACertPath: "/run/secrets/kubernetes.io/serviceaccount/ca.crt"
 ```
+
+# PKI
+
+We will import root CA
+```
+cat talos-apps-tamrieltower-local.key > talos-apps-tamrieltower-local.pem
+cat talos-apps-tamrieltower-local.crt >> talos-apps-tamrieltower-local.pem
+```
+
+Run 
+
+```
+kubectl port-forward service/vault -n vault 8200:8200
+export VAULT_ADDR=https://localhost:8200
+export VAULT_TOKEN=$VAULT_TOKEN
+export VAULT_CACERT=PATH_TO_VAULT_CA
+./create-pki.sh
+```
