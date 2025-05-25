@@ -3,6 +3,7 @@ extraEnvVars:
   TZ: Europe/Amsterdam
   FTLCONF_dns_listeningMode: 'all'
   FTLCONF_dns_dnssec: 'true'
+  FTLCONF_dns_upstreams: '127.0.0.1#5053'
 serviceDns:
   annotations:
     metallb.universe.tf/address-pool: pihole-dns
@@ -32,6 +33,18 @@ admin:
 # If podDnsConfig is set you cannot resolve kube service addresses
 podDnsConfig:
   enabled: false
+
+extraContainers:
+- name: cloudflared
+  image: "cloudflare/cloudflared:latest"
+  command: ["cloudflared", "proxy-dns"]
+  env:
+  - name: TUNNEL_DNS_UPSTREAM
+    value: "https://1.1.1.1/dns-query,https://1.0.0.1/dns-query"
+  - name: TUNNEL_DNS_PORT
+    value: "5053"
+  - name: TUNNEL_DNS_ADDRESS
+    value: "0.0.0.0"
 
 serviceDhcp:
   enabled: false
