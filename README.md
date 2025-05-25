@@ -23,6 +23,9 @@ Applications in this repo assume Pod Security Adminission as `baseline` enabled 
 5. 1password_connect
 6. vault
 
+**DNS Resolution**
+7. Pihole
+
 # Architecture
 
 Below are some architecture ideas. Those marked with **Work In Progress** are not validated/implemented yet. 
@@ -51,10 +54,6 @@ Below are some architecture ideas. Those marked with **Work In Progress** are no
 
 ## DNS Resolution
 
-**Work in Progress**
-
-     [ External DNS: Populates Pihole]
-
       [ Users access a website in local network ] 
              |
              v
@@ -62,6 +61,8 @@ Below are some architecture ideas. Those marked with **Work In Progress** are no
              |
              v
       [ Nginx: Reverse Proxy / Load Balancer ]
+
+ Pihole has DNS masq so it will resolve all DNS to nginx IP. However in a setup without DNS Masq you can install External DNS to automatically add each record to each IP.
 
 ## Certificates 
 
@@ -75,6 +76,7 @@ Below are some architecture ideas. Those marked with **Work In Progress** are no
 
 ## Manage users and identity
 
+**TODO**
       [ User: Creates user in Keycloak]
                  |
                  |

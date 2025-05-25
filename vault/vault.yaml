@@ -19,8 +19,14 @@ injector: # Secret injector
           - ALL
 csi:
   enabled: true
-  agent:
-    enabled: false
+  volumes:
+    - name: tls
+      secret:
+        secretName: vault-ha-tls
+  volumeMounts:
+    - name: tls
+      mountPath: /vault/tls
+      readOnly: true
 server:
   # Plugin needs to be installed on every pod
   # Registration of plugin is only done once and remains in PV

@@ -89,18 +89,18 @@ vault read op/vaults/<vault_name_or_uuid>/items/<item_title_or_uuid>
 
 ## Configure Kubernetes Authentication
 
+Thanks to this [article](https://www.hashicorp.com/en/blog/retrieve-hashicorp-vault-secrets-with-kubernetes-csi) I finally made this work!
+Countless hours only because issuer parameter were not there.
+
 ```
 vault auth enable kubernetes
 
 vault write auth/kubernetes/config \
-  kubernetes_host=https://$KUBERNETES_SERVICE_HOST:$KUBERNETES_SERVICE_PORT \
+  issuer="https://kubernetes.default.svc.cluster.local" \
   token_reviewer_jwt="$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)" \
+  kubernetes_host="https://$KUBERNETES_PORT_443_TCP_ADDR:443" \
   kubernetes_ca_cert=@/var/run/secrets/kubernetes.io/serviceaccount/ca.crt
 ```
-
-Although in the Vault [documentation](https://developer.hashicorp.com/vault/api-docs/auth/kubernetes#parameters) mentions `kubernetes_ca_cert` and `token_reviewer_jwt` assume the default valued from the command above somehow it was empty when not defining it explicitely.
-
-Now pods will be able to authenticate to vault using service accounts
 
 ### How to troubeshoot
 
