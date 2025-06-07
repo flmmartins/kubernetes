@@ -165,3 +165,6 @@ Since Vault installation is by far the most complex component a separate README 
       [ Nginx: Reverse Proxy / Load Balancer ]
 
 Pihole has DNS masq so it will resolve all DNS to nginx IP. However in a setup without DNS Masq you can install External DNS to automatically add each record to each IP.
+
+### How to configure pihole.conf
+You can use FTL variables and convert them to environment variables as described in [here](https://docs.pi-hole.net/docker/configuration/?h=environment+variables#environment-variables)

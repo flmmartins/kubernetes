@@ -34,7 +34,7 @@ variable "vault_address_internal" {
 
 variable "vault_ca_file" {
   description = "Vault CA File for TF provider"
-  default     = "talos-apps-tamrieltower-local.crt"
+  default     = "vault.ca"
 }
 
 variable "vault_user_uid" {
