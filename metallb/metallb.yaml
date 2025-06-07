@@ -1,6 +1,0 @@
-controller:
-  additionalLabels:
-    component: loadbalancer
-    part-of: loadbalancer
-speaker:
-  ignoreExcludeLB: true #Allows MetalLB to assign IPs using controlplane nodes

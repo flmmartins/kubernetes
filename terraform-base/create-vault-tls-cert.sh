@@ -1,12 +1,10 @@
 #!/bin/bash
 
 VAULT_K8S_NAMESPACE="vault"
-VAULT_HELM_RELEASE_NAME="vault"
-VAULT_VERSION="~0.29.1"
 VAULT_SERVICE_NAME="vault-internal"
 VAULT_SECRET_INJECTOR="vault.svc"
 K8S_CLUSTER_NAME="cluster.local"
-WORKDIR="$HOME/Downloads/vault_tls_cert"
+WORKDIR="vault_tls_cert"
 
 mkdir -p "$WORKDIR"
 
@@ -88,8 +86,3 @@ kubectl create secret generic vault-ha-tls \
   --from-file=vault.key=${WORKDIR}/vault.key \
   --from-file=vault.crt=${WORKDIR}/vault.crt \
   --from-file=vault.ca=${WORKDIR}/vault.ca
-
-helm upgrade --install --version "${VAULT_VERSION}" \
-    --namespace $VAULT_K8S_NAMESPACE \
-    -f vault.yaml \
-    ${VAULT_HELM_RELEASE_NAME} hashicorp/vault

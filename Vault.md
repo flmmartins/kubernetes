@@ -2,23 +2,15 @@
 
 Without ingress: `kubectl -n vault port-forward service/vault -n vault 8200:8200`
 
-# Upgrade
-
-```
-helm upgrade --install --version "~0.30.0" \
-    --namespace vault \
-    -f vault.yaml \
-    vault hashicorp/vault
-```
-
 # Install
 
-TLDR: Run vault-install.sh
+Terraform will run `create-vault-tls-cert.sh` which will create certificate, namespace and kubernetes secret.
 
-Used instructions from vault [website](https://developer.hashicorp.com/vault/tutorials/kubernetes/kubernetes-minikube-tls) to add certificate and to initiliase vault
+To create the script it was used instructions from vault [website](https://developer.hashicorp.com/vault/tutorials/kubernetes/kubernetes-minikube-tls) to add certificate and to initiliase vault
 
 When using Secret Injector we missed a [SAN](https://github.com/hashicorp/vault/issues/19131) (vault.vault.svc) to the certificate so I made a script that install vault and add the appropriate fixes.
 
+After running the script, terraform will install the helm chart but if it's the first ever run vault needs to be initiliased according to next section and only then terraform can continue run
 
 ## Initialise
 
@@ -72,6 +64,8 @@ vault write op/config \
   op_connect_host=http://onepassword-connect.1password-connect:8080 \
   op_connect_token=$OP_CONNECT_TOKEN
 ```
+These commands are now done by terraform
+
 Checks:
 
 Returns the names and UUIDs for the vault(s) that are accessible to the Connect access token:
@@ -89,8 +83,7 @@ vault read op/vaults/<vault_name_or_uuid>/items/<item_title_or_uuid>
 
 ## Configure Kubernetes Authentication
 
-Thanks to this [article](https://www.hashicorp.com/en/blog/retrieve-hashicorp-vault-secrets-with-kubernetes-csi) I finally made this work!
-Countless hours only because issuer parameter were not there.
+This is now done by terraform but I let the manual reference documented
 
 ```
 vault auth enable kubernetes
@@ -101,6 +94,14 @@ vault write auth/kubernetes/config \
   kubernetes_host="https://$KUBERNETES_PORT_443_TCP_ADDR:443" \
   kubernetes_ca_cert=@/var/run/secrets/kubernetes.io/serviceaccount/ca.crt
 ```
+
+**Issue with token_reviewer_jwt**
+
+The issue of defining a token_reviewer_jwt happens when all vault pods go down. It loses the token and kubernetes authentication goes bad.
+If you remove from the command above it, kubernetes will fetch a new one when necessary but then pods starts to complain about `invalid issuer (iss) claim`
+
+In the end the solution was to remove most of arguments and leave as in terraform
+
 
 ### How to troubeshoot
 
@@ -239,7 +240,7 @@ Run
 
 ```
 kubectl port-forward service/vault -n vault 8200:8200
-export VAULT_ADDR=https://localhost:8200
+export VAULT_ADDR=https://127.0.0.1:8200
 export VAULT_TOKEN=$VAULT_TOKEN
 export VAULT_CACERT=PATH_TO_VAULT_CA
 ./create-pki.sh
