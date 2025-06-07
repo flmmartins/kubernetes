@@ -251,11 +251,13 @@ resource "vault_pki_secret_backend_config_urls" "pki-apps-root" {
   ]
 }
 
+# Tried many combinations for kubernetes, in the end had to allow any
 resource "vault_pki_secret_backend_role" "apps-tamrieltower-local" {
-  backend          = vault_mount.pki-apps-root.path
-  name             = "apps-tamrieltower-local"
-  allowed_domains  = [var.apps_domain]
-  allow_subdomains = true
+  backend                     = vault_mount.pki-apps-root.path
+  name                        = "apps-tamrieltower-local"
+  allow_any_name              = true
+  allow_glob_domains          = true
+  allow_wildcard_certificates = true
 }
 
 resource "vault_policy" "issuer-apps-tamrieltower-local" {

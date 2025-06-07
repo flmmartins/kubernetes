@@ -47,3 +47,16 @@ variable "pihole_additionalHostsEntries" {
   type        = list(string)
   description = "Pihole Hosts Entries comming from router"
 }
+
+variable "storage_user_uid" {
+  description = "Default Storage User UID"
+}
+
+variable "storage_group_uid" {
+  description = "Default Storage User UID"
+}
+
+variable "certificate_cluster_issuer" {
+  description = "Certificate Cluster Issuer"
+  default     = "apps-tamrieltower-local"
+}

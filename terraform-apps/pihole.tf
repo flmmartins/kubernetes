@@ -7,6 +7,12 @@ locals {
   }
 }
 
+resource "kubernetes_namespace_v1" "pihole" {
+  metadata {
+    name = "pihole"
+  }
+}
+
 resource "vault_policy" "pihole" {
   name   = "pihole"
   policy = <<EOT
@@ -20,15 +26,9 @@ EOT
 resource "vault_kubernetes_auth_backend_role" "pihole" {
   role_name                        = "pihole"
   bound_service_account_names      = ["default"]
-  bound_service_account_namespaces = ["pihole"]
+  bound_service_account_namespaces = [kubernetes_namespace_v1.pihole.metadata[0].name]
   token_max_ttl                    = 1440 #24H
   token_policies                   = [vault_policy.pihole.name]
-}
-
-resource "kubernetes_namespace_v1" "pihole" {
-  metadata {
-    name = "pihole"
-  }
 }
 
 resource "kubernetes_manifest" "pihole-admin-secret" {
@@ -37,7 +37,7 @@ resource "kubernetes_manifest" "pihole-admin-secret" {
     kind       = "SecretProviderClass"
 
     metadata = {
-      name      = "pihole"
+      name      = local.pihole_secret_name
       namespace = kubernetes_namespace_v1.pihole.metadata[0].name
     }
 
@@ -139,7 +139,7 @@ resource "helm_release" "pihole" {
 
     admin:
       enabled: true
-      existingSecret: ${local.pihole_secret_name}
+      existingSecret: ${kubernetes_manifest.pihole-admin-secret.manifest.metadata.name}
       passwordKey: ${local.pihole_secret_key}
 
     # If podDnsConfig is set you cannot resolve kube service addresses
