@@ -60,3 +60,16 @@ variable "certificate_cluster_issuer" {
   description = "Certificate Cluster Issuer"
   default     = "apps-tamrieltower-local"
 }
+
+variable "nfs_ip" {
+  description = "NFS IP"
+}
+
+variable "nfs_share_ebooks_comics" {
+  description = "NFS path for Ebooks and Comics"
+}
+
+variable "nfs_share_ebooks_comics_vol_name" {
+  description = "Volume name of NFS in Kubernetes"
+  default     = "ebooks-comics"
+}
