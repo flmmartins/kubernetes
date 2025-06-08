@@ -1,5 +1,10 @@
 # Terraform
 
+## Remote Init
+
+Currently configure in state.tf You need to configure AWS_S3_ENDPOINT, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY as env vars and run `terraform init`
+
+
 ## Local Init
 
 If minio is not set, you might want to run terraform locally
