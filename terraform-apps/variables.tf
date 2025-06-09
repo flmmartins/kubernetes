@@ -48,11 +48,11 @@ variable "pihole_additionalHostsEntries" {
   description = "Pihole Hosts Entries comming from router"
 }
 
-variable "storage_user_uid" {
+variable "kubernetes_storage_user_uid" {
   description = "Default Storage User UID"
 }
 
-variable "storage_group_uid" {
+variable "kubernetes_storage_group_uid" {
   description = "Default Storage User UID"
 }
 

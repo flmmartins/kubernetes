@@ -4,6 +4,9 @@ locals {
   minio_certificate_secret_name = "minio-tls"
   minio_api_hostname            = "minio-api.${var.apps_domain}"
   minio_hostname                = "minio.${var.apps_domain}"
+  minio_common_labels           = {
+    "part-of" = "storage"
+  }
 }
 
 #Changing Security Context for minio without Minio Operator is not possible therefore we relax it's permission on namespace
@@ -43,6 +46,7 @@ resource "kubernetes_manifest" "minio_credentials" {
     metadata = {
       name      = local.minio_credentials_secret_name
       namespace = kubernetes_namespace_v1.minio.metadata[0].name
+      labels = merge(local.minio_common_labels, {component = "credentials"})
     }
 
     spec = {
@@ -86,6 +90,7 @@ resource "kubernetes_manifest" "minio_certificate" {
     metadata = {
       name      = local.minio_certificate_secret_name
       namespace = kubernetes_namespace_v1.minio.metadata[0].name
+      labels = merge(local.minio_common_labels, {component = "certificate"})
     }
     spec = {
       secretName  = local.minio_certificate_secret_name

@@ -5,7 +5,7 @@
 **/**.key
 **/**.pem
 **/**.ca
-**/**terraform.tfvars
+**/**.tfvars
 **/**.terraform
 **/**.terraform.lock.hcl
 **/**.tfstate
