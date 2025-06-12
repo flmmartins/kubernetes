@@ -12,12 +12,22 @@ resource "helm_release" "nginx" {
       component: ingress-controller
       part-of: ingress-controller
     controller:
+      allowSnippetAnnotations: true
+      config:
+        annotations-risk-level: Critical
       autoscaling:
         enabled: true
         minReplicas: 1
         maxReplicas: 3
         targetCPUUtilizationPercentage: 80
         targetMemoryUtilizationPercentage: 80
+      resources:
+        requests:
+          cpu: 100m
+          memory: 90Mi
+        limits:
+          memory: 200Mi
+          cpu: 300m
       ingressClassResource:
         name: nginx
         enabled: true
@@ -35,9 +45,6 @@ resource "helm_release" "nginx" {
                   values:
                   - ingress-controller
               topologyKey: kubernetes.io/hostname
-    #tcp:
-    #  "9000": "minio/minio:9000"
-    #  "9001": "minio/minio-console:9001"
     EOF
   ]
 }

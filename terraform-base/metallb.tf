@@ -22,8 +22,22 @@ resource "helm_release" "metallb" {
       additionalLabels:
         component: loadbalancer
         part-of: loadbalancer
+      resources:
+        requests:
+          memory: 25Mi
+          cpu: 5m
+        limits:
+          memory: 100Mi
+          cpu: 10m
     speaker:
       ignoreExcludeLB: true #Allows MetalLB to assign IPs using controlplane nodes
+      resources:
+        requests:
+          memory: 50Mi
+          cpu: 10m
+        limits:
+          memory: 100Mi
+          cpu: 20m
     EOF
   ]
 }

@@ -40,6 +40,13 @@ resource "helm_release" "vault" {
           capabilities:
             drop:
               - ALL
+      resources:
+        requests:
+          memory: 50Mi
+          cpu: 20m
+        limits:
+          memory: 100Mi
+          cpu: 100m
     csi:
       enabled: true
       volumes:
@@ -50,6 +57,13 @@ resource "helm_release" "vault" {
         - name: tls
           mountPath: /vault/tls
           readOnly: true
+      resources:
+        requests:
+          memory: 50Mi
+          cpu: 50m
+        limits:
+          memory: 128Mi
+          cpu: 100m
     server:
       # Plugin needs to be installed on every pod
       # Registration of plugin is only done once and remains in PV
@@ -66,6 +80,13 @@ resource "helm_release" "vault" {
           volumeMounts:
             - name: plugins
               mountPath: ${local.vault_plugin_folder}
+      resources:
+        requests:
+          memory: 150Mi
+          cpu: 50m
+        limits:
+          memory: 300Mi
+          cpu: 100m
       extraEnvironmentVars:
         VAULT_CACERT: /vault/userconfig/vault-ha-tls/vault.ca
         VAULT_TLSCERT: /vault/userconfig/vault-ha-tls/vault.crt

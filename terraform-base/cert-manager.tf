@@ -41,10 +41,33 @@ resource "helm_release" "cert-manager" {
                 values:
                 - cert-manager
             topologyKey: kubernetes.io/hostname
+    resources:
+      requests:
+        memory: 25Mi
+        cpu: 5m
+      limits:
+        memory: 100Mi
+        cpu: 20m
     ingressShim:
       defaultIssuerName: ${local.defaut_cert_issuer_name}
       defaultIssuerKind: ClusterIssuer
       defaultIssuerGroup: cert-manager.io
+    webhook:
+      resources:
+        requests:
+          memory: 25Mi
+          cpu: 5m
+        limits:
+          memory: 100Mi
+          cpu: 20m
+    cainjector:
+      resources:
+        requests:
+          memory: 25Mi
+          cpu: 5m
+        limits:
+          memory: 100Mi
+          cpu: 20m
   EOF
   ]
 }
