@@ -12,6 +12,7 @@ resource "helm_release" "nginx" {
       component: ingress-controller
       part-of: ingress-controller
     controller:
+      #For pihole
       allowSnippetAnnotations: true
       config:
         annotations-risk-level: Critical
