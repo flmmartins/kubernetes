@@ -46,17 +46,21 @@ This creates storage for PVs
 
 ### How NFS is created
 
-When I created the NFS I set a user and group to it. When creating a volume permissions are as follows:
+When I created the NFS I set a user and group to it. I restricted access to K8s machines.
+
+When creating a NFS permissions are as follows:
 
 ```
-drwxrwsr-x nfs_user nfs_group
+drwx---- root wheel
 ```
 
-However by using csi-driver-nfs you can do dynamic subdirectory permissions therefore each application will have it's own volume with proper permissions and security isolation
+In the NFS I had also to configure maproot_user to root and maproot_group to wheel, this is called `no_root_squash` permissions are absolutely necessary for CSI NFS be able to do fsGroupChangePolicy and allow CSI to delete from NFS
+
+I wanted to strict permissions per application on NFS as much as possible. So I tried to play only by assigning app_user to nfs_group and then don't use fsGroup or fsGroupChangePolicy. Vault needs to stat the root directory so I added 711 but that didn't work and if I did more permissions would breach security. So there's no running from fsGroup and fsGroupChangePolicy. 
+
+If you set an fsGroup, fsGroupChangePolicy will run and set that as the group.
 
 ### How to assign permission to subdirectories
-
-Create a user for the application and make it part of the group allowed to the NFS.
 
 In the pod do:
 
@@ -64,38 +68,9 @@ In the pod do:
 securityContext:
   runAsUser: app_user
   runAsGroup: app_group
-  fsGroup: nfs_group
+  fsGroup: app_group
   fsGroupChangePolicy: "OnRootMismatch"
 ```
-
-The `fsGroupChangePolicy` is necessary bc that changes the permissions to the ones defined by `fsGroup` before volume is mounted.
-
-Now you can see the permissions of the volume again:
-
-```
-drwxrwxr-x nfs_user nfs_group
-```
-
-If you enter a subdirectory of the volume the created files will have the rwx permissions according to the application behaviour. However ownership will be fully by application
-
-Example:
-
-```
--rw------- 1 app_user nfs_group db
-```
-
-Even if another application tries to use the volume it will not have permissions
-
-Since the rwx permissions are determine by the application you might run into a case where you have:
-
-```
--rw-r----- 1 app_user nfs_group db
-```
-
-This would allow everyone on the nfs_group to read such directories. Initially I tried setting `fsGroup` to app_group however due to NFS csi driver it always want to change files permissions inside the volume independent of `fsGroupChangePolicy` since files didn't had the nfs_group set it showed the following error: `applyFSGroup failed permission denied`
-
-I opened an [issue](https://github.com/kubernetes-csi/csi-driver-nfs/issues/894) to understand more about it
-
 
 ## AutoScaling
 Metric server is installing to enable HPA
