@@ -8,7 +8,7 @@ variable "nfs" {
   type = object({
     ip           = string
     share_folder = string
-    user_id      = number
+    group_uid    = number
   })
 }
 

@@ -31,7 +31,7 @@ resource "helm_release" "vault" {
           runAsNonRoot: true
           runAsUser: ${var.vault_user_uid}
           runAsGroup: ${var.vault_group_uid}
-          fsGroup: ${var.nfs.user_id}
+          fsGroup: ${var.vault_group_uid}
           fsGroupChangePolicy: "OnRootMismatch"
         container:
           allowPrivilegeEscalation: false
@@ -97,7 +97,7 @@ resource "helm_release" "vault" {
             runAsNonRoot: true
             runAsUser: ${var.vault_user_uid}
             runAsGroup: ${var.vault_group_uid}
-            fsGroup: ${var.nfs.user_id}
+            fsGroup: ${var.vault_group_uid}
             fsGroupChangePolicy: "OnRootMismatch"
           container: #vault defaults
             allowPrivilegeEscalation: false

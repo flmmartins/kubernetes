@@ -13,6 +13,8 @@ resource "helm_release" "csi-driver-nfs" {
   chart      = "csi-driver-nfs"
   values = [
     <<-EOF
+    driver:
+      mountPermissions: 0700
     controller:
       replicas: 2
       runOnControlPlane: true
@@ -44,9 +46,10 @@ resource "kubernetes_storage_class_v1" "persistent" {
   }
   storage_provisioner = "nfs.csi.k8s.io"
   parameters = {
-    server = var.nfs.ip
-    share  = var.nfs.share_folder
-
+    server           = var.nfs.ip
+    share            = var.nfs.share_folder
+    subdir           = "$${pvc.metadata.namespace}-$${pvc.metadata.name}"
+    mountPermissions = "0700"
   }
   reclaim_policy         = "Retain"
   volume_binding_mode    = "Immediate"
@@ -64,9 +67,10 @@ resource "kubernetes_storage_class_v1" "default" {
   }
   storage_provisioner = "nfs.csi.k8s.io"
   parameters = {
-    server = var.nfs.ip
-    share  = var.nfs.share_folder
-
+    server           = var.nfs.ip
+    share            = var.nfs.share_folder
+    subdir           = "$${pvc.metadata.namespace}-$${pvc.metadata.name}"
+    mountPermissions = "0700"
   }
   reclaim_policy         = "Delete"
   volume_binding_mode    = "Immediate"
