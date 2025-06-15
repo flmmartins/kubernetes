@@ -2,12 +2,13 @@ locals {
   komga_app_name = "komga-reader"
   komga_port     = 25600
   komga_url      = "reader.${var.apps_domain}"
+  komga_share    = "ebooks-comics"
   komga_common_labels = {
     part-of = "reader"
   }
   komga_app_labels = merge(local.komga_common_labels, {
-      app       = local.komga_app_name
-      component = "app"
+    app       = local.komga_app_name
+    component = "app"
   })
 }
 
@@ -34,14 +35,14 @@ resource "kubernetes_persistent_volume_claim_v1" "komga_config" {
         storage = "5Gi"
       }
     }
-    
+
     storage_class_name = "persistent"
   }
 }
 
 resource "kubernetes_persistent_volume_claim_v1" "komga_data" {
   metadata {
-    name = "komga-data"
+    name      = "komga-data"
     namespace = kubernetes_namespace_v1.komga.metadata[0].name
     labels = merge(local.komga_common_labels, {
       component = "data"
@@ -49,13 +50,13 @@ resource "kubernetes_persistent_volume_claim_v1" "komga_data" {
   }
 
   spec {
-    access_modes = ["ReadWriteMany"]
+    access_modes = [var.existing_nfs_share[local.komga_share].access_mode]
     resources {
       requests = {
-        storage = "50Gi"
+        storage = var.existing_nfs_share[local.komga_share].size
       }
     }
-    volume_name        = kubernetes_persistent_volume_v1.ebooks_comics.metadata[0].name
+    volume_name        = kubernetes_persistent_volume_v1.data_volumes[local.komga_share].metadata[0].name
     storage_class_name = kubernetes_storage_class_v1.manual.metadata[0].name
   }
 }
@@ -80,18 +81,30 @@ resource "kubernetes_deployment_v1" "komga" {
       }
 
       spec {
+        security_context {
+          run_as_non_root        = true
+          run_as_user            = var.existing_nfs_share[local.komga_share].user_uid
+          run_as_group           = var.existing_nfs_share[local.komga_share].group_uid
+          fs_group               = var.existing_nfs_share[local.komga_share].group_uid
+          fs_group_change_policy = "OnRootMismatch" #Only applicable to dynamic
+        }
         container {
-          name  = "komga"
+          name  = local.komga_app_name
           image = "gotson/komga:${var.komga_image_version}"
-
-          security_context {
-            run_as_user     = var.storage_user_uid
-            run_as_group    = var.storage_user_uid
-            run_as_non_root = true
-          }
 
           port {
             container_port = local.komga_port
+          }
+
+          resources {
+            requests = {
+              memory = "200Mi"
+              cpu    = "50m"
+            }
+            limits = {
+              memory = "500Mi"
+              cpu    = "200m"
+            }
           }
 
           volume_mount {
@@ -102,6 +115,7 @@ resource "kubernetes_deployment_v1" "komga" {
           volume_mount {
             name       = "data"
             mount_path = "/books"
+            read_only  = true
           }
         }
 
@@ -148,8 +162,8 @@ resource "kubernetes_service_v1" "komga" {
 
 resource "kubernetes_ingress_v1" "komga" {
   metadata {
-    name        = local.komga_app_name
-    namespace   = kubernetes_namespace_v1.komga.metadata[0].name
+    name      = local.komga_app_name
+    namespace = kubernetes_namespace_v1.komga.metadata[0].name
     annotations = {
       "kubernetes.io/tls-acme"      = "true"
       "cert-manager.io/common-name" = local.komga_url
@@ -165,7 +179,7 @@ resource "kubernetes_ingress_v1" "komga" {
 
       http {
         path {
-          path      = "/"
+          path = "/"
           backend {
             service {
               name = kubernetes_service_v1.komga.metadata[0].name
@@ -180,7 +194,7 @@ resource "kubernetes_ingress_v1" "komga" {
 
     tls {
       hosts       = [local.komga_url]
-      secret_name = "${local.komga_app_name}-tls"  # must match a TLS secret in the same namespace
+      secret_name = "${local.komga_app_name}-tls" # must match a TLS secret in the same namespace
     }
   }
 }

@@ -57,8 +57,15 @@ variable "nfs_ip" {
   description = "NFS IP"
 }
 
-variable "nfs_share_ebooks_comics" {
-  description = "NFS path for Ebooks and Comics"
+variable "existing_nfs_share" {
+  description = "NFS shares"
+  type = map(object({
+    path        = string
+    size        = optional(string, "50Gi")
+    user_uid    = number
+    group_uid   = number
+    access_mode = optional(string, "ReadOnlyMany")
+  }))
 }
 
 variable "minio" {
