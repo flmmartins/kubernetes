@@ -72,6 +72,10 @@ securityContext:
   fsGroupChangePolicy: "OnRootMismatch"
 ```
 
+### Minio
+
+I made a branch called minio with Bitnami Helm Chart which has much more features however when I installed it didn't had UI to create api keys, no bucket versioning. So I stick with the version I currently have which is an older release but with more decent.
+
 ## AutoScaling
 Metric server is installing to enable HPA
 
@@ -126,6 +130,9 @@ Since Vault installation is by far the most complex component a separate README 
            |
            v
     [ Cert Manager uses Hashicorp Vault to sign the certificate and manages rotation]
+
+### Internal Vs External Certificates
+Ideally you want one set of certificates for internal TLS of vault or minio and another set for external facing certificate however since I only have one set is all done with the same certificate
 
 # Terraform Apps
 

@@ -48,14 +48,6 @@ variable "pihole_additionalHostsEntries" {
   description = "Pihole Hosts Entries comming from router"
 }
 
-variable "kubernetes_storage_user_uid" {
-  description = "Default Storage User UID"
-}
-
-variable "kubernetes_storage_group_uid" {
-  description = "Default Storage User UID"
-}
-
 variable "certificate_cluster_issuer" {
   description = "Certificate Cluster Issuer"
   default     = "apps-tamrieltower-local"
@@ -69,7 +61,10 @@ variable "nfs_share_ebooks_comics" {
   description = "NFS path for Ebooks and Comics"
 }
 
-variable "nfs_share_ebooks_comics_vol_name" {
-  description = "Volume name of NFS in Kubernetes"
-  default     = "ebooks-comics"
+variable "minio" {
+  description = "Minio User & Group UIDs"
+  type = object({
+    user_uid  = number
+    group_uid = number
+  })
 }

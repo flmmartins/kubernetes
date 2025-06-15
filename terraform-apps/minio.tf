@@ -4,18 +4,14 @@ locals {
   minio_certificate_secret_name = "minio-tls"
   minio_api_hostname            = "minio-api.${var.apps_domain}"
   minio_hostname                = "minio.${var.apps_domain}"
-  minio_common_labels           = {
+  minio_common_labels = {
     "part-of" = "storage"
   }
 }
 
-#Changing Security Context for minio without Minio Operator is not possible therefore we relax it's permission on namespace
 resource "kubernetes_namespace_v1" "minio" {
   metadata {
     name = "minio"
-    labels = {
-      "pod-security.kubernetes.io/enforce" = "privileged"
-    }
   }
 }
 
@@ -46,7 +42,7 @@ resource "kubernetes_manifest" "minio_credentials" {
     metadata = {
       name      = local.minio_credentials_secret_name
       namespace = kubernetes_namespace_v1.minio.metadata[0].name
-      labels = merge(local.minio_common_labels, {component = "credentials"})
+      labels    = merge(local.minio_common_labels, { component = "credentials" })
     }
 
     spec = {
@@ -90,7 +86,7 @@ resource "kubernetes_manifest" "minio_certificate" {
     metadata = {
       name      = local.minio_certificate_secret_name
       namespace = kubernetes_namespace_v1.minio.metadata[0].name
-      labels = merge(local.minio_common_labels, {component = "certificate"})
+      labels    = merge(local.minio_common_labels, { component = "certificate" })
     }
     spec = {
       secretName  = local.minio_certificate_secret_name
@@ -128,13 +124,13 @@ resource "helm_release" "minio" {
     minioConsolePort: "9001"
     replicas: 2
     existingSecret: ${kubernetes_manifest.minio_credentials.manifest.metadata.name}
-    additionalLabels:
-      component: minio
-      part-of: storage
+    additionalLabels: ${jsonencode(merge(local.minio_common_labels, { "component" = "minio" }))}
     # By default minio requires tons of memory
     resources:
       requests:
         memory: 100Mi
+      limits:
+        memory: 400Mi
     tls:
       enabled: true
       ## Create a secret with private.key and public.crt files and pass that here. Ref: https://github.com/minio/minio/tree/master/docs/tls/kubernetes#2-create-kubernetes-secret
@@ -152,20 +148,20 @@ resource "helm_release" "minio" {
       annotations:
         nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
       hosts:
-      - minio-api.${var.apps_domain}
+      - ${local.minio_api_hostname}
       tls:
       - hosts:
-        - minio-api.${var.apps_domain}
+        - ${local.minio_api_hostname}
         secretName: ${kubernetes_manifest.minio_certificate.manifest.metadata.name}
     consoleIngress:
       enabled: true
       annotations:
         nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
       hosts:
-      - minio.${var.apps_domain}
+      - ${local.minio_hostname}
       tls:
       - hosts:
-        - minio.${var.apps_domain}
+        - ${local.minio_hostname}
         secretName: ${kubernetes_manifest.minio_certificate.manifest.metadata.name}
     serviceAccount:
       create: true
@@ -173,9 +169,9 @@ resource "helm_release" "minio" {
     # Set user and group so it can create files in the volume with those
     securityContext:
       enabled: true
-      runAsUser: ${var.storage_user_uid}
-      runAsGroup: ${var.storage_group_uid}
-      fsGroup: ${var.storage_group_uid}
+      runAsUser: ${var.minio.user_uid}
+      runAsGroup: ${var.minio.group_uid}
+      fsGroup: ${var.minio.group_uid}
       fsGroupChangePolicy: "OnRootMismatch"
     affinity:
       podAntiAffinity:
