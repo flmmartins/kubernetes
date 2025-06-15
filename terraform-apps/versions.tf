@@ -5,7 +5,7 @@ variable "pihole_chart_version" {
 
 variable "minio_chart_version" {
   description = "Minio Version"
-  default     = "5.4.0"
+  default     = "17.0.4"
 }
 
 variable "komga_image_version" {
