@@ -2,7 +2,7 @@ locals {
   pihole_secret_name = "pihole-admin-password"
   pihole_secret_key  = "password"
   pihole_metallb_annotations = {
-    "metallb.universe.tf/address-pool"    = "pihole-dns"
+    "metallb.universe.tf/address-pool"    = kubernetes_manifest.pihole-l2-advertisement.manifest.metadata.name
     "metallb.universe.tf/allow-shared-ip" = "pihole-services"
   }
 }

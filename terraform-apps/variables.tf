@@ -43,6 +43,11 @@ variable "nginx_ip" {
   description = "IP of NGINX"
 }
 
+variable "plex_ip_cidr" {
+  type        = string
+  description = "IP of Plex"
+}
+
 variable "pihole_additionalHostsEntries" {
   type        = list(string)
   description = "Pihole Hosts Entries comming from router"

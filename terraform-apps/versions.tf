@@ -12,3 +12,13 @@ variable "komga_image_version" {
   description = "Komga Ebooks & Comic Reader Version"
   default     = "latest"
 }
+
+variable "plex_chart_version" {
+  description = "Plex Version"
+  default     = "1.0.2"
+}
+
+variable "immich_chart_version" {
+  description = "Photos Processing App Version"
+  default     = "0.9.3"
+}

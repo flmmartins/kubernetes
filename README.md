@@ -20,7 +20,7 @@ Applications in this repo assume Pod Security Adminission as `baseline` enabled 
 4. [Load Balancer](##LoadBalancer)
 5. [Secret Management](##SecretManagement)
 6. [Certificates](#Certificates)
-
+7. [Apps](#Apps)
 
 # Terraform Base
 Contains the Base Infrastructure
@@ -150,3 +150,7 @@ Pihole has DNS masq so it will resolve all DNS to nginx IP. However in a setup w
 
 ### How to configure pihole.conf
 You can use FTL variables and convert them to environment variables as described in [here](https://docs.pi-hole.net/docker/configuration/?h=environment+variables#environment-variables)
+
+## Plex
+
+Plex is a media center. I tried to use the helm chart however that didn't work. Although I was setting PLEX_UID, PLEX_GID, container security context and changing the permissions to the correct one manually, on every restarted it insisted on changing all permissions to UID 1000. Also the security context is very limited and you cannot do fsGroup operations.
