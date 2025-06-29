@@ -153,4 +153,4 @@ You can use FTL variables and convert them to environment variables as described
 
 ## Plex
 
-Plex is a media center. I tried to use the helm chart however that didn't work. Although I was setting PLEX_UID, PLEX_GID, container security context and changing the permissions to the correct one manually, on every restarted it insisted on changing all permissions to UID 1000. Also the security context is very limited and you cannot do fsGroup operations.
+Check Plex.md

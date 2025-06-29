@@ -1,6 +1,5 @@
 locals {
-  plex_app_name = "plex"
-  plex_share    = "media"
+  plex_app_name      = "plex"
   plex_url      = "${local.plex_app_name}.${var.apps_domain}"
   plex_common_labels = {
     "part-of" = "media-server"
@@ -13,41 +12,9 @@ resource "kubernetes_namespace_v1" "plex" {
   }
 }
 
-#Plex only works with IP, with nginx it didn't allow to configure it
-resource "kubernetes_manifest" "plex-ip-address-pool" {
-  manifest = {
-    apiVersion = "metallb.io/v1beta1"
-    kind       = "IPAddressPool"
-    metadata = {
-      name      = local.plex_app_name
-      namespace = "metallb"
-      labels    = local.plex_common_labels
-    }
-    spec = {
-      addresses  = [var.plex_ip_cidr]
-      autoAssign = false
-    }
-  }
-}
-
-resource "kubernetes_manifest" "plex-l2-advertisement" {
-  manifest = {
-    apiVersion = "metallb.io/v1beta1"
-    kind       = "L2Advertisement"
-    metadata = {
-      name      = local.plex_app_name
-      namespace = "metallb"
-      labels    = local.plex_common_labels
-    }
-    spec = {
-      ipAddressPools = [kubernetes_manifest.plex-ip-address-pool.manifest.metadata.name]
-    }
-  }
-}
-
-resource "kubernetes_persistent_volume_claim_v1" "plex_data" {
+resource "kubernetes_persistent_volume_claim_v1" "plex_movies" {
   metadata {
-    name      = "${local.plex_app_name}-data"
+    name      = "${local.plex_app_name}-movies"
     namespace = kubernetes_namespace_v1.plex.metadata[0].name
     labels = merge(local.plex_common_labels, {
       component = "data"
@@ -55,19 +22,79 @@ resource "kubernetes_persistent_volume_claim_v1" "plex_data" {
   }
 
   spec {
-    access_modes = [var.existing_nfs_share[local.plex_share].access_mode]
+    access_modes = [var.existing_nfs_share["movies"].access_mode]
     resources {
       requests = {
-        storage = var.existing_nfs_share[local.plex_share].size
+        storage = var.existing_nfs_share["movies"].size
       }
     }
-    volume_name        = kubernetes_persistent_volume_v1.data_volumes[local.plex_share].metadata[0].name
+    volume_name        = kubernetes_persistent_volume_v1.data_volumes["movies"].metadata[0].name
     storage_class_name = kubernetes_storage_class_v1.manual.metadata[0].name
   }
 }
 
+resource "kubernetes_persistent_volume_claim_v1" "plex_music" {
+  metadata {
+    name      = "${local.plex_app_name}-music"
+    namespace = kubernetes_namespace_v1.plex.metadata[0].name
+    labels = merge(local.plex_common_labels, {
+      component = "data"
+    })
+  }
 
+  spec {
+    access_modes = [var.existing_nfs_share["music"].access_mode]
+    resources {
+      requests = {
+        storage = var.existing_nfs_share["music"].size
+      }
+    }
+    volume_name        = kubernetes_persistent_volume_v1.data_volumes["music"].metadata[0].name
+    storage_class_name = kubernetes_storage_class_v1.manual.metadata[0].name
+  }
+}
 
+resource "kubernetes_persistent_volume_claim_v1" "plex_photos" {
+  metadata {
+    name      = "${local.plex_app_name}-photos"
+    namespace = kubernetes_namespace_v1.plex.metadata[0].name
+    labels = merge(local.plex_common_labels, {
+      component = "data"
+    })
+  }
+
+  spec {
+    access_modes = [var.existing_nfs_share["photos"].access_mode]
+    resources {
+      requests = {
+        storage = var.existing_nfs_share["photos"].size
+      }
+    }
+    volume_name        = kubernetes_persistent_volume_v1.data_volumes["photos"].metadata[0].name
+    storage_class_name = kubernetes_storage_class_v1.manual.metadata[0].name
+  }
+}
+
+resource "kubernetes_persistent_volume_claim_v1" "plex_tvshows" {
+  metadata {
+    name      = "${local.plex_app_name}-tv-shows"
+    namespace = kubernetes_namespace_v1.plex.metadata[0].name
+    labels = merge(local.plex_common_labels, {
+      component = "data"
+    })
+  }
+
+  spec {
+    access_modes = [var.existing_nfs_share["tv-shows"].access_mode]
+    resources {
+      requests = {
+        storage = var.existing_nfs_share["tv-shows"].size
+      }
+    }
+    volume_name        = kubernetes_persistent_volume_v1.data_volumes["tv-shows"].metadata[0].name
+    storage_class_name = kubernetes_storage_class_v1.manual.metadata[0].name
+  }
+}
 
 resource "helm_release" "plex" {
   name       = local.plex_app_name
@@ -76,24 +103,15 @@ resource "helm_release" "plex" {
   version    = var.plex_chart_version
   chart      = "plex-media-server"
   values = [
-    <<-EOF
+  <<-EOF
   pms:
     # On first boot: https://www.plex.tv/claim/. Edit env var below - claim token is temp
     storageClassName: persistent
     configStorage: 5Gi
-    # This is a container security context, fsGroup doesn't apply
-    securityContext:
-      runAsNonRoot: true
-      runAsUser: ${var.existing_nfs_share[local.plex_share].user_uid}
-      runAsGroup: ${var.existing_nfs_share[local.plex_share].group_uid}
-      allowPrivilegeEscalation: false
     resources:
       requests:
         cpu: 100m
         memory: 200Mi
-      limits:
-        cpu: 300m
-        memory: 400Mi
   commonLabels: ${jsonencode(merge(local.plex_common_labels, { "component" = "plex" }))}
   affinity:
     podAntiAffinity:
@@ -111,21 +129,44 @@ resource "helm_release" "plex" {
     HOSTNAME: "TalosPlexServer"
     TZ: "Europe/Amsterdam"
     ALLOWED_NETWORKS: "0.0.0.0/0"
-    PLEX_UID: ${var.existing_nfs_share[local.plex_share].user_uid}
-    PLEX_GID: ${var.existing_nfs_share[local.plex_share].group_uid}
-    #PLEX_CLAIM:
+    # PLEX_CLAIM:
   extraVolumes:
-  - name: media
+  - name: movies
     persistentVolumeClaim:
-      claimName: ${kubernetes_persistent_volume_claim_v1.plex_data.metadata[0].name}
+      claimName: ${kubernetes_persistent_volume_claim_v1.plex_movies.metadata[0].name}
+  - name: music
+    persistentVolumeClaim:
+      claimName: ${kubernetes_persistent_volume_claim_v1.plex_music.metadata[0].name}
+  - name: photos
+    persistentVolumeClaim:
+      claimName: ${kubernetes_persistent_volume_claim_v1.plex_photos.metadata[0].name}
+  - name: tvshows
+    persistentVolumeClaim:
+      claimName: ${kubernetes_persistent_volume_claim_v1.plex_tvshows.metadata[0].name}
   extraVolumeMounts:
-  - name: media
-    mountPath: /media
+  - name: movies
+    mountPath: /movies
     readOnly: true
-  service:
-    annotations:
-      "metallb.universe.tf/address-pool": ${kubernetes_manifest.plex-l2-advertisement.manifest.metadata.name}
-    type: LoadBalancer
+  - name: music
+    mountPath: /music
+    readOnly: true
+  - name: photos
+    mountPath: /photos
+    readOnly: true
+  - name: tvshows
+    mountPath: /tv_shows
+    readOnly: true
+  ingress:
+    enabled: true
+    ingressClassName: "nginx"
+    url: ${local.plex_url}
+    annotations: 
+      kubernetes.io/tls-acme: "true" #Auto-tls creation by cert-manager
+      cert-manager.io/common-name: "${local.plex_url}"
+    tls:
+    - hosts:
+      - ${local.plex_url}
+      secretName: ${local.plex_app_name}-tls
   EOF
   ]
 }
