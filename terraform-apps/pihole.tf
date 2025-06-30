@@ -115,9 +115,9 @@ resource "helm_release" "pihole" {
       FTLCONF_dns_listeningMode: 'all'
       FTLCONF_dns_dnssec: 'true'
       FTLCONF_dns_upstreams: '127.0.0.1#5053'
-    serviceWeb:
-      annotations: ${jsonencode(local.pihole_metallb_annotations)}
-      type: LoadBalancer
+    #serviceWeb:
+    #  annotations: ${jsonencode(local.pihole_metallb_annotations)}
+    #  type: LoadBalancer
     serviceDns:
       annotations: ${jsonencode(local.pihole_metallb_annotations)}
       mixedService: true #tcp and udp dns svc on same ip
@@ -168,17 +168,21 @@ resource "helm_release" "pihole" {
       namespaces: [${kubernetes_namespace_v1.pihole.metadata[0].name}]
 
     # Not possible with ingress due to https://github.com/MoJo2600/pihole-kubernetes/issues/375
-    #ingress:
-    #  enabled: true
-    #  annotations:
-    #    kubernetes.io/tls-acme: "true" #Auto-tls creation by cert-manager
-    #    cert-manager.io/common-name: "pihole.${var.apps_domain}"
-    #  hosts:
-    #  - pihole.${var.apps_domain}
-    #  tls:
-    #  - hosts:
-    #    - pihole.${var.apps_domain}
-    #    secretName: pihole-tls
+    ingress:
+      enabled: true
+      annotations:
+        kubernetes.io/tls-acme: "true" #Auto-tls creation by cert-manager
+        cert-manager.io/common-name: "pihole.${var.apps_domain}"
+        nginx.ingress.kubernetes.io/configuration-snippet: |
+          rewrite ^/$ /admin/ redirect;
+      path: /
+      pathType: Prefix
+      hosts:
+      - pihole.${var.apps_domain}
+      tls:
+      - hosts:
+        - pihole.${var.apps_domain}
+        secretName: pihole-tls
         
     dnsmasq:
       enableCustomDnsMasq: true

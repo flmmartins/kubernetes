@@ -54,27 +54,6 @@ resource "kubernetes_persistent_volume_claim_v1" "plex_music" {
   }
 }
 
-resource "kubernetes_persistent_volume_claim_v1" "plex_photos" {
-  metadata {
-    name      = "${local.plex_app_name}-photos"
-    namespace = kubernetes_namespace_v1.plex.metadata[0].name
-    labels = merge(local.plex_common_labels, {
-      component = "data"
-    })
-  }
-
-  spec {
-    access_modes = [var.existing_nfs_share["photos"].access_mode]
-    resources {
-      requests = {
-        storage = var.existing_nfs_share["photos"].size
-      }
-    }
-    volume_name        = kubernetes_persistent_volume_v1.data_volumes["photos"].metadata[0].name
-    storage_class_name = kubernetes_storage_class_v1.manual.metadata[0].name
-  }
-}
-
 resource "kubernetes_persistent_volume_claim_v1" "plex_tvshows" {
   metadata {
     name      = "${local.plex_app_name}-tv-shows"
@@ -137,9 +116,6 @@ resource "helm_release" "plex" {
   - name: music
     persistentVolumeClaim:
       claimName: ${kubernetes_persistent_volume_claim_v1.plex_music.metadata[0].name}
-  - name: photos
-    persistentVolumeClaim:
-      claimName: ${kubernetes_persistent_volume_claim_v1.plex_photos.metadata[0].name}
   - name: tvshows
     persistentVolumeClaim:
       claimName: ${kubernetes_persistent_volume_claim_v1.plex_tvshows.metadata[0].name}
@@ -149,9 +125,6 @@ resource "helm_release" "plex" {
     readOnly: true
   - name: music
     mountPath: /music
-    readOnly: true
-  - name: photos
-    mountPath: /photos
     readOnly: true
   - name: tvshows
     mountPath: /tv_shows
