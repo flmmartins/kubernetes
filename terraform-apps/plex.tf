@@ -1,6 +1,7 @@
 locals {
   plex_app_name      = "plex"
-  plex_url      = "${local.plex_app_name}.${var.apps_domain}"
+  plex_url           = "${local.plex_app_name}.${var.apps_domain}"
+  plex_ip            = cidrhost(var.plex_ip_cidr, 0)
   plex_common_labels = {
     "part-of" = "media-server"
   }
@@ -9,6 +10,38 @@ locals {
 resource "kubernetes_namespace_v1" "plex" {
   metadata {
     name = local.plex_app_name
+  }
+}
+
+#TV and some apps does not accept reverse proxysql and require advertise IP
+resource "kubernetes_manifest" "plex-ip-address-pool" {
+  manifest = {
+    apiVersion = "metallb.io/v1beta1"
+    kind       = "IPAddressPool"
+    metadata = {
+      name      = local.plex_app_name
+      namespace = "metallb"
+      labels    = local.plex_common_labels
+    }
+    spec = {
+      addresses  = [var.plex_ip_cidr]
+      autoAssign = false
+    }
+  }
+}
+
+resource "kubernetes_manifest" "plex-l2-advertisement" {
+  manifest = {
+    apiVersion = "metallb.io/v1beta1"
+    kind       = "L2Advertisement"
+    metadata = {
+      name      = local.plex_app_name
+      namespace = "metallb"
+      labels    = local.plex_common_labels
+    }
+    spec = {
+      ipAddressPools = [kubernetes_manifest.plex-ip-address-pool.manifest.metadata.name]
+    }
   }
 }
 
@@ -108,7 +141,8 @@ resource "helm_release" "plex" {
     HOSTNAME: "TalosPlexServer"
     TZ: "Europe/Amsterdam"
     ALLOWED_NETWORKS: "0.0.0.0/0"
-    # PLEX_CLAIM:
+    ADVERTISE_IP: "http://${local.plex_ip}:32400,https://${local.plex_ip}:32400"
+    #PLEX_CLAIM:
   extraVolumes:
   - name: movies
     persistentVolumeClaim:
@@ -129,17 +163,10 @@ resource "helm_release" "plex" {
   - name: tvshows
     mountPath: /tv_shows
     readOnly: true
-  ingress:
-    enabled: true
-    ingressClassName: "nginx"
-    url: ${local.plex_url}
-    annotations: 
-      kubernetes.io/tls-acme: "true" #Auto-tls creation by cert-manager
-      cert-manager.io/common-name: "${local.plex_url}"
-    tls:
-    - hosts:
-      - ${local.plex_url}
-      secretName: ${local.plex_app_name}-tls
+  service:
+    annotations:
+      "metallb.universe.tf/address-pool": ${kubernetes_manifest.plex-l2-advertisement.manifest.metadata.name}
+    type: LoadBalancer
   EOF
   ]
 }
