@@ -13,7 +13,7 @@ resource "kubernetes_namespace_v1" "plex" {
   }
 }
 
-#TV and some apps does not accept reverse proxysql and require advertise IP
+#TV and mobile apps don't work using reverse proxy. Check readme
 resource "kubernetes_manifest" "plex-ip-address-pool" {
   manifest = {
     apiVersion = "metallb.io/v1beta1"
