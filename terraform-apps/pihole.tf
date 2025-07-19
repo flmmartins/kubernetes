@@ -109,26 +109,29 @@ resource "helm_release" "pihole" {
   chart      = "pihole"
   values = [
     <<-EOF
-    replicaCount: 2
+    # Pihole with 2 replicas causes issue with persistentVolume
+    # WARNING: Cannot get exclusive lock for /etc/pihole/pihole.toml: Bad file descriptor
+    replicaCount: 1
     extraEnvVars:
       TZ: Europe/Amsterdam
       FTLCONF_dns_listeningMode: 'all'
       FTLCONF_dns_dnssec: 'true'
       FTLCONF_dns_upstreams: '127.0.0.1#5053'
-    #serviceWeb:
-    #  annotations: ${jsonencode(local.pihole_metallb_annotations)}
-    #  type: LoadBalancer
     serviceDns:
       annotations: ${jsonencode(local.pihole_metallb_annotations)}
       mixedService: true #tcp and udp dns svc on same ip
       type: LoadBalancer
-
+    persistentVolumeClaim:
+      enabled: true
+      accessModes:
+      - ReadWriteMany
+      size: "1Gi"
+      storageClass: persistent
     # Volumes are defined only so CSI Secret Driver can run
     extraVolumeMounts:
       csi-secret-driver-for-admin-pwd:
         mountPath: '/mnt/secrets-store'
         readOnly: true
-
     extraVolumes:
       csi-secret-driver-for-admin-pwd:
         csi:
@@ -136,16 +139,13 @@ resource "helm_release" "pihole" {
           readOnly: true
           volumeAttributes:
             secretProviderClass: ${kubernetes_manifest.pihole-admin-secret.manifest.metadata.name}
-
     admin:
       enabled: true
       existingSecret: ${kubernetes_manifest.pihole-admin-secret.manifest.metadata.name}
       passwordKey: ${local.pihole_secret_key}
-
     # If podDnsConfig is set you cannot resolve kube service addresses
     podDnsConfig:
       enabled: false
-
     extraContainers:
     - name: cloudflared
       image: "cloudflare/cloudflared:latest"
@@ -157,16 +157,8 @@ resource "helm_release" "pihole" {
         value: "5053"
       - name: TUNNEL_DNS_ADDRESS
         value: "0.0.0.0"
-
     serviceDhcp:
       enabled: false
-
-    antiaff:
-      enabled: true
-      avoidRelease: pihole
-      strict: false
-      namespaces: [${kubernetes_namespace_v1.pihole.metadata[0].name}]
-
     # Not possible with ingress due to https://github.com/MoJo2600/pihole-kubernetes/issues/375
     ingress:
       enabled: true
@@ -174,10 +166,6 @@ resource "helm_release" "pihole" {
         kubernetes.io/tls-acme: "true" #Auto-tls creation by cert-manager
         cert-manager.io/common-name: "pihole.${var.private_domain}"
         cert-manager.io/cluster-issuer: "${var.private_cert_issuer}"
-        nginx.ingress.kubernetes.io/configuration-snippet: |
-          rewrite ^/$ /admin/ redirect;
-      path: /
-      pathType: Prefix
       hosts:
       - pihole.${var.private_domain}
       tls:
