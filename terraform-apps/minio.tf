@@ -1,6 +1,6 @@
 locals {
   minio_sa                      = "minio"
-  minio_credentials_secret_name = "minio-credentials"
+  minio_credentials_secret_name = "minio"
   minio_certificate_secret_name = "minio-tls"
   minio_api_hostname            = "minio-api.${var.private_domain}"
   minio_hostname                = "minio.${var.private_domain}"
@@ -53,10 +53,10 @@ resource "kubernetes_manifest" "minio_credentials" {
         vaultCACertPath = var.vault_csi_ca_cert_path #TLS mounted on CSI pod
         objects         = <<EOT
 - objectName: password
-  secretPath: op/vaults/${var.onepassword_vault_id}/items/minio
+  secretPath: op/vaults/${var.onepassword_vault_id}/items/${local.minio_credentials_secret_name}
   secretKey: password
 - objectName: user
-  secretPath: op/vaults/${var.onepassword_vault_id}/items/minio
+  secretPath: op/vaults/${var.onepassword_vault_id}/items/${local.minio_credentials_secret_name}
   secretKey: username
         EOT
       }

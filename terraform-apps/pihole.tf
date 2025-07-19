@@ -1,5 +1,5 @@
 locals {
-  pihole_secret_name = "pihole-admin-password"
+  pihole_secret_name = "pihole"
   pihole_secret_key  = "password"
   pihole_metallb_annotations = {
     "metallb.universe.tf/address-pool"    = kubernetes_manifest.pihole-l2-advertisement.manifest.metadata.name
@@ -16,7 +16,7 @@ resource "kubernetes_namespace_v1" "pihole" {
 resource "vault_policy" "pihole" {
   name   = "pihole"
   policy = <<EOT
-path "op/vaults/+/items/pihole" {
+path "op/vaults/+/items/${local.pihole_secret_name}" {
   capabilities = ["read"]
 }
 EOT
@@ -49,7 +49,7 @@ resource "kubernetes_manifest" "pihole-admin-secret" {
         vaultCACertPath = var.vault_csi_ca_cert_path #TLS mounted on CSI pod
         objects         = <<EOT
 - objectName: ${local.pihole_secret_name}
-  secretPath: op/vaults/${var.onepassword_vault_id}/items/pihole
+  secretPath: op/vaults/${var.onepassword_vault_id}/items/${local.pihole_secret_name}
   secretKey: ${local.pihole_secret_key}
         EOT
       }
