@@ -1,7 +1,7 @@
 locals {
   komga_app_name = "komga-reader"
   komga_port     = 25600
-  komga_url      = "reader.${var.apps_domain}"
+  komga_url      = "reader.${var.public_domain}"
   komga_share    = "ebooks-comics"
   komga_common_labels = {
     part-of = "reader"

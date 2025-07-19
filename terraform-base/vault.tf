@@ -1,7 +1,8 @@
 locals {
-  vault_namespace     = "vault"
-  vault_pki_root_path = "pki/apps/root"
-  vault_plugin_folder = "/usr/local/libexec/vault"
+  vault_namespace            = "vault"
+  vault_pki_root_path        = "pki/apps/root"
+  vault_plugin_folder        = "/usr/local/libexec/vault"
+  vault_csi_cert_mounth_path = "/vault/tls"
 }
 
 # Namespace is created on with this script
@@ -55,7 +56,7 @@ resource "helm_release" "vault" {
             secretName: vault-ha-tls
       volumeMounts:
         - name: tls
-          mountPath: /vault/tls
+          mountPath: ${local.vault_csi_cert_mounth_path}
           readOnly: true
       resources:
         requests:
@@ -119,13 +120,14 @@ resource "helm_release" "vault" {
         enabled: true
         annotations:
           kubernetes.io/tls-acme: "true"
-          cert-manager.io/common-name: "vault.${var.apps_domain}"
+          cert-manager.io/common-name: "vault.${var.private_domain}"
+          cert-manager.io/cluster-issuer: "${var.private_cert_issuer}"
           nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
         hosts:
-        - host: vault.${var.apps_domain}
+        - host: vault.${var.private_domain}
         tls:
           - hosts:
-            - vault.${var.apps_domain}
+            - vault.${var.private_domain}
             secretName: vault-ui-tls
       # This configures the Vault Statefulset to create a PVC for audit logs.
       # See https://www.vaultproject.io/docs/audit/index.html to know more

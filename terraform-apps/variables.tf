@@ -28,9 +28,19 @@ variable "onepassword_vault_id" {
   description = "1password vault id for secrets"
 }
 
-variable "apps_domain" {
+variable "private_domain" {
   type        = string
-  description = "Apps domain name"
+  description = "Apps private domain name"
+}
+
+variable "private_cert_issuer" {
+  description = "Cluster Issuer responsible for internal self signed certificates"
+  default     = "private-issuer"
+}
+
+variable "public_domain" {
+  type        = string
+  description = "Apps public domain name"
 }
 
 variable "pihole_ip_cidr" {
@@ -51,11 +61,6 @@ variable "plex_ip_cidr" {
 variable "pihole_additionalHostsEntries" {
   type        = list(string)
   description = "Pihole Hosts Entries comming from router"
-}
-
-variable "certificate_cluster_issuer" {
-  description = "Certificate Cluster Issuer"
-  default     = "apps-tamrieltower-local"
 }
 
 variable "nfs_ip" {

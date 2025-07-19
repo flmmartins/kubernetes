@@ -172,22 +172,23 @@ resource "helm_release" "pihole" {
       enabled: true
       annotations:
         kubernetes.io/tls-acme: "true" #Auto-tls creation by cert-manager
-        cert-manager.io/common-name: "pihole.${var.apps_domain}"
+        cert-manager.io/common-name: "pihole.${var.private_domain}"
+        cert-manager.io/cluster-issuer: "${var.private_cert_issuer}"
         nginx.ingress.kubernetes.io/configuration-snippet: |
           rewrite ^/$ /admin/ redirect;
       path: /
       pathType: Prefix
       hosts:
-      - pihole.${var.apps_domain}
+      - pihole.${var.private_domain}
       tls:
       - hosts:
-        - pihole.${var.apps_domain}
+        - pihole.${var.private_domain}
         secretName: pihole-tls
-        
     dnsmasq:
       enableCustomDnsMasq: true
       customDnsEntries:
-      - address=/${var.apps_domain}/${var.nginx_ip}
+      - address=/${var.public_domain}/${var.nginx_ip}
+      - address=/${var.private_domain}/${var.nginx_ip}
       additionalHostsEntries: ${jsonencode(var.pihole_additionalHostsEntries)}
     EOF
   ]

@@ -49,6 +49,20 @@ variable "vault_apps_cert_pembundle_file_path" {
   description = "Vault CA File Path to import to Vault PKI"
 }
 
-variable "apps_domain" {
-  description = "Apps domain name"
+variable "private_domain" {
+  description = "Private domain name"
+}
+
+variable "private_cert_issuer" {
+  description = "Cluster Issuer responsible for internal self signed certificates"
+  default     = "private-issuer"
+}
+
+variable "onepassword_vault_id" {
+  default     = ""
+  description = "1password vault id for secrets"
+}
+
+variable "cloudflare_email" {
+  description = "Email of cloudflare account"
 }

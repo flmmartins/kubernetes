@@ -2,8 +2,8 @@ locals {
   minio_sa                      = "minio"
   minio_credentials_secret_name = "minio-credentials"
   minio_certificate_secret_name = "minio-tls"
-  minio_api_hostname            = "minio-api.${var.apps_domain}"
-  minio_hostname                = "minio.${var.apps_domain}"
+  minio_api_hostname            = "minio-api.${var.private_domain}"
+  minio_hostname                = "minio.${var.private_domain}"
   minio_common_labels = {
     "part-of" = "storage"
   }
@@ -102,9 +102,8 @@ resource "kubernetes_manifest" "minio_certificate" {
         local.minio_api_hostname,
         local.minio_hostname
       ]
-      # Although cert manager has a default issuer I need to define here again
       issuerRef = {
-        name = var.certificate_cluster_issuer
+        name = var.private_cert_issuer
         kind = "ClusterIssuer"
       }
     }
