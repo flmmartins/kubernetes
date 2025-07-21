@@ -32,8 +32,6 @@ resource "vault_kubernetes_auth_backend_role" "minio" {
   token_policies                   = [vault_policy.minio.name]
 }
 
-
-
 resource "kubernetes_manifest" "minio_credentials" {
   manifest = {
     apiVersion = "secrets-store.csi.x-k8s.io/v1"
