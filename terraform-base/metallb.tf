@@ -24,20 +24,20 @@ resource "helm_release" "metallb" {
         part-of: loadbalancer
       resources:
         requests:
-          memory: 25Mi
-          cpu: 5m
+          memory: 50Mi
+          cpu: 50m
         limits:
           memory: 100Mi
-          cpu: 10m
+          cpu: 100m
     speaker:
       ignoreExcludeLB: true #Allows MetalLB to assign IPs using controlplane nodes
       resources:
         requests:
-          memory: 50Mi
-          cpu: 10m
-        limits:
           memory: 100Mi
-          cpu: 20m
+          cpu: 50m
+        limits:
+          memory: 200Mi
+          cpu: 100m
     EOF
   ]
 }

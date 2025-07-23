@@ -63,7 +63,7 @@ resource "helm_release" "vault" {
           memory: 50Mi
           cpu: 50m
         limits:
-          memory: 128Mi
+          memory: 200Mi
           cpu: 100m
     server:
       # Plugin needs to be installed on every pod
@@ -83,11 +83,11 @@ resource "helm_release" "vault" {
               mountPath: ${local.vault_plugin_folder}
       resources:
         requests:
-          memory: 150Mi
-          cpu: 50m
+          memory: 200Mi
+          cpu: 100m
         limits:
           memory: 300Mi
-          cpu: 100m
+          cpu: 200m
       extraEnvironmentVars:
         VAULT_CACERT: /vault/userconfig/vault-ha-tls/vault.ca
         VAULT_TLSCERT: /vault/userconfig/vault-ha-tls/vault.crt
