@@ -126,7 +126,7 @@ resource "helm_release" "pihole" {
       accessModes:
       - ReadWriteMany
       size: "1Gi"
-      storageClass: persistent
+      storageClass: ${var.persistent_storage_class}
     # Volumes are defined only so CSI Secret Driver can run
     extraVolumeMounts:
       csi-secret-driver-for-admin-pwd:

@@ -36,7 +36,7 @@ resource "kubernetes_persistent_volume_claim_v1" "komga_config" {
       }
     }
 
-    storage_class_name = "persistent"
+    storage_class_name = var.persistent_storage_class
   }
 }
 

@@ -140,7 +140,7 @@ resource "helm_release" "vault" {
         enabled: false
 
       dataStorage:
-        storageClass: persistent
+        storageClass: ${kubernetes_storage_class_v1.persistent.metadata[0].name}
         size: 10Gi
         mountPath: /vault/data
 

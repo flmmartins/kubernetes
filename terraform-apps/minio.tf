@@ -137,7 +137,7 @@ resource "helm_release" "minio" {
     # It will create volume x replicas for redudant storage
     persistence: {
       enabled: "true",
-      storageClass: persistent,
+      storageClass: ${var.persistent_storage_class},
       size: 5Gi
     }
     ingress:

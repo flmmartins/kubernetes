@@ -62,6 +62,11 @@ variable "nfs_ip" {
   description = "NFS IP"
 }
 
+variable "persistent_storage_class" {
+  description = "Name of the storage class which persist data"
+  default     = "persistent"
+}
+
 variable "existing_nfs_share" {
   description = "NFS shares"
   type = map(object({

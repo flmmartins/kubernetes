@@ -85,12 +85,12 @@ resource "helm_release" "plex" {
     <<-EOF
     pms:
       # On first boot: https://www.plex.tv/claim/. Edit env var below - claim token is temp
-      storageClassName: persistent
+      storageClassName: ${var.persistent_storage_class}
       configStorage: 5Gi
       resources:
         requests:
-          cpu: 100m
-          memory: 200Mi
+          cpu: 200m
+          memory: 300Mi
     commonLabels: ${jsonencode(merge(local.plex_common_labels, { "component" = "plex" }))}
     extraEnv:
       HOSTNAME: "TalosPlexServer"
