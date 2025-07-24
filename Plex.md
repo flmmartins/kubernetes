@@ -106,5 +106,5 @@ It was noticed that TV and mobile apps require the use of ADVERTISE_IP environme
 
 So following that I removed the certificate entirely and reverse proxy. Even when adding a simple DNS record to the plex IP and trying to replace the ADVERTISE_IP with a name things go bad. When you access the DNS address in a normal browser it uses a certificate from plex.direct domain and since my domain is not that one I also hit a wall. I could try to replace the certificate however I would fall in the same issue as the above paragraph. For now I will access plex using an IP.
 
-Update: When I added a Let's Encrypt, I removed ADVERTISE IP environment variable and instead I manually configure Custom Server Urls to:
-https://plex.domain.com,http://plex.domain.com
+When I added a Let's Encrypt, I added ADVERTISE IP environment variables:
+https://plex.domain.com,http://plex.domain.com.
