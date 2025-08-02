@@ -18,6 +18,11 @@ variable "plex_chart_version" {
   default     = "1.0.2"
 }
 
+variable "postgres_operator_chart_version" {
+  description = "CloudNative PG Version"
+  default     = "v0.24.0"
+}
+
 variable "immich_chart_version" {
   description = "Photos Processing App Version"
   default     = "0.9.3"
