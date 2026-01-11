@@ -102,9 +102,4 @@ Later I realize that plex already had a /media path and these were conflicting w
 
 ## TV and mobile apps
 
-It was noticed that TV and mobile apps require the use of ADVERTISE_IP environment variable. I tried putting the DNS address and it didn't work: the tv simply doesn't find the server. I had a feeling this was due to my self signed certificate also because the apps have no way to define a CA. Maybe in the future reverse proxy can work if I have a Let's Encrypt certificate which is recognized by devices.
-
-So following that I removed the certificate entirely and reverse proxy. Even when adding a simple DNS record to the plex IP and trying to replace the ADVERTISE_IP with a name things go bad. When you access the DNS address in a normal browser it uses a certificate from plex.direct domain and since my domain is not that one I also hit a wall. I could try to replace the certificate however I would fall in the same issue as the above paragraph. For now I will access plex using an IP.
-
-Update: When I added a Let's Encrypt, I added ADVERTISE_IP environment variables:
-https://plex.domain.com,http://plex.domain.com.
+TV and mobile apps require the use of ADVERTISE_IP environment variable. At first I tried to use HTTPS but TV and mobile app seems to not accept port 443. In the end I endedup using reverse proxy IP and opening the Plex port. The ingress with HTTPS can only be used by browsers.

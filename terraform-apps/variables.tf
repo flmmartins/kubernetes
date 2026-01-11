@@ -48,18 +48,23 @@ variable "pihole_ip_cidr" {
   description = "IP CIDR assigned to Pihole DNS"
 }
 
-variable "nginx_ip" {
-  type        = string
-  description = "IP of NGINX"
-}
-
 variable "pihole_additionalHostsEntries" {
   type        = list(string)
   description = "Pihole Hosts Entries comming from router"
 }
 
+variable "nginx_ip" {
+  type        = string
+  description = "IP of NGINX"
+}
+
 variable "nfs_ip" {
   description = "NFS IP"
+}
+
+variable "plex_ip_cidr" {
+  type        = string
+  description = "IP of Plex"
 }
 
 variable "persistent_storage_class" {

@@ -8,6 +8,8 @@ resource "helm_release" "nginx" {
   chart            = "ingress-nginx"
   values = [
     <<-EOF
+    tcp:
+      "32400" : "plex/plex-plex-media-server:32400"
     commonLabels:
       component: ingress-controller
       part-of: ingress-controller
@@ -18,7 +20,7 @@ resource "helm_release" "nginx" {
         annotations-risk-level: Critical
       autoscaling:
         enabled: true
-        minReplicas: 1
+        minReplicas: 2
         maxReplicas: 3
         targetCPUUtilizationPercentage: 80
         targetMemoryUtilizationPercentage: 80

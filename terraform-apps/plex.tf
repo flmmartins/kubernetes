@@ -96,7 +96,7 @@ resource "helm_release" "plex" {
       HOSTNAME: "TalosPlexServer"
       TZ: "Europe/Amsterdam"
       ALLOWED_NETWORKS: "0.0.0.0/0"
-      ADVERTISE_IP: "https://${local.plex_url},http://${local.plex_url}"
+      ADVERTISE_IP: "https://${var.nginx_ip}:32400,http://${var.nginx_ip}:32400"
       #PLEX_CLAIM:
     extraVolumes:
     - name: movies
@@ -125,6 +125,7 @@ resource "helm_release" "plex" {
       annotations: 
         kubernetes.io/tls-acme: "true" #Auto-tls creation by cert-manager
         cert-manager.io/common-name: "${local.plex_url}"
+        cert-manager.io/dns-names: "${local.plex_url}"
       tls:
       - hosts:
         - ${local.plex_url}
