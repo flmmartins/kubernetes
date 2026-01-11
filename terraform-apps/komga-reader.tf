@@ -167,6 +167,7 @@ resource "kubernetes_ingress_v1" "komga" {
     annotations = {
       "kubernetes.io/tls-acme"      = "true"
       "cert-manager.io/common-name" = local.komga_url
+      "cert-manager.io/dns-names"   = local.komga_url
     }
     labels = merge(local.komga_common_labels, {
       component = "ingress"
