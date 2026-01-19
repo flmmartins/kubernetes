@@ -58,9 +58,9 @@ variable "private_cert_issuer" {
   default     = "private-issuer"
 }
 
-variable "onepassword_vault_id" {
+variable "onepassword_vault_path" {
   default     = ""
-  description = "1password vault id for secrets"
+  description = "1password vault path for secrets. It contain the <path prefix>/<vault id>"
 }
 
 variable "cloudflare_email" {

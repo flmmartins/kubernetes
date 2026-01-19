@@ -23,9 +23,9 @@ variable "vault_ca_file" {
   default     = "vault.ca"
 }
 
-variable "onepassword_vault_id" {
+variable "onepassword_vault_path" {
   type        = string
-  description = "1password vault id for secrets"
+  description = "1password vault path for secrets. It contain the <path prefix>/<vault id>"
 }
 
 variable "private_domain" {

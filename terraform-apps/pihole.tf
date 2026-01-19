@@ -16,7 +16,7 @@ resource "kubernetes_namespace_v1" "pihole" {
 resource "vault_policy" "pihole" {
   name   = "pihole"
   policy = <<EOT
-path "op/vaults/+/items/${local.pihole_secret_name}" {
+path "${var.onepassword_vault_path}/items/${local.pihole_secret_name}" {
   capabilities = ["read"]
 }
 EOT
@@ -49,7 +49,7 @@ resource "kubernetes_manifest" "pihole-admin-secret" {
         vaultCACertPath = var.vault_csi_ca_cert_path #TLS mounted on CSI pod
         objects         = <<EOT
 - objectName: ${local.pihole_secret_name}
-  secretPath: op/vaults/${var.onepassword_vault_id}/items/${local.pihole_secret_name}
+  secretPath: ${var.onepassword_vault_path}/items/${local.pihole_secret_name}
   secretKey: ${local.pihole_secret_key}
         EOT
       }

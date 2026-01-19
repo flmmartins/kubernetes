@@ -173,7 +173,7 @@ resource "kubernetes_manifest" "cloudflare-api-token" {
         vaultCACertPath = "${local.vault_csi_cert_mounth_path}/vault.ca"
         objects         = <<EOT
 - objectName: ${local.cloudflare_secret_name}
-  secretPath: op/vaults/${var.onepassword_vault_id}/items/${local.cloudflare_secret_name}
+  secretPath: ${var.onepassword_vault_path}/items/${local.cloudflare_secret_name}
   secretKey: ${local.cloudflare_secret_key}
         EOT
       }
