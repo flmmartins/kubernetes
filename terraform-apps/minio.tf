@@ -18,7 +18,7 @@ resource "kubernetes_namespace_v1" "minio" {
 resource "vault_policy" "minio" {
   name   = "minio"
   policy = <<EOT
-path "${var.onepassword_vault_path}/items/minio" {
+path "${var.onepassword_vault_path}/minio" {
   capabilities = ["read"]
 }
 EOT
@@ -51,10 +51,10 @@ resource "kubernetes_manifest" "minio_credentials" {
         vaultCACertPath = var.vault_csi_ca_cert_path #TLS mounted on CSI pod
         objects         = <<EOT
 - objectName: password
-  secretPath: ${var.onepassword_vault_path}/items/${local.minio_credentials_secret_name}
+  secretPath: ${var.onepassword_vault_path}/${local.minio_credentials_secret_name}
   secretKey: password
 - objectName: user
-  secretPath: ${var.onepassword_vault_path}/items/${local.minio_credentials_secret_name}
+  secretPath: ${var.onepassword_vault_path}/${local.minio_credentials_secret_name}
   secretKey: username
         EOT
       }
