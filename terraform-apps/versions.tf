@@ -27,3 +27,8 @@ variable "immich_chart_version" {
   description = "Photos Processing App Version"
   default     = "0.9.3"
 }
+
+variable "velero_chart_version" {
+  description = "Velero Version"
+  default     = "11.3.2"
+}

@@ -76,6 +76,13 @@ securityContext:
 
 I made a branch called minio with Bitnami Helm Chart which has much more features however when I installed it didn't had UI to create api keys, no bucket versioning. So I stick with the version I currently have which is an older release but with more decent.
 
+To use Minio in TF provider set this. If you already use Minio as a TF backend is just a matter of using the same admin and just pass:
+
+export MINIO_ENDPOINT=url.com (no https in front)
+export MINIO_USER=$AWS_ACCESS_KEY_ID
+export MINIO_PASSWORD=$AWS_SECRET_ACCESS_KEY
+export MINIO_ENABLE_HTTPS=true
+
 ## AutoScaling
 Metric server is installing to enable HPA
 
@@ -133,6 +140,11 @@ Since Vault installation is by far the most complex component a separate README 
 
 ### Internal Vs External Certificates
 Ideally you want one set of certificates for internal TLS of vault or minio and another set for external facing certificate however since I only have one set is all done with the same certificate
+
+# Backups
+
+We use Velero for Backups. It authenticates with minio to create the necessary assets using environment variables
+
 
 # Terraform Apps
 
