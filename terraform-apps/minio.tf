@@ -197,3 +197,43 @@ resource "helm_release" "minio" {
   EOF
   ]
 }
+
+resource "minio_s3_bucket" "terraform" {
+  depends_on     = [helm_release.minio]
+  bucket         = "terraform"
+  object_locking = true
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
+resource "minio_s3_bucket_versioning" "terraform" {
+  bucket = minio_s3_bucket.terraform.bucket
+
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+resource "minio_ilm_policy" "terraform" {
+  bucket = minio_s3_bucket.terraform.bucket
+
+  rule {
+    id     = "expire-old-versions"
+    status = "Enabled"
+
+    noncurrent_expiration {
+      days           = "30d"
+      newer_versions = 3
+    }
+  }
+}
+
+resource "null_resource" "prevent_terraform_state_deletion" {
+  triggers = {
+    terraform_bucket = minio_s3_bucket.terraform.bucket
+  }
+  provisioner "local-exec" {
+    command = "mc alias set myminio https://$MINIO_ENDPOINT $MINIO_USER $MINIO_PASSWORD && mc retention set --recursive governance 365d myminio/${minio_s3_bucket.terraform.bucket}"
+  }
+}
