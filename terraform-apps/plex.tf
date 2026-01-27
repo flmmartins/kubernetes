@@ -95,8 +95,8 @@ resource "helm_release" "plex" {
     extraEnv:
       HOSTNAME: "TalosPlexServer"
       TZ: "Europe/Amsterdam"
-      ALLOWED_NETWORKS: "0.0.0.0/0"
-      ADVERTISE_IP: "https://${var.nginx_ip}:32400,http://${var.nginx_ip}:32400"
+      ALLOWED_NETWORKS: "0.0.0.0/0" 
+      ADVERTISE_IP: "http://${var.nginx_ip}:32400,http://${local.plex_url}"
       #PLEX_CLAIM:
     extraVolumes:
     - name: movies

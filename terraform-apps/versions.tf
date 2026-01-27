@@ -1,6 +1,6 @@
 variable "pihole_chart_version" {
   description = "Pihole Version"
-  default     = "2.31.0"
+  default     = "2.35.0"
 }
 
 variable "minio_chart_version" {
@@ -15,7 +15,7 @@ variable "komga_image_version" {
 
 variable "plex_chart_version" {
   description = "Plex Version"
-  default     = "1.0.2"
+  default     = "1.4.0"
 }
 
 variable "postgres_operator_chart_version" {

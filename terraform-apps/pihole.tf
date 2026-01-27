@@ -146,6 +146,13 @@ resource "helm_release" "pihole" {
     # If podDnsConfig is set you cannot resolve kube service addresses
     podDnsConfig:
       enabled: false
+    resources:
+      limits:
+        cpu: 100m
+        memory: 128Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
     extraContainers:
     - name: cloudflared
       image: "cloudflare/cloudflared:latest"
