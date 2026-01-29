@@ -142,7 +142,7 @@ resource "helm_release" "velero" {
               objectName: aws_credentials
     initContainers:
     - name: velero-plugin-for-aws
-      image: velero/velero-plugin-for-aws:v1.6.0
+      image: velero/velero-plugin-for-aws:${var.velero_aws_plugin_version}
       volumeMounts:
       - mountPath: /target
         name: plugins
@@ -157,7 +157,7 @@ resource "helm_release" "velero" {
         config:
           region: minio
           s3ForcePathStyle: "true"
-          s3Url: https://minio.${kubernetes_namespace_v1.minio.metadata[0].name}.svc:9000
+          s3Url: https://minio.${kubernetes_namespace_v1.minio.metadata[0].name}.svc.cluster.local:9000
     serviceAccount:
       server:
         create: true
