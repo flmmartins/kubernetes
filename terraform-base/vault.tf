@@ -66,6 +66,7 @@ resource "helm_release" "vault" {
           memory: 200Mi
           cpu: 100m
     server:
+      priorityClassName: ${var.priority_class}
       # Plugin needs to be installed on every pod
       # Registration of plugin is only done once and remains in PV
       extraInitContainers:

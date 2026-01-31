@@ -66,3 +66,9 @@ variable "onepassword_vault_path" {
 variable "cloudflare_email" {
   description = "Email of cloudflare account"
 }
+
+variable "priority_class" {
+  description = "Name of the critical priority class"
+  type        = string
+  default     = "critical"
+}
