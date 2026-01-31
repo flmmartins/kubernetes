@@ -4,8 +4,36 @@ resource "helm_release" "csi-secrets-store" {
   repository = "https://kubernetes-sigs.github.io/secrets-store-csi-driver/charts"
   version    = var.csi_secret_store_chart_version
   chart      = "secrets-store-csi-driver"
-  set {
-    name  = "syncSecret.enabled"
-    value = true
-  }
+
+  values = [
+    <<-EOF
+    syncSecret:
+      enabled: true
+    linux:
+      driver:
+        resources:
+          limits:
+            cpu: 150m
+            memory: 128Mi
+          requests:
+            cpu: 25m
+            memory: 64Mi
+      registrar:
+        resources:
+          limits:
+            cpu: 50m
+            memory: 64Mi
+          requests:
+            cpu: 5m
+            memory: 16Mi
+      livenessProbe:
+        resources:
+          limits:
+            cpu: 50m
+            memory: 32Mi
+          requests:
+            cpu: 5m
+            memory: 16Mi
+        EOF
+  ]
 }
