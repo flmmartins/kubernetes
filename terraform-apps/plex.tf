@@ -91,6 +91,9 @@ resource "helm_release" "plex" {
         requests:
           cpu: 200m
           memory: 300Mi
+        limits:
+          cpu: 1
+          memory: 1Gi
     commonLabels: ${jsonencode(merge(local.plex_common_labels, { "component" = "plex" }))}
     extraEnv:
       HOSTNAME: "TalosPlexServer"

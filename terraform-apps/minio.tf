@@ -125,8 +125,10 @@ resource "helm_release" "minio" {
     # By default minio requires tons of memory
     resources:
       requests:
+        cpu: 100m
         memory: 100Mi
       limits:
+        cpu: 250m
         memory: 400Mi
     tls:
       enabled: true
