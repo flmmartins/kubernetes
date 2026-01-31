@@ -85,7 +85,7 @@ resource "helm_release" "vault" {
       resources:
         requests:
           cpu: 256m
-          memory: 384Mi
+          memory: 512Mi
         limits:
           cpu: 256m
           memory: 512Mi
