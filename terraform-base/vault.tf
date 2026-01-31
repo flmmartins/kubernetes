@@ -83,11 +83,11 @@ resource "helm_release" "vault" {
               mountPath: ${local.vault_plugin_folder}
       resources:
         requests:
-          cpu: 250m
-          memory: 512Mi
+          cpu: 256m
+          memory: 384Mi
         limits:
-          cpu: 500m
-          memory: 768Mi
+          cpu: 256m
+          memory: 512Mi
       extraEnvironmentVars:
         VAULT_CACERT: /vault/userconfig/vault-ha-tls/vault.ca
         VAULT_TLSCERT: /vault/userconfig/vault-ha-tls/vault.crt
