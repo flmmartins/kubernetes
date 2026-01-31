@@ -16,7 +16,7 @@ resource "helm_release" "csi-driver-nfs" {
     driver:
       mountPermissions: 0700
     controller:
-      replicas: 2
+      replicas: 1
       runOnControlPlane: true
       resources:
         csiProvisioner:
