@@ -91,6 +91,14 @@ resource "kubernetes_deployment_v1" "komga" {
         container {
           name  = local.komga_app_name
           image = "gotson/komga:${var.komga_image_version}"
+          env {
+            name  = "KOMGA_DATABASE_CHECKLOCALFILESYSTEM"
+            value = "FALSE"
+          }
+          env {
+            name  = "KOMGA_TASKSDB_CHECKLOCALFILESYSTEM"
+            value = "FALSE"
+          }
 
           port {
             container_port = local.komga_port
