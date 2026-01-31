@@ -18,6 +18,42 @@ resource "helm_release" "csi-driver-nfs" {
     controller:
       replicas: 2
       runOnControlPlane: true
+      resources:
+        csiProvisioner:
+          requests:
+            cpu: 25m
+            memory: 32Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
+        csiResizer:
+          requests:
+            cpu: 25m
+            memory: 32Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
+        csiSnapshotter:
+          requests:
+            cpu: 15m
+            memory: 32Mi
+          limits:
+            cpu: 75m
+            memory: 96Mi
+        livenessProbe:
+          requests:
+            cpu: 10m
+            memory: 16Mi
+          limits:
+            cpu: 50m
+            memory: 32Mi
+        nfs:
+          requests:
+            cpu: 25m
+            memory: 32Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
       # Do not schedule pods on same node
       affinity:
         podAntiAffinity:
@@ -31,6 +67,29 @@ resource "helm_release" "csi-driver-nfs" {
                   values:
                   - ${local.csi_driver_nfs_labels.component}
               topologyKey: kubernetes.io/hostname
+    node:
+      resources:
+        livenessProbe:
+          requests:
+            cpu: 10m
+            memory: 16Mi
+          limits:
+            cpu: 50m
+            memory: 32Mi
+        nodeDriverRegistrar:
+          requests:
+            cpu: 10m
+            memory: 16Mi
+          limits:
+            cpu: 50m
+            memory: 32Mi
+        nfs:
+          requests:
+            cpu: 25m
+            memory: 32Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
     customLabels: ${jsonencode(local.csi_driver_nfs_labels)}
     storageClass:
       create: false #Not all options are present
