@@ -26,11 +26,11 @@ resource "helm_release" "nginx" {
         targetMemoryUtilizationPercentage: 80
       resources:
         requests:
-          cpu: 100m
+          cpu: 50m
           memory: 90Mi
         limits:
           memory: 200Mi
-          cpu: 300m
+          cpu: 200m
       ingressClassResource:
         name: nginx
         enabled: true

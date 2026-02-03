@@ -90,3 +90,11 @@ variable "minio" {
     group_uid = number
   })
 }
+
+variable "monitoring" {
+  description = "Monitoring User & Group UIDs"
+  type = object({
+    user_uid  = number
+    group_uid = number
+  })
+}

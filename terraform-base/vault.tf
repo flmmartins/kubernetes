@@ -84,7 +84,7 @@ resource "helm_release" "vault" {
               mountPath: ${local.vault_plugin_folder}
       resources:
         requests:
-          cpu: 256m
+          cpu: 100m
           memory: 512Mi
         limits:
           cpu: 256m

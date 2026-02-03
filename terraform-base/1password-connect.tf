@@ -4,6 +4,7 @@ resource "terraform_data" "onepassword-connect" {
 
   triggers_replace = {
     version = var.onepassword_chart_version
+    values  = filemd5("${path.module}/1password-connect.yaml")
   }
 
   provisioner "local-exec" {

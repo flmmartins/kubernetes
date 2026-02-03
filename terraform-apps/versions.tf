@@ -37,3 +37,8 @@ variable "velero_aws_plugin_version" {
   description = "AWS Plugin for Velero Version. It has to be compatible with velero. Check: https://github.com/vmware-tanzu/velero-plugin-for-aws?tab=readme-ov-file#compatibility"
   default     = "v1.13.2"
 }
+
+variable "prometheus_stack_chart_version" {
+  description = "Kube Prometheus Stack"
+  default     = "81.4.2"
+}

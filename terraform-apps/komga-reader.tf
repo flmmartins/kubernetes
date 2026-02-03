@@ -107,11 +107,11 @@ resource "kubernetes_deployment_v1" "komga" {
           resources {
             requests = {
               memory = "500Mi"
-              cpu    = "300m"
+              cpu    = "200m"
             }
             limits = {
-              memory = "700Mi"
-              cpu    = "400m"
+              memory = "500Mi"
+              cpu    = "200m"
             }
           }
 

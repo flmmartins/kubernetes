@@ -143,6 +143,7 @@ resource "helm_release" "pihole" {
       enabled: true
       existingSecret: ${kubernetes_manifest.pihole-admin-secret.manifest.metadata.name}
       passwordKey: ${local.pihole_secret_key}
+    priorityClassName: critical
     # If podDnsConfig is set you cannot resolve kube service addresses
     podDnsConfig:
       enabled: false

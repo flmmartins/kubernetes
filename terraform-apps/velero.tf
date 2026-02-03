@@ -177,11 +177,12 @@ resource "helm_release" "velero" {
     podLabels: ${jsonencode(merge(local.velero_common_labels, { "component" = "velero" }))}
     resources:
       requests:
-        cpu: "180m"
+        cpu: "50m"
         memory: "100Mi"
       limits:
-        cpu: "350m"
+        cpu: "250m"
         memory: "256Mi"
+    upgradeCRDs: false # due to https://github.com/vmware-tanzu/helm-charts/issues/727
     EOF
   ]
 }

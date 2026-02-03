@@ -89,7 +89,7 @@ resource "helm_release" "plex" {
       configStorage: 5Gi
       resources:
         requests:
-          cpu: 200m
+          cpu: 100m
           memory: 300Mi
         limits:
           cpu: 1
