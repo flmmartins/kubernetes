@@ -1,6 +1,4 @@
-provider "kubernetes" {
-  host = var.kubernetes_api
-}
+provider "kubernetes" {}
 
 provider "helm" {}
 

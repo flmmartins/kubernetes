@@ -50,8 +50,8 @@ resource "helm_release" "nginx" {
   ]
 }
 
-resource "kubernetes_manifest" "nginx-ip-address-pool" {
-  manifest = {
+resource "kubectl_manifest" "nginx-ip-address-pool" {
+  yaml_body = yamlencode({
     apiVersion = "metallb.io/v1beta1"
     kind       = "IPAddressPool"
     metadata = {
@@ -65,11 +65,11 @@ resource "kubernetes_manifest" "nginx-ip-address-pool" {
       addresses  = var.nginx_ip_cidrs
       autoAssign = true
     }
-  }
+  })
 }
 
-resource "kubernetes_manifest" "nginx-l2-advertisement" {
-  manifest = {
+resource "kubectl_manifest" "nginx-l2-advertisement" {
+  yaml_body = yamlencode({
     apiVersion = "metallb.io/v1beta1"
     kind       = "L2Advertisement"
     metadata = {
@@ -80,7 +80,7 @@ resource "kubernetes_manifest" "nginx-l2-advertisement" {
       }
     }
     spec = {
-      ipAddressPools = [kubernetes_manifest.nginx-ip-address-pool.manifest.metadata.name]
+      ipAddressPools = [kubectl_manifest.nginx-ip-address-pool.name]
     }
-  }
+  })
 }

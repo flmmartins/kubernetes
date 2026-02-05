@@ -12,7 +12,7 @@ This differentiation is necessary because there're several dependencies between 
 Applications in this repo assume Pod Security Adminission as `baseline` enabled by default therefore settings are adjusted to it
 
 # Table of Contents
-
+[Run Local](#RunningLocal)
 [Terraform Base](#TerraformBase)
 1. [Storage & NFS](##Storage)
 2. [Autoscaling](##NFS)
@@ -21,6 +21,37 @@ Applications in this repo assume Pod Security Adminission as `baseline` enabled 
 5. [Secret Management](##SecretManagement)
 6. [Certificates](#Certificates)
 7. [Apps](#Apps)
+
+# Running Local
+
+## Create a kubernetes cluster
+
+If you want to run this localy on laptop do:
+```
+kind create cluster --config kind-config.yaml --name home-cluster
+```
+
+## Generate certificate
+
+```
+brew install mkcert
+
+mkcert -install
+
+mkcert mycluster.local "*.mycluster.local" localhost 127.0.0.1 ::1
+```
+
+
+
+Init terraform and use local state
+```
+terraform init -backend=false
+```
+
+Plan with a special set of variables for kind:
+```
+terraform plan -var-file=kind.tfvars
+```
 
 # Terraform Base
 Contains the Base Infrastructure
@@ -44,33 +75,7 @@ Execution Order:
 
 This creates storage for PVs
 
-### How NFS is created
 
-When I created the NFS I set a user and group to it. I restricted access to K8s machines.
-
-When creating a NFS permissions are as follows:
-
-```
-drwx---- root wheel
-```
-
-In the NFS I had also to configure maproot_user to root and maproot_group to wheel, this is called `no_root_squash` permissions are absolutely necessary for CSI NFS be able to do fsGroupChangePolicy and allow CSI to delete from NFS
-
-I wanted to strict permissions per application on NFS as much as possible. So I tried to play only by assigning app_user to nfs_group and then don't use fsGroup or fsGroupChangePolicy. Vault needs to stat the root directory so I added 711 but that didn't work and if I did more permissions would breach security. So there's no running from fsGroup and fsGroupChangePolicy. 
-
-If you set an fsGroup, fsGroupChangePolicy will run and set that as the group.
-
-### How to assign permission to subdirectories
-
-In the pod do:
-
-```
-securityContext:
-  runAsUser: app_user
-  runAsGroup: app_group
-  fsGroup: app_group
-  fsGroupChangePolicy: "OnRootMismatch"
-```
 
 ### Minio
 

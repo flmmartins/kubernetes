@@ -5,8 +5,9 @@
 **/**.key
 **/**.pem
 **/**.ca
-**/**.tfvars
+**/prod.tfvars
 **/**.terraform
 **/**.terraform.lock.hcl
 **/**.tfstate
 **/**.tfstate.*
+**/backend.tf

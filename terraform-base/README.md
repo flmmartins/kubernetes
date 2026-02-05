@@ -9,8 +9,7 @@ Currently configure in state.tf You need to configure AWS_S3_ENDPOINT, AWS_ACCES
 If minio is not set, you might want to run terraform locally
 
 ```
-terraform init \
-  -backend-config="path=terraform.tfstate"
+terraform init -backend=false
 ```
 
 # Plan/Apply

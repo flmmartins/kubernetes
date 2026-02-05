@@ -1,0 +1,14 @@
+terraform {
+  backend "local" {
+    path = "kind.tfstate"
+  }
+
+  required_version = ">= 1.13.5"
+
+  required_providers {
+    kubectl = {
+      source  = "gavinbunney/kubectl"
+      version = ">= 1.14.0"
+    }
+  }
+}
