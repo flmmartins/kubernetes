@@ -10,8 +10,14 @@ locals {
 
 resource "kubernetes_namespace_v1" "prometheus_stack" {
   metadata {
-    name   = local.prometheus_stack_app_name
-    labels = local.prometheus_stack_common_labels
+    name = local.prometheus_stack_app_name
+    labels = merge(local.prometheus_stack_common_labels,
+      {
+        "pod-security.kubernetes.io/enforce" = "privileged"
+        "pod-security.kubernetes.io/audit"   = "privileged"
+        "pod-security.kubernetes.io/warn"    = "privileged"
+      }
+    )
   }
 }
 
@@ -44,10 +50,10 @@ resource "helm_release" "prometheus_stack" {
         resources:
           requests:
             cpu: 100m
-            memory: 512Mi
+            memory: 300Mi
           limits:
-            cpu: 500m
-            memory: 1Gi
+            cpu: 300m
+            memory: 512Gi
         securityContext:
           runAsUser: ${var.monitoring.user_uid}
           runAsGroup: ${var.monitoring.group_uid}
@@ -113,6 +119,13 @@ resource "helm_release" "prometheus_stack" {
     commonLabels: ${jsonencode(merge(local.prometheus_stack_common_labels, { "component" = "prometheus_stack" }))}
     # There's no volumeMounts on grafana
     prometheusOperator:
+      resources:
+        limits:
+          cpu: 200m
+          memory: 200Mi
+        requests:
+          cpu: 100m
+          memory: 100Mi
       extraVolumeMounts:
       - name: csi-secret-driver
         mountPath: '/mnt/secrets-store'

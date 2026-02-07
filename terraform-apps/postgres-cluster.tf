@@ -88,10 +88,10 @@ resource "kubernetes_manifest" "pg_prd_superuser" {
         vaultCACertPath = var.vault_csi_ca_cert_path #TLS mounted on CSI pod
         objects         = <<EOT
 - objectName: password
-  secretPath: op/vaults/${var.onepassword_vault_id}/items/${local.pg_prd_superuser_secret_name}
+  secretPath: ${var.onepassword_vault_path}/${local.pg_prd_superuser_secret_name}
   secretKey: password
 - objectName: username
-  secretPath: op/vaults/${var.onepassword_vault_id}/items/${local.pg_prd_superuser_secret_name}
+  secretPath: ${var.onepassword_vault_path}/${local.pg_prd_superuser_secret_name}
   secretKey: username
         EOT
       }
