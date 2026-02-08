@@ -1,12 +1,17 @@
-# Terraform
+# Terraform Init
 
-## Remote Init
+## Prod
 
-Currently configure in state.tf You need to configure AWS_S3_ENDPOINT, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY as env vars and run `terraform init`
+Currently configure in state.tf You need to configure AWS_S3_ENDPOINT, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY as env vars
 
 
-## Local Init
+```
+cd terraform-apps
+../tfinit.sh prod
+```
 
+
+### Starting from scratch
 If minio is not set, you might want to run terraform locally
 
 ```
@@ -14,7 +19,17 @@ terraform init \
   -backend-config="path=terraform.tfstate"
 ```
 
-# Plan/Apply
+
+## Local
+
+
+```
+cd terraform-apps
+../tfinit.sh local
+```
+
+
+# Terraform Plan/Apply
 
 `terraform plan/apply`
 
