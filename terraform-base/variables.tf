@@ -6,20 +6,23 @@ variable "kubernetes_api" {
 variable "nfs" {
   description = "NFS Share for CSI NFS"
   type = object({
-    ip           = string
-    share_folder = string
-    group_uid    = number
+    ip     = optional(string)
+    folder = optional(string)
   })
+  default = {}
 }
 
 variable "nginx_ip_cidrs" {
   type        = list(string)
+  default     = []
   description = "IP assigned to NGINX"
+
 }
 
 variable "onepassword_connect_token" {
   description = "1password Connect Token"
   sensitive   = true
+  default     = null
 }
 
 variable "vault_address" {
@@ -39,18 +42,22 @@ variable "vault_ca_file" {
 
 variable "vault_user_uid" {
   description = "Vault User UID"
+  default     = ""
 }
 
 variable "vault_group_uid" {
   description = "Vault Group UID"
+  default     = ""
 }
 
 variable "vault_apps_cert_pembundle_file_path" {
   description = "Vault CA File Path to import to Vault PKI"
+  default     = null
 }
 
 variable "private_domain" {
   description = "Private domain name"
+  default     = ""
 }
 
 variable "private_cert_issuer" {
@@ -65,10 +72,17 @@ variable "onepassword_vault_path" {
 
 variable "cloudflare_email" {
   description = "Email of cloudflare account"
+  default     = null
 }
 
 variable "priority_class" {
   description = "Name of the critical priority class"
   type        = string
   default     = "critical"
+}
+
+variable "enable_csi_nfs" {
+  description = "Whether to enable the NFS CSI driver"
+  type        = bool
+  default     = true
 }

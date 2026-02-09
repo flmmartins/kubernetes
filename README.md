@@ -12,7 +12,7 @@ This differentiation is necessary because there're several dependencies between 
 Applications in this repo assume Pod Security Adminission as `baseline` enabled by default therefore settings are adjusted to it
 
 # Table of Contents
-
+[Run Local](#RunningLocal)
 [Terraform Base](#TerraformBase)
 1. [Storage & NFS](##Storage)
 2. [Autoscaling](##NFS)
@@ -21,6 +21,15 @@ Applications in this repo assume Pod Security Adminission as `baseline` enabled 
 5. [Secret Management](##SecretManagement)
 6. [Certificates](#Certificates)
 7. [Apps](#Apps)
+
+# Running Local
+
+## Create a kubernetes cluster
+
+If you want to run this localy on laptop do:
+```
+kind create cluster
+```
 
 # Terraform Base
 Contains the Base Infrastructure

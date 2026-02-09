@@ -7,7 +7,7 @@ locals {
 
 # Namespace is created on with this script
 resource "terraform_data" "create-tls-cert" {
-  depends_on = [helm_release.csi-driver-nfs, helm_release.csi-secrets-store]
+  depends_on = [helm_release.csi-secrets-store]
   provisioner "local-exec" {
     command = "bash ${path.module}/create-vault-tls-cert.sh "
   }
@@ -141,7 +141,7 @@ resource "helm_release" "vault" {
         enabled: false
 
       dataStorage:
-        storageClass: ${kubernetes_storage_class_v1.persistent.metadata[0].name}
+        storageClass: ${module.csi-driver-nfs[0].persistent_storage_class}
         size: 10Gi
         mountPath: /vault/data
 

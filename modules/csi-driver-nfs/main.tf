@@ -1,15 +1,15 @@
 locals {
-  csi_driver_nfs_labels = {
-    component = "storage"
-    part-of   = "truenas"
-  }
+  component = "storage"
+  labels = merge(var.labels, {
+    component = local.component
+  })
 }
 
-resource "helm_release" "csi-driver-nfs" {
+resource "helm_release" "this" {
   name       = "csi-driver-nfs"
   namespace  = "kube-system"
   repository = "https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/master/charts"
-  version    = var.csi_driver_nfs_version
+  version    = var.chart_version
   chart      = "csi-driver-nfs"
   values = [
     <<-EOF
@@ -65,7 +65,7 @@ resource "helm_release" "csi-driver-nfs" {
                 - key: component
                   operator: In
                   values:
-                  - ${local.csi_driver_nfs_labels.component}
+                  - ${local.component}
               topologyKey: kubernetes.io/hostname
     node:
       resources:
@@ -90,7 +90,7 @@ resource "helm_release" "csi-driver-nfs" {
           limits:
             cpu: 100m
             memory: 128Mi
-    customLabels: ${jsonencode(local.csi_driver_nfs_labels)}
+    customLabels: ${jsonencode(local.labels)}
     storageClass:
       create: false #Not all options are present
     EOF
@@ -98,15 +98,15 @@ resource "helm_release" "csi-driver-nfs" {
 }
 
 resource "kubernetes_storage_class_v1" "persistent" {
-  depends_on = [helm_release.csi-driver-nfs]
+  depends_on = [helm_release.this]
   metadata {
     name   = "persistent"
-    labels = local.csi_driver_nfs_labels
+    labels = local.labels
   }
   storage_provisioner = "nfs.csi.k8s.io"
   parameters = {
-    server           = var.nfs.ip
-    share            = var.nfs.share_folder
+    server           = var.server
+    share            = var.folder
     subdir           = "$${pvc.metadata.namespace}-$${pvc.metadata.name}"
     mountPermissions = "0700"
   }
@@ -116,18 +116,18 @@ resource "kubernetes_storage_class_v1" "persistent" {
 }
 
 resource "kubernetes_storage_class_v1" "default" {
-  depends_on = [helm_release.csi-driver-nfs]
+  depends_on = [helm_release.this]
   metadata {
     name   = "default"
-    labels = local.csi_driver_nfs_labels
+    labels = local.labels
     annotations = {
       "storageclass.kubernetes.io/is-default-class" = "true"
     }
   }
   storage_provisioner = "nfs.csi.k8s.io"
   parameters = {
-    server           = var.nfs.ip
-    share            = var.nfs.share_folder
+    server           = var.server
+    share            = var.folder
     subdir           = "$${pvc.metadata.namespace}-$${pvc.metadata.name}"
     mountPermissions = "0700"
   }
