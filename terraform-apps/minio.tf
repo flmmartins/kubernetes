@@ -146,6 +146,8 @@ resource "helm_release" "minio" {
       enabled: true
       annotations:
         nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+        # Terraform state payloads can be bigger then what nginx accepts
+        nginx.ingress.kubernetes.io/proxy-body-size: 50m
       hosts:
       - ${local.minio_api_hostname}
       tls:
