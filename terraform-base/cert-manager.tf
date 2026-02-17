@@ -115,7 +115,7 @@ resource "kubernetes_secret_v1" "cert-manager-sa-token" {
   type = "kubernetes.io/service-account-token"
 }
 
-data "kubernetes_config_map" "vault_ca" {
+data "kubernetes_config_map_v1" "vault_ca" {
   metadata {
     name      = "kube-root-ca.crt"
     namespace = kubernetes_namespace_v1.cert-manager.metadata[0].name
@@ -139,7 +139,7 @@ resource "kubernetes_manifest" "private_issuer" {
       vault = {
         server   = var.vault_address_internal
         path     = "${vault_mount.pki-apps-root.path}/sign/${vault_pki_secret_backend_role.apps-tamrieltower-local.name}"
-        caBundle = base64encode(data.kubernetes_config_map.vault_ca.data["ca.crt"])
+        caBundle = base64encode(data.kubernetes_config_map_v1.vault_ca.data["ca.crt"])
         auth = {
           kubernetes = {
             role = vault_kubernetes_auth_backend_role.cert-manager.role_name
