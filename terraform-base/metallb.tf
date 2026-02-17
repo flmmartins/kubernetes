@@ -30,7 +30,6 @@ resource "helm_release" "metallb" {
           memory: 100Mi
           cpu: 100m
     speaker:
-      ignoreExcludeLB: true #Allows MetalLB to assign IPs using controlplane nodes
       resources:
         requests:
           memory: 100Mi

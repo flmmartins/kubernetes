@@ -17,7 +17,6 @@ resource "helm_release" "this" {
       mountPermissions: 0700
     controller:
       replicas: 1
-      runOnControlPlane: true
       resources:
         csiProvisioner:
           requests:
