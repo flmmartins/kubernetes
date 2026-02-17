@@ -116,7 +116,6 @@ resource "helm_release" "pihole" {
       TZ: Europe/Amsterdam
       FTLCONF_dns_listeningMode: 'all'
       FTLCONF_dns_dnssec: 'true'
-      FTLCONF_dns_upstreams: '127.0.0.1#5053'
     serviceDns:
       annotations: ${jsonencode(local.pihole_metallb_annotations)}
       mixedService: true #tcp and udp dns svc on same ip
@@ -154,17 +153,6 @@ resource "helm_release" "pihole" {
       requests:
         cpu: 100m
         memory: 128Mi
-    extraContainers:
-    - name: cloudflared
-      image: "cloudflare/cloudflared:latest"
-      command: ["cloudflared", "proxy-dns"]
-      env:
-      - name: TUNNEL_DNS_UPSTREAM
-        value: "https://1.1.1.1/dns-query,https://1.0.0.1/dns-query"
-      - name: TUNNEL_DNS_PORT
-        value: "5053"
-      - name: TUNNEL_DNS_ADDRESS
-        value: "0.0.0.0"
     serviceDhcp:
       enabled: false
     # Not possible with ingress due to https://github.com/MoJo2600/pihole-kubernetes/issues/375
