@@ -14,9 +14,9 @@ resource "helm_release" "this" {
   values = [
     <<-EOF
     driver:
-      mountPermissions: 0700
+      mountPermissions: ${var.mount_permissions}
     controller:
-      replicas: 1
+      replicas: ${var.replicas}
       resources:
         csiProvisioner:
           requests:

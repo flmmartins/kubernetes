@@ -10,12 +10,6 @@ provider "kubernetes" {
   host = var.kubernetes_api
 }
 
-provider "helm" {
-  experiments = {
-    manifest = true
-  }
-}
-
 provider "vault" {
   address = var.vault_address
   #token - configure VAULT_TOKEN env var

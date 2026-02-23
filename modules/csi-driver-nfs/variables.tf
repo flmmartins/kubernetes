@@ -18,3 +18,15 @@ variable "folder" {
   description = "NFS Folder"
   type        = string
 }
+
+variable "mount_permissions" {
+  description = "Mount permissions for the NFS volumes (e.g., 0700)"
+  type        = string
+  default     = "0700"
+}
+
+variable "replicas" {
+  description = "Number of replicas for the CSI Driver NFS controller"
+  type        = number
+  default     = 1
+}
