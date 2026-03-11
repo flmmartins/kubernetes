@@ -41,9 +41,20 @@ resource "helm_release" "vault" {
           capabilities:
             drop:
               - ALL
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/name: vault-agent-injector
+                    app.kubernetes.io/instance: vault
+                    component: webhook
       resources:
         requests:
-          memory: 50Mi
+          memory: 80Mi
           cpu: 20m
         limits:
           memory: 100Mi
@@ -60,10 +71,10 @@ resource "helm_release" "vault" {
           readOnly: true
       resources:
         requests:
-          memory: 50Mi
+          memory: 300Mi
           cpu: 50m
         limits:
-          memory: 200Mi
+          memory: 500Mi
           cpu: 100m
     server:
       priorityClassName: ${var.priority_class}
@@ -169,7 +180,17 @@ resource "helm_release" "vault" {
             }
             disable_mlock = true
             service_registration "kubernetes" {}
-
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/name: vault
+                    app.kubernetes.io/instance: vault
+                    component: server
     # Vault UI
     ui:
       enabled: true
