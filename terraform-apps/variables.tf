@@ -28,16 +28,6 @@ variable "public_domain" {
   description = "Apps public domain name"
 }
 
-variable "pihole_ip_cidr" {
-  type        = string
-  description = "IP CIDR assigned to Pihole DNS"
-}
-
-variable "pihole_additionalHostsEntries" {
-  type        = list(string)
-  description = "Pihole Hosts Entries comming from router"
-}
-
 variable "nginx_ip" {
   type        = string
   description = "IP of NGINX"
