@@ -20,7 +20,7 @@ resource "kubernetes_namespace_v1" "this" {
 
 # TODO: Test random password later
 ephemeral "random_password" "this" {
-  count = var.grafana_vault_password == null ? 1 : 0
+  count = var.vault_password == null ? 1 : 0
 
   length           = 16
   special          = true
@@ -28,7 +28,7 @@ ephemeral "random_password" "this" {
 }
 
 resource "kubernetes_secret_v1" "this" {
-  count = var.grafana_vault_password == null ? 1 : 0
+  count = var.vault_password == null ? 1 : 0
 
   metadata {
     name = "grafana"
@@ -40,16 +40,16 @@ resource "kubernetes_secret_v1" "this" {
 }
 
 resource "vault_policy" "this" {
-  count = var.grafana_vault_password != null ? 1 : 0
+  count = var.vault_password != null ? 1 : 0
 
   name   = local.name
   policy = <<EOT
-path "${var.grafana_vault_password.secret_path}" { capabilities = ["read"] }
+path "${var.vault_password.secret_path}" { capabilities = ["read"] }
 EOT
 }
 
 resource "vault_kubernetes_auth_backend_role" "this" {
-  count = var.grafana_vault_password != null ? 1 : 0
+  count = var.vault_password != null ? 1 : 0
 
   role_name                        = local.name
   bound_service_account_names      = ["prometheus-stack-kube-prom-operator"]
@@ -123,7 +123,7 @@ resource "helm_release" "this" {
                   storage: ${var.alertmanager_storage_size}
     grafana:
       admin:
-      %{~if var.grafana_vault_password != null~} 
+      %{~if var.vault_password != null~} 
         existingSecret: grafana
       %{~else~}
         existingSecret: ${kubernetes_secret_v1.this[0].metadata[0].name}
@@ -153,7 +153,7 @@ resource "helm_release" "this" {
         limits:
           cpu: ${var.operator_cpu_limit}
           memory: ${var.operator_memory_limit}
-    %{~if var.grafana_vault_password != null~} 
+    %{~if var.vault_password != null~} 
       extraVolumeMounts:
       - name: csi-secret-driver
         mountPath: '/mnt/secrets-store'
@@ -174,15 +174,15 @@ resource "helm_release" "this" {
         provider: vault
         parameters:
           roleName: ${vault_kubernetes_auth_backend_role.this[0].role_name}
-          vaultAddress: ${var.grafana_vault_password.vault_address}
-          vaultCACertPath: ${var.grafana_vault_password.vault_csi_ca_cert_path}
+          vaultAddress: ${var.vault_password.vault_address}
+          vaultCACertPath: ${var.vault_password.vault_csi_ca_cert_path}
           objects: |
             - objectName: password
               secretKey: password
-              secretPath: ${var.grafana_vault_password.secret_path}
+              secretPath: ${var.vault_password.secret_path}
             - objectName: username
               secretKey: username
-              secretPath: ${var.grafana_vault_password.secret_path}
+              secretPath: ${var.vault_password.secret_path}
         secretObjects:
           - secretName: grafana
             type: Opaque

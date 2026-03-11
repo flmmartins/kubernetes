@@ -64,7 +64,7 @@ resource "kubernetes_manifest" "nginx-ip-address-pool" {
       }
     }
     spec = {
-      addresses  = [var.nginx_ip]
+      addresses  = ["${var.nginx_ip}/32"]
       autoAssign = true
     }
   }

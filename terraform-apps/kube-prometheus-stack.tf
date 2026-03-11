@@ -5,7 +5,7 @@ locals {
 module "kube_prometheus_stack" {
   source = "../modules/prometheus-stack"
 
-  grafana_vault_password = {
+  vault_password = {
     vault_address          = var.vault_address_internal
     vault_csi_ca_cert_path = var.vault_csi_ca_cert_path
     secret_path            = format("%s/grafana", var.onepassword_vault_path)

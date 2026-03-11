@@ -1,4 +1,4 @@
-variable "grafana_vault_password" {
+variable "vault_password" {
   description = "Object containing vault data to read grafana password from vault"
   type = object({
     secret_path            = optional(string)
@@ -133,5 +133,3 @@ variable "security_context" {
   })
   default = {}
 }
-
-

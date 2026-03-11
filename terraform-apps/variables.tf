@@ -37,11 +37,6 @@ variable "nfs_ip" {
   description = "NFS IP"
 }
 
-variable "plex_ip_cidr" {
-  type        = string
-  description = "IP of Plex"
-}
-
 variable "persistent_storage_class" {
   description = "Name of the storage class which persist data"
   default     = "persistent"
