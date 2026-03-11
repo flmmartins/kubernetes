@@ -1,43 +1,34 @@
-variable "kubernetes_api" {
+variable "nfs_ip" {
+  description = "NFS IP"
+}
+
+variable "nfs_folder" {
+  description = "NFS Folder"
+}
+
+variable "nginx_ip" {
   type        = string
-  description = "Kubernetes API used by terraform provider"
-}
-
-variable "nfs" {
-  description = "NFS Share for CSI NFS"
-  type = object({
-    ip     = optional(string)
-    folder = optional(string)
-  })
-  default = {}
-}
-
-variable "nginx_ip_cidrs" {
-  type        = list(string)
-  default     = []
   description = "IP assigned to NGINX"
 
 }
 
 variable "onepassword_connect_token" {
   description = "1password Connect Token"
+  type        = string
   sensitive   = true
   default     = null
 }
 
-variable "vault_address" {
-  description = "Vault Address for Terraform to be able to access"
-  default     = "https://127.0.0.1:8200"
+variable "onepassword_credentials_json_base64" {
+  description = "1password Credentials File json encoded in base64"
+  type        = string
+  sensitive   = true
+  default     = null
 }
 
 variable "vault_address_internal" {
   description = "Vault Internal URL for communication between pods"
   default     = "https://vault.vault:8200"
-}
-
-variable "vault_ca_file" {
-  description = "Vault CA File for TF provider"
-  default     = "vault.ca"
 }
 
 variable "vault_user_uid" {
@@ -50,7 +41,7 @@ variable "vault_group_uid" {
   default     = ""
 }
 
-variable "vault_apps_cert_pembundle_file_path" {
+variable "vault_apps_cert_pembundle" {
   description = "Vault CA File Path to import to Vault PKI"
   default     = null
 }

@@ -10,6 +10,6 @@ module "csi-driver-nfs" {
   source = "../modules/csi-driver-nfs"
 
   labels = local.csi_driver_nfs_labels
-  server = var.nfs.ip
-  folder = var.nfs.folder
+  server = var.nfs_ip
+  folder = var.nfs_folder
 }

@@ -258,7 +258,7 @@ resource "vault_pki_secret_backend_config_ca" "pki-apps-root" {
   backend = vault_mount.pki-apps-root.path
 
   pem_bundle = <<EOT
-  ${file(var.vault_apps_cert_pembundle_file_path)}
+  ${var.vault_apps_cert_pembundle}
   EOT
 }
 

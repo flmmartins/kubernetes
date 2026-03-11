@@ -12,7 +12,7 @@ resource "terraform_data" "onepassword-connect" {
     helm upgrade --install --version ${var.onepassword_chart_version} \
       --namespace 1password-connect \
       --create-namespace \
-      --set-file connect.credentials=${path.module}/1password-credentials.json \
+      --set-file connect.credentials_base64=${var.onepassword_credentials_json_base64} \
       -f 1password-connect.yaml \
       1password-connect 1password/connect
     EOT
