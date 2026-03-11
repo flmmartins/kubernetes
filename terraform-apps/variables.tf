@@ -1,13 +1,3 @@
-variable "kubernetes_api" {
-  type        = string
-  description = "Kubernetes API used by terraform provider"
-}
-
-variable "vault_address" {
-  description = "Vault Address for Terraform to be able to access"
-  default     = "https://127.0.0.1:8200"
-}
-
 variable "vault_address_internal" {
   description = "Vault Internal URL for communication between pods"
   default     = "https://vault.vault:8200"
@@ -16,11 +6,6 @@ variable "vault_address_internal" {
 variable "vault_csi_ca_cert_path" {
   description = "Vault Parameters used by CSI Secret Provider Classes"
   default     = "/vault/tls/vault.ca"
-}
-
-variable "vault_ca_file" {
-  description = "Vault CA File for TF provider"
-  default     = "vault.ca"
 }
 
 variable "onepassword_vault_path" {
