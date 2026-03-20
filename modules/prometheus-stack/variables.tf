@@ -50,19 +50,19 @@ variable "prometheus_storage_size" {
 variable "prometheus_cpu_request" {
   type        = string
   description = "Prometheus CPU Request"
-  default     = "100m"
+  default     = "300m"
 }
 
 variable "prometheus_cpu_limit" {
   type        = string
   description = "Prometheus CPU Limit"
-  default     = "300m"
+  default     = "600m"
 }
 
 variable "prometheus_memory_request" {
   type        = string
   description = "Prometheus Memory Request"
-  default     = "300Mi"
+  default     = "450Mi"
 }
 
 variable "prometheus_memory_limit" {

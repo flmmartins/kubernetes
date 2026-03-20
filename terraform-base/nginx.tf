@@ -27,7 +27,7 @@ resource "helm_release" "nginx" {
       resources:
         requests:
           cpu: 50m
-          memory: 90Mi
+          memory: 120Mi
         limits:
           memory: 200Mi
           cpu: 200m

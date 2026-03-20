@@ -71,19 +71,19 @@ resource "helm_release" "cert-manager" {
     webhook:
       resources:
         requests:
-          memory: 25Mi
+          memory: 75Mi
           cpu: 5m
         limits:
-          memory: 100Mi
+          memory: 120Mi
           cpu: 20m
     cainjector:
       resources:
         requests:
-          memory: 25Mi
-          cpu: 5m
-        limits:
-          memory: 100Mi
+          memory: 90Mi
           cpu: 20m
+        limits:
+          memory: 200Mi
+          cpu: 100m
     # Volumes are defined only so CSI Secret Driver can run
     volumeMounts:
       - name: csi-secret-driver-for-cloudflare-token

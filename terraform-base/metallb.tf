@@ -27,12 +27,12 @@ resource "helm_release" "metallb" {
           memory: 50Mi
           cpu: 50m
         limits:
-          memory: 100Mi
+          memory: 150Mi
           cpu: 100m
     speaker:
       resources:
         requests:
-          memory: 100Mi
+          memory: 150Mi
           cpu: 50m
         limits:
           memory: 200Mi

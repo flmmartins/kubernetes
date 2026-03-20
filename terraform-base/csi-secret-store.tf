@@ -25,15 +25,15 @@ resource "helm_release" "csi-secrets-store" {
             memory: 64Mi
           requests:
             cpu: 5m
-            memory: 16Mi
+            memory: 32Mi
       livenessProbe:
         resources:
           limits:
             cpu: 50m
-            memory: 32Mi
+            memory: 64Mi
           requests:
             cpu: 5m
-            memory: 16Mi
+            memory: 32Mi
         EOF
   ]
 }

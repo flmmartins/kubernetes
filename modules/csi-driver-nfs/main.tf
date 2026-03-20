@@ -71,21 +71,21 @@ resource "helm_release" "this" {
         livenessProbe:
           requests:
             cpu: 10m
-            memory: 16Mi
+            memory: 28Mi
           limits:
             cpu: 50m
-            memory: 32Mi
+            memory: 56Mi
         nodeDriverRegistrar:
           requests:
             cpu: 10m
-            memory: 16Mi
+            memory: 28Mi
           limits:
             cpu: 50m
-            memory: 32Mi
+            memory: 56Mi
         nfs:
           requests:
             cpu: 25m
-            memory: 32Mi
+            memory: 64Mi
           limits:
             cpu: 100m
             memory: 128Mi

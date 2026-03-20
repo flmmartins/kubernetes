@@ -71,10 +71,10 @@ resource "helm_release" "vault" {
           readOnly: true
       resources:
         requests:
-          memory: 300Mi
+          memory: 390Mi
           cpu: 50m
         limits:
-          memory: 500Mi
+          memory: 600Mi
           cpu: 100m
     server:
       priorityClassName: ${var.priority_class}
@@ -159,7 +159,7 @@ resource "helm_release" "vault" {
       # Run Vault in "HA" mode.
       ha:
         enabled: true
-        replicas: 2
+        replicas: 3
         raft: #aka integrated storage
           enabled: true
           setNodeId: true #Set raft id to the name of the pod
