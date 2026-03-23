@@ -31,8 +31,11 @@ resource "kubernetes_secret_v1" "this" {
   count = var.vault_password == null ? 1 : 0
 
   metadata {
-    name = "grafana"
+    name      = "grafana"
+    namespace = kubernetes_namespace_v1.this.metadata[0].name
+    labels    = merge(local.labels, { component = "credentials" })
   }
+
   data_wo = {
     "admin-password" = ephemeral.random_password.this[0].result
     "admin-user"     = "admin"
@@ -136,7 +139,7 @@ resource "helm_release" "this" {
         tls:
         - hosts:
           - ${var.grafana_url}
-          secretName: grafana-tls
+          secretName: ${split(".", var.grafana_url)[0]}-tls
       persistence:
         enabled: true
         storageClassName: ${var.storage_class_name}
@@ -178,10 +181,10 @@ resource "helm_release" "this" {
           vaultCACertPath: ${var.vault_password.vault_csi_ca_cert_path}
           objects: |
             - objectName: password
-              secretKey: password
+              secretKey: ${var.vault_password.password_field}
               secretPath: ${var.vault_password.secret_path}
             - objectName: username
-              secretKey: username
+              secretKey: ${var.vault_password.username_field}
               secretPath: ${var.vault_password.secret_path}
         secretObjects:
           - secretName: grafana

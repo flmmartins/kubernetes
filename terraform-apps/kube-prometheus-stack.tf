@@ -10,8 +10,7 @@ module "kube_prometheus_stack" {
     vault_csi_ca_cert_path = var.vault_csi_ca_cert_path
     secret_path            = format("%s/grafana", var.onepassword_vault_path)
   }
-  chart_version = var.prometheus_stack_chart_version
-  grafana_url   = local.grafana_url
+  grafana_url = local.grafana_url
   security_context = {
     user_uid  = var.monitoring.user_uid
     group_uid = var.monitoring.group_uid

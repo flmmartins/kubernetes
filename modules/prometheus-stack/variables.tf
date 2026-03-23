@@ -3,7 +3,10 @@ variable "vault_password" {
   type = object({
     secret_path            = optional(string)
     vault_address          = optional(string)
-    vault_csi_ca_cert_path = optional(string)
+    vault_csi_ca_cert_path = optional(string, "/vault/tls/vault.ca")
+    # Fields in Secret Manager
+    username_field = optional(string, "username")
+    password_field = optional(string, "password")
   })
   default = {}
 }
@@ -46,6 +49,19 @@ variable "prometheus_storage_size" {
   description = "Prometheus Storage Size"
   default     = "50Gi"
 }
+
+variable "security_context" {
+  description = "Security context for the prometheus stack"
+  type = object({
+    user_uid  = optional(number)
+    group_uid = optional(number)
+  })
+  default = {}
+}
+
+# =============================================================================
+# Resource Variables
+# =============================================================================
 
 variable "prometheus_cpu_request" {
   type        = string
@@ -123,13 +139,4 @@ variable "operator_memory_limit" {
   type        = string
   description = "Operator Memory Limit"
   default     = "200Mi"
-}
-
-variable "security_context" {
-  description = "Security context for the prometheus stack"
-  type = object({
-    user_uid  = optional(number)
-    group_uid = optional(number)
-  })
-  default = {}
 }

@@ -1,8 +1,3 @@
-variable "pihole_chart_version" {
-  description = "Pihole Version"
-  default     = "2.35.0"
-}
-
 variable "minio_chart_version" {
   description = "Minio Version"
   default     = "5.4.0"
@@ -36,9 +31,4 @@ variable "velero_chart_version" {
 variable "velero_aws_plugin_version" {
   description = "AWS Plugin for Velero Version. It has to be compatible with velero. Check: https://github.com/vmware-tanzu/velero-plugin-for-aws?tab=readme-ov-file#compatibility"
   default     = "v1.13.2"
-}
-
-variable "prometheus_stack_chart_version" {
-  description = "Kube Prometheus Stack"
-  default     = "81.4.2"
 }
