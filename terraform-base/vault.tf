@@ -7,7 +7,7 @@ locals {
 
 # Namespace is created on with this script
 resource "terraform_data" "create-tls-cert" {
-  depends_on = [helm_release.csi-secrets-store]
+  depends_on = [module.csi-secret-store]
   provisioner "local-exec" {
     command = "bash ${path.module}/create-vault-tls-cert.sh "
   }

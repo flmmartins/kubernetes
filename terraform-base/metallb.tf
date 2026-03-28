@@ -1,7 +1,6 @@
 resource "kubernetes_namespace_v1" "metallb" {
   metadata {
     name = "metallb"
-    # Due to Pod Security
     labels = {
       "kubernetes.io/enforce"            = "privileged"
       "pod-security.kubernetes.io/audit" = "privileged"
