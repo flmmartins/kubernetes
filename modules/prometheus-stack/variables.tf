@@ -1,16 +1,3 @@
-variable "vault_password" {
-  description = "Object containing vault data to read grafana password from vault"
-  type = object({
-    secret_path            = optional(string)
-    vault_address          = optional(string)
-    vault_csi_ca_cert_path = optional(string, "/vault/tls/vault.ca")
-    # Fields in Secret Manager
-    username_field = optional(string, "username")
-    password_field = optional(string, "password")
-  })
-  default = {}
-}
-
 variable "chart_version" {
   type        = string
   description = "Prometheus Stack Chart Version"
@@ -27,27 +14,49 @@ variable "grafana_ingress_annotations" {
   default = {}
 }
 
-variable "grana_storage_size" {
-  type        = string
-  description = "Grafana Storage Size"
-  default     = "10Gi"
-}
-
-variable "storage_class_name" {
-  description = "Storage class name for prometheus and alertmanager"
-  type        = string
-}
-
 variable "retention_days" {
   type        = string
   description = "Prometheus retention days"
   default     = "15d"
 }
 
+variable "vault_password" {
+  description = "Object containing vault data to read grafana password from vault"
+  type = object({
+    secret_path            = optional(string)
+    vault_address          = optional(string)
+    vault_csi_ca_cert_path = optional(string, "/vault/tls/vault.ca")
+    # Fields in Secret Manager
+    username_field = optional(string, "username")
+    password_field = optional(string, "password")
+  })
+  default = {}
+}
+
+# -----------------------------------------------------------------------------
+# Storage
+# -----------------------------------------------------------------------------
+variable "storage_class_name" {
+  description = "Storage class name for prometheus and alertmanager"
+  type        = string
+}
+
 variable "prometheus_storage_size" {
   type        = string
   description = "Prometheus Storage Size"
   default     = "50Gi"
+}
+
+variable "alertmanager_storage_size" {
+  type        = string
+  description = "Alert Manager Storage Size"
+  default     = "10Gi"
+}
+
+variable "grana_storage_size" {
+  type        = string
+  description = "Grafana Storage Size"
+  default     = "10Gi"
 }
 
 variable "security_context" {
@@ -63,6 +72,9 @@ variable "security_context" {
 # Resource Variables
 # =============================================================================
 
+# -----------------------------------------------------------------------------
+# Prometheus
+# -----------------------------------------------------------------------------
 variable "prometheus_cpu_request" {
   type        = string
   description = "Prometheus CPU Request"
@@ -87,12 +99,9 @@ variable "prometheus_memory_limit" {
   default     = "512Mi"
 }
 
-variable "alertmanager_storage_size" {
-  type        = string
-  description = "Alert Manager Storage Size"
-  default     = "10Gi"
-}
-
+# -----------------------------------------------------------------------------
+# Alert Manager
+# -----------------------------------------------------------------------------
 variable "alertmanager_cpu_request" {
   type        = string
   description = "Alert Manager CPU Request"
@@ -117,6 +126,9 @@ variable "alertmanager_memory_limit" {
   default     = "256Mi"
 }
 
+# -----------------------------------------------------------------------------
+# Operator
+# -----------------------------------------------------------------------------
 variable "operator_cpu_request" {
   type        = string
   description = "Operator CPU Request"

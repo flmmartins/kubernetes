@@ -150,14 +150,13 @@ resource "helm_release" "velero" {
       backupStorageLocation:
       - name: "talos-truenas"
         provider: "aws"
-        bucket: "${minio_s3_bucket.velero.bucket}"
-        caCert:   ${base64encode(data.vault_generic_secret.minio_ca.data["ca_chain"])}
+        bucket: "velero"
         default: true
         accessMode: ReadWrite
         config:
-          region: minio
+          region: seaweedfs
           s3ForcePathStyle: "true"
-          s3Url: https://minio.${kubernetes_namespace_v1.minio.metadata[0].name}.svc.cluster.local:9000
+          s3Url: ${module.seaweedfs.s3_internal_endpoint}
     serviceAccount:
       server:
         create: true
@@ -182,7 +181,9 @@ resource "helm_release" "velero" {
       limits:
         cpu: "250m"
         memory: "256Mi"
-    upgradeCRDs: false # due to https://github.com/vmware-tanzu/helm-charts/issues/727
     EOF
   ]
 }
+
+# TODO: For now velero buckets and etc will be created by seaweedfs helm because aws_s3 provider can't:
+# create users, keys or lifecycle pilicies

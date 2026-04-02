@@ -1,3 +1,20 @@
+terraform {
+  required_providers {
+    helm = {
+      source = "hashicorp/helm"
+    }
+    kubernetes = {
+      source = "hashicorp/kubernetes"
+    }
+    vault = {
+      source = "hashicorp/vault"
+    }
+    random = {
+      source = "hashicorp/random"
+    }
+  }
+}
+
 locals {
   name = "seaweedfs"
   labels = {
@@ -5,6 +22,7 @@ locals {
   }
   s3_k8s_secret_name    = "seaweedfs-s3"
   admin_k8s_secret_name = "seaweedfs-admin"
+  service_account       = "seaweedfs"
 }
 
 resource "kubernetes_namespace_v1" "this" {
@@ -75,7 +93,7 @@ resource "vault_kubernetes_auth_backend_role" "this" {
   count = var.vault_password != null ? 1 : 0
 
   role_name                        = local.name
-  bound_service_account_names      = ["seaweedfs"]
+  bound_service_account_names      = [local.service_account]
   bound_service_account_namespaces = [kubernetes_namespace_v1.this.metadata[0].name]
   token_max_ttl                    = 1440 #24H
   token_policies                   = [vault_policy.this[0].name]
@@ -145,8 +163,6 @@ resource "helm_release" "this" {
   chart      = "seaweedfs"
   version    = var.chart_version
   namespace  = kubernetes_namespace_v1.this.metadata[0].name
-  wait       = true
-  timeout    = 300
 
   values = [<<-EOF
     podLabels: ${jsonencode(local.labels)}
@@ -157,6 +173,21 @@ resource "helm_release" "this" {
     master:
       enabled: true
       replicas: 1
+      %{~if var.security_context != null~}
+      podSecurityContext:
+        runAsUser: ${var.security_context.user_id}
+        runAsGroup: ${var.security_context.group_id}
+        fsGroup: ${var.security_context.group_id}
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
+      %{~endif~}
+      data:
+        type: persistentVolumeClaim
+        size: 1Gi
+      logs:
+        type: persistentVolumeClaim
+        size: 1Gi
       resources:
         requests:
           cpu: ${var.master_cpu_request}
@@ -195,7 +226,7 @@ resource "helm_release" "this" {
         - name: data
           type: "persistentVolumeClaim"
           size: ${var.volume_storage_size}
-          storageClass: ${var.storage_class_name}
+          storageClass: ${var.persistent_storage_class_name}
           maxVolumes: 0   # 0 = auto-configure based on disk size
       resources:
         requests:
@@ -235,7 +266,10 @@ resource "helm_release" "this" {
       data:
         type: "persistentVolumeClaim"
         size: ${var.filer_storage_size}
-        storageClass: ${var.storage_class_name}
+        storageClass: ${var.persistent_storage_class_name}
+      logs:
+        type: persistentVolumeClaim
+        size: 1G
       resources:
         requests:
           cpu: ${var.filer_cpu_request}
@@ -263,17 +297,21 @@ resource "helm_release" "this" {
       port: ${var.s3api_port}        # internal S3 API port
       enableAuth: true  # enables access key / secret key authentication
       existingConfigSecret: ${local.s3_k8s_secret_name}
+      serviceAccountName: ${local.service_account} #this is the default account but chart has a bug
       extraVolumes: |
         - name: csi-secret-driver-for-seaweedfs-credentials
           csi:
             driver: secrets-store.csi.k8s.io
-            readOnly: true
+            readOnly: true  
             volumeAttributes:
               secretProviderClass: ${kubernetes_manifest.this[0].manifest.metadata.name}
       extraVolumeMounts: |
         - name: csi-secret-driver-for-seaweedfs-credentials
           mountPath: /mnt/secrets-store
           readOnly: true
+      logs:
+        type: persistentVolumeClaim
+        size: 1G
       resources:
         requests:
           cpu: ${var.s3_cpu_request}
@@ -285,8 +323,7 @@ resource "helm_release" "this" {
         enabled: true
         className: "nginx"
         annotations: ${jsonencode(var.s3api_ingress_annotations)}
-        hosts:
-        - ${var.s3api_url}
+        host: "${var.s3api_url}"
         tls:
         - hosts:
           - ${var.s3api_url}
@@ -303,18 +340,32 @@ resource "helm_release" "this" {
                       values:
                         - s3
                 topologyKey: kubernetes.io/hostname
+      createBuckets:
+      - name: terraform
+        anonymousRead: false
+        objectLock: true
+        versioning: Enabled
+        ttl: 90d
+      - name: velero
+        anonymousRead: false
+        versioning: Enabled
+        ttl: 30d
 
     # -------------------------------------------------------------------------
-    # Admin UI — equivalent to MinIO Console, mirrors your consoleIngress
+    # Admin UI
     # -------------------------------------------------------------------------
     admin:
       enabled: true
       port: ${var.admin_ui_port}
+      secret:
+        existingSecret: ${local.admin_k8s_secret_name}
+        userKey: ${var.vault_password.admin_username_field}
+        pwKey: ${var.vault_password.admin_password_field}
       ingress:
         enabled: true
         className: "nginx"
         annotations: ${jsonencode(var.admin_ui_ingress_annotations)}
-        host: ${var.admin_ui_url}
+        host: "${var.admin_ui_url}"
         tls:
           - hosts:
               - ${var.admin_ui_url}
@@ -334,18 +385,4 @@ resource "helm_release" "this" {
       enabled: false
   EOF
   ]
-}
-
-# =============================================================================
-# OUTPUTS
-# =============================================================================
-
-output "seaweedfs_s3_endpoint" {
-  description = "S3-compatible endpoint — use this as your Terraform backend endpoint"
-  value       = "https://${var.s3api_url}"
-}
-
-output "seaweedfs_admin_url" {
-  description = "SeaweedFS Admin UI — equivalent to MinIO Console"
-  value       = "https://${var.admin_ui_url}"
 }

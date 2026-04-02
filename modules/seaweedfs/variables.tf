@@ -49,16 +49,10 @@ variable "vault_password" {
   default = {}
 }
 
-variable "security_context" {
-  description = "Security context for the cluster"
-  type = object({
-    user_id  = optional(number)
-    group_id = optional(number)
-  })
-  default = {}
-}
-
-variable "storage_class_name" {
+# -----------------------------------------------------------------------------
+# Storage
+# -----------------------------------------------------------------------------
+variable "persistent_storage_class_name" {
   description = "Storage class name for PVC"
   type        = string
 }
@@ -75,6 +69,14 @@ variable "filer_storage_size" {
   default     = "5Gi"
 }
 
+variable "security_context" {
+  description = "Security context for the cluster"
+  type = object({
+    user_id  = optional(number)
+    group_id = optional(number)
+  })
+  default = {}
+}
 
 # =============================================================================
 # Resource Variables

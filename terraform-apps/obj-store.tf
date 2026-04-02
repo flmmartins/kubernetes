@@ -1,5 +1,5 @@
 locals {
-  s3api_url           = "s3api.${var.private_domain}"
+  seaweedfs_s3api_url = "s3api.${var.private_domain}"
   seaweedfs_admin_url = "seaweedfs.${var.private_domain}"
 }
 
@@ -16,20 +16,20 @@ module "seaweedfs" {
     user_id  = var.minio.user_uid
     group_id = var.minio.group_uid
   }
-  s3api_url = local.s3api_url
+  s3api_url = local.seaweedfs_s3api_url
   s3api_ingress_annotations = {
-    "nginx.ingress.kubernetes.io/backend-protocol" = "HTTPS"
-    "nginx.ingress.kubernetes.io/proxy-body-size"  = "50m"
-    "kubernetes.io/tls-acme"                       = "true"
-    "cert-manager.io/common-name"                  = local.s3api_url
-    "cert-manager.io/dns-names"                    = local.s3api_url
+    "nginx.ingress.kubernetes.io/proxy-body-size" = "50m"
+    "kubernetes.io/tls-acme"                      = "true"
+    "cert-manager.io/cluster-issuer"              = var.private_cert_issuer
+    "cert-manager.io/common-name"                 = local.seaweedfs_s3api_url
+    "cert-manager.io/dns-names"                   = local.seaweedfs_s3api_url
   }
   admin_ui_url = local.seaweedfs_admin_url
   admin_ui_ingress_annotations = {
-    "nginx.ingress.kubernetes.io/backend-protocol" = "HTTPS"
-    "kubernetes.io/tls-acme"                       = "true"
-    "cert-manager.io/common-name"                  = local.seaweedfs_admin_url
-    "cert-manager.io/dns-names"                    = local.seaweedfs_admin_url
+    "kubernetes.io/tls-acme"         = "true"
+    "cert-manager.io/cluster-issuer" = var.private_cert_issuer
+    "cert-manager.io/common-name"    = local.seaweedfs_admin_url
+    "cert-manager.io/dns-names"      = local.seaweedfs_admin_url
   }
-  storage_class_name = var.persistent_storage_class
+  persistent_storage_class_name = var.persistent_storage_class
 }

@@ -25,7 +25,7 @@ variable "immich_chart_version" {
 
 variable "velero_chart_version" {
   description = "Velero Version"
-  default     = "11.3.2"
+  default     = "12.0.0"
 }
 
 variable "velero_aws_plugin_version" {
