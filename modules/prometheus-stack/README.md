@@ -42,15 +42,15 @@ No modules.
 | <a name="input_operator_cpu_request"></a> [operator\_cpu\_request](#input\_operator\_cpu\_request) | Operator CPU Request | `string` | `"100m"` | no |
 | <a name="input_operator_memory_limit"></a> [operator\_memory\_limit](#input\_operator\_memory\_limit) | Operator Memory Limit | `string` | `"200Mi"` | no |
 | <a name="input_operator_memory_request"></a> [operator\_memory\_request](#input\_operator\_memory\_request) | Operator Memory Request | `string` | `"100Mi"` | no |
-| <a name="input_prometheus_cpu_limit"></a> [prometheus\_cpu\_limit](#input\_prometheus\_cpu\_limit) | Prometheus CPU Limit | `string` | `"300m"` | no |
-| <a name="input_prometheus_cpu_request"></a> [prometheus\_cpu\_request](#input\_prometheus\_cpu\_request) | Prometheus CPU Request | `string` | `"100m"` | no |
+| <a name="input_prometheus_cpu_limit"></a> [prometheus\_cpu\_limit](#input\_prometheus\_cpu\_limit) | Prometheus CPU Limit | `string` | `"600m"` | no |
+| <a name="input_prometheus_cpu_request"></a> [prometheus\_cpu\_request](#input\_prometheus\_cpu\_request) | Prometheus CPU Request | `string` | `"300m"` | no |
 | <a name="input_prometheus_memory_limit"></a> [prometheus\_memory\_limit](#input\_prometheus\_memory\_limit) | Prometheus Memory Limit | `string` | `"512Mi"` | no |
-| <a name="input_prometheus_memory_request"></a> [prometheus\_memory\_request](#input\_prometheus\_memory\_request) | Prometheus Memory Request | `string` | `"300Mi"` | no |
+| <a name="input_prometheus_memory_request"></a> [prometheus\_memory\_request](#input\_prometheus\_memory\_request) | Prometheus Memory Request | `string` | `"450Mi"` | no |
 | <a name="input_prometheus_storage_size"></a> [prometheus\_storage\_size](#input\_prometheus\_storage\_size) | Prometheus Storage Size | `string` | `"50Gi"` | no |
 | <a name="input_retention_days"></a> [retention\_days](#input\_retention\_days) | Prometheus retention days | `string` | `"15d"` | no |
 | <a name="input_security_context"></a> [security\_context](#input\_security\_context) | Security context for the prometheus stack | <pre>object({<br/>    user_uid  = optional(number)<br/>    group_uid = optional(number)<br/>  })</pre> | `{}` | no |
 | <a name="input_storage_class_name"></a> [storage\_class\_name](#input\_storage\_class\_name) | Storage class name for prometheus and alertmanager | `string` | n/a | yes |
-| <a name="input_vault_password"></a> [vault\_password](#input\_vault\_password) | Object containing vault data to read grafana password from vault | <pre>object({<br/>    secret_path            = optional(string)<br/>    vault_address          = optional(string)<br/>    vault_csi_ca_cert_path = optional(string)<br/>  })</pre> | `{}` | no |
+| <a name="input_vault_password"></a> [vault\_password](#input\_vault\_password) | Object containing vault data to read grafana password from vault | <pre>object({<br/>    secret_path            = optional(string)<br/>    vault_address          = optional(string)<br/>    vault_csi_ca_cert_path = optional(string, "/vault/tls/vault.ca")<br/>    # Fields in Secret Manager<br/>    username_field = optional(string, "username")<br/>    password_field = optional(string, "password")<br/>  })</pre> | `{}` | no |
 
 ## Outputs
 
