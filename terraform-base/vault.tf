@@ -239,11 +239,17 @@ resource "vault_generic_endpoint" "op_connect_mount" {
     plugin_name = vault_plugin.op_connect.name,
     description = "1Password Connect secrets engine"
 
+    # Because default ttl is 32 days
+    config = {
+      default_lease_ttl = "5m",
+      max_lease_ttl     = "1h",
+      force_no_cache    = true
+    }
   })
   # Due to data being sensitive it always changes
-  lifecycle {
-    ignore_changes = [data_json]
-  }
+  #lifecycle {
+  #  ignore_changes = [data_json]
+  #}
 }
 
 resource "vault_generic_endpoint" "onepassword-connect-config" {
