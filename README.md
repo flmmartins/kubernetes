@@ -1,12 +1,69 @@
-Here you will see a description of components
-
-Ideas and project track can be found [here](https://github.com/users/flmmartins/projects/3)
+# How to run
 
 Execution is done via terraform:
 1. Terraform Base - Install infrastructure components
 2. Terraform Apps - Install Apps
 
-This differentiation is necessary because there're several dependencies between infrastructure and apps. Additionaly almost all apps require a Vault ID which can only be fetched after Vault is configured. Since this Vault ID comes from 1password plugin, there's no terraform resource for it and wanted to keep it a secret.
+This differentiation is necessary because there're several dependencies between infrastructure and apps. Additionaly almost all apps require a Vault ID which can only be fetched after Vault is configured.
+
+**Migrating to Terraform Stacks**
+Hopefully the problems above can be resolved in the future with Terraform Stacks. This repository is slowly migrating to conform to the terraform stack organization so you will see some code as modules and things might be a messy while is being migrated!!
+
+## Terraform init
+
+tfinit.sh was created to allow handling of multiple states from different backends. Terraform Stacks hopefully will be used in the future to handle this better than using a script!
+
+Currently there are 2 environments: 
+* dev => Which is a kind cluster, using a local terraform state
+* prd => Which is a full cluster with several machines using a remote s3 terraform state
+
+## With S3 backend (prod)
+
+You need to configure AWS_S3_ENDPOINT, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY as env vars
+
+
+```
+cd terraform-apps OR terraform-base
+../tfinit.sh prod
+```
+
+## With Local state (dev)
+
+```
+cd terraform-apps OR terraform-base
+../tfinit.sh local
+```
+
+# Secret Management
+
+Currently due to my integration with 1password I created a file with 1p references and I ran terraform as follows:
+
+Example of .env.prd:
+
+TF_VAR_my_ip=op://MY_VAULT/SECRET_NAME/FIELD
+
+1password fetch this passwords based on references above and inject while running terraform with:
+
+```
+op run --env-file=envs/.env.prd --no-masking -- terraform COMMAND
+```
+
+Where COMMAND can be plan, apply....
+
+Teoretically since now my secrets are not text-clear I could commit to git but better not provide any information on my Vault Name to the outside
+
+**Old way of running**
+
+Before having integration with 1password I did like this:
+
+`terraform plan/apply`
+
+It will automatically get the terraform.tfvars file which is was not commited in the repo.
+
+
+# Archiecture & Components
+
+Ideas and project track can be found [here](https://github.com/users/flmmartins/projects/3)
 
 **Pod Security Admissions**
 Applications in this repo assume Pod Security Adminission as `baseline` enabled by default therefore settings are adjusted to it
@@ -81,16 +138,9 @@ securityContext:
   fsGroupChangePolicy: "OnRootMismatch"
 ```
 
-### Minio
+### SeaweedFS
 
-I made a branch called minio with Bitnami Helm Chart which has much more features however when I installed it didn't had UI to create api keys, no bucket versioning. So I stick with the version I currently have which is an older release but with more decent.
-
-To use Minio in TF provider set this. If you already use Minio as a TF backend is just a matter of using the same admin and just pass:
-
-export MINIO_ENDPOINT=url.com (no https in front)
-export MINIO_USER=$AWS_ACCESS_KEY_ID
-export MINIO_PASSWORD=$AWS_SECRET_ACCESS_KEY
-export MINIO_ENABLE_HTTPS=true
+Minio was deprecated and is now in maintenance mode. Seaweedfs is the replacement
 
 ## AutoScaling
 Metric server is installing to enable HPA
@@ -162,16 +212,13 @@ We use Velero for Backups. It authenticates with minio to create the necessary a
       [ Users access a website in local network ] 
              |
              v
-      [ Pi-hole: Local DNS Server, resolves the URL ]   
+      [ Ad-Guard: Local DNS Server, resolves the URL - outside kubernetes ]   
              |
              v
       [ Nginx: Reverse Proxy / Load Balancer ]
 
-Pihole has DNS masq so it will resolve all DNS to nginx IP. However in a setup without DNS Masq you can install External DNS to automatically add each record to each IP.
-
-### How to configure pihole.conf
-You can use FTL variables and convert them to environment variables as described in [here](https://docs.pi-hole.net/docker/configuration/?h=environment+variables#environment-variables)
+Ad Guard has DNS masq so it will resolve all DNS to reverse proxy IP. However in a setup without DNS Masq you can install External DNS to automatically add each record to each IP.
 
 ## Plex
 
-Check Plex.md
+Check [Plex](Plex.md)
