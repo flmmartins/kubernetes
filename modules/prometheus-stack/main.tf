@@ -95,9 +95,9 @@ resource "helm_release" "this" {
             memory: ${var.prometheus_memory_limit}
         %{~if var.security_context != null~}
         securityContext:
-          runAsUser: ${var.security_context.user_uid}
-          runAsGroup: ${var.security_context.group_uid}
-          fsGroup: ${var.security_context.group_uid}
+          runAsUser: ${var.security_context.user_id}
+          runAsGroup: ${var.security_context.group_id}
+          fsGroup: ${var.security_context.group_id}
           fsGroupChangePolicy: OnRootMismatch
           seccompProfile:
             type: RuntimeDefault
@@ -122,9 +122,9 @@ resource "helm_release" "this" {
             memory: ${var.alertmanager_memory_limit}
         %{~if var.security_context != null~}
         securityContext:
-          runAsUser: ${var.security_context.user_uid}
-          runAsGroup: ${var.security_context.group_uid}
-          fsGroup: ${var.security_context.group_uid}
+          runAsUser: ${var.security_context.user_id}
+          runAsGroup: ${var.security_context.group_id}
+          fsGroup: ${var.security_context.group_id}
           fsGroupChangePolicy: OnRootMismatch
           seccompProfile:
             type: RuntimeDefault

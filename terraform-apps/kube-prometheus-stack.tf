@@ -12,8 +12,8 @@ module "kube_prometheus_stack" {
   }
   grafana_url = local.grafana_url
   security_context = {
-    user_uid  = var.monitoring.user_uid
-    group_uid = var.monitoring.group_uid
+    user_id  = var.monitoring_credentials.user_id
+    group_id = var.monitoring_credentials.group_id
   }
 
   storage_class_name = var.persistent_storage_class

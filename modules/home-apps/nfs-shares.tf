@@ -31,7 +31,7 @@ resource "kubernetes_persistent_volume_v1" "data_volumes" {
         driver        = "nfs.csi.k8s.io"
         volume_handle = each.key
         volume_attributes = {
-          server = var.nfs_ip
+          server = each.value.server
           share  = each.value.path
         }
       }

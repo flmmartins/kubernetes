@@ -33,10 +33,6 @@ variable "nginx_ip" {
   description = "IP of NGINX"
 }
 
-variable "nfs_ip" {
-  description = "NFS IP"
-}
-
 variable "persistent_storage_class" {
   description = "Name of the storage class which persist data"
   default     = "persistent"
@@ -45,26 +41,27 @@ variable "persistent_storage_class" {
 variable "existing_nfs_share" {
   description = "NFS shares"
   type = map(object({
-    path        = string
     size        = optional(string, "50Gi")
-    user_uid    = number
-    group_uid   = number
+    user_id     = number
+    group_id    = number
     access_mode = optional(string, "ReadOnlyMany")
+    server      = string
+    path        = string
   }))
 }
 
-variable "objstore" {
-  description = "Object Store User & Group UIDs"
+variable "objstore_credentials" {
+  description = "Object Store User & Group ids"
   type = object({
     user_id  = number
     group_id = number
   })
 }
 
-variable "monitoring" {
-  description = "Monitoring User & Group UIDs"
+variable "monitoring_credentials" {
+  description = "Monitoring User & Group ids"
   type = object({
-    user_uid  = number
-    group_uid = number
+    user_id  = number
+    group_id = number
   })
 }

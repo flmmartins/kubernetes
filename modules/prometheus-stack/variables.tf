@@ -62,8 +62,8 @@ variable "grana_storage_size" {
 variable "security_context" {
   description = "Security context for the prometheus stack"
   type = object({
-    user_uid  = optional(number)
-    group_uid = optional(number)
+    user_id  = optional(number)
+    group_id = optional(number)
   })
   default = {}
 }

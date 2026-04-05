@@ -1,7 +1,7 @@
 locals {
   komga_app_name = "komga-reader"
   komga_port     = 25600
-  komga_url      = "reader.${var.public_domain}"
+  komga_url      = "reader.${var.domain}"
   komga_share    = "ebooks-comics"
   komga_common_labels = {
     part-of = "reader"
@@ -83,9 +83,9 @@ resource "kubernetes_deployment_v1" "komga" {
       spec {
         security_context {
           run_as_non_root        = true
-          run_as_user            = var.existing_nfs_share[local.komga_share].user_uid
-          run_as_group           = var.existing_nfs_share[local.komga_share].group_uid
-          fs_group               = var.existing_nfs_share[local.komga_share].group_uid
+          run_as_user            = var.existing_nfs_share[local.komga_share].user_id
+          run_as_group           = var.existing_nfs_share[local.komga_share].group_id
+          fs_group               = var.existing_nfs_share[local.komga_share].group_id
           fs_group_change_policy = "OnRootMismatch" #Only applicable to dynamic
         }
         container {
