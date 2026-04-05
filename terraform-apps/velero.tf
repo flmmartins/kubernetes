@@ -3,14 +3,8 @@ locals {
   velero_common_labels = {
     part-of = "backup"
   }
-  velero_vault_secret_path    = format("%s/%s", var.onepassword_vault_path, minio_iam_user.velero.name)
+  velero_vault_secret_path    = format("%s/%s", var.onepassword_vault_path, local.velero_app_name)
   velero_service_account_name = local.velero_app_name
-}
-
-# Helm chart only accepts Minio root like this. Other options with environment variables are very opionated and horrible
-# This is the minio root cert for TLS. While mino presents the leaf, clients need to present root and intermediate as well
-data "vault_generic_secret" "minio_ca" {
-  path = "pki/apps/root/cert/ca_chain"
 }
 
 resource "kubernetes_namespace_v1" "velero" {
@@ -20,74 +14,9 @@ resource "kubernetes_namespace_v1" "velero" {
   }
 }
 
-resource "minio_s3_bucket" "velero" {
-  depends_on = [helm_release.minio]
-  bucket     = local.velero_app_name
-}
-
-resource "minio_iam_user" "velero" {
-  name = local.velero_app_name
-}
-
-resource "minio_iam_policy" "velero" {
-  name = local.velero_app_name
-
-  policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Effect   = "Allow",
-        Action   = ["s3:ListBucket", "s3:GetBucketLocation"],
-        Resource = [minio_s3_bucket.velero.arn]
-      },
-      {
-        Effect = "Allow",
-        Action = [
-          "s3:PutObject",
-          "s3:GetObject",
-          "s3:DeleteObject",
-          "s3:PutObjectTagging",
-          "s3:AbortMultipartUpload",
-          "s3:ListMultipartUploadParts"
-        ],
-        Resource = ["${minio_s3_bucket.velero.arn}/*"]
-      }
-    ]
-  })
-}
-
-resource "minio_iam_user_policy_attachment" "velero" {
-  user_name   = minio_iam_user.velero.id
-  policy_name = minio_iam_policy.velero.id
-}
-
-resource "minio_ilm_policy" "velero" {
-  bucket = minio_s3_bucket.velero.bucket
-
-  rule {
-    id         = "erase-after-time"
-    status     = "Enabled"
-    expiration = "30d"
-    filter     = "*"
-  }
-}
-
-# Don't store secret in state
-resource "null_resource" "velero" {
-  depends_on = [minio_iam_user_policy_attachment.velero]
-  triggers = {
-    user = minio_iam_user.velero.name
-    kv   = var.onepassword_vault_path
-  }
-  provisioner "local-exec" {
-    command = "bash ${path.module}/create-minio-credentials.sh ${minio_iam_user.velero.name} ${var.onepassword_vault_path}"
-  }
-}
-
 resource "vault_policy" "velero" {
-  depends_on = [null_resource.velero]
-  name       = local.velero_app_name
-  policy     = <<EOT
+  name   = local.velero_app_name
+  policy = <<EOT
 path "${local.velero_vault_secret_path}" { capabilities = ["read"] }
 EOT
 }

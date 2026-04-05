@@ -53,11 +53,11 @@ variable "existing_nfs_share" {
   }))
 }
 
-variable "minio" {
-  description = "Minio User & Group UIDs"
+variable "objstore" {
+  description = "Object Store User & Group UIDs"
   type = object({
-    user_uid  = number
-    group_uid = number
+    user_id  = number
+    group_id = number
   })
 }
 

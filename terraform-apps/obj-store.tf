@@ -13,8 +13,8 @@ module "seaweedfs" {
   }
 
   security_context = {
-    user_id  = var.minio.user_uid
-    group_id = var.minio.group_uid
+    user_id  = var.objstore.user_id
+    group_id = var.objstore.group_id
   }
   s3api_url = local.seaweedfs_s3api_url
   s3api_ingress_annotations = {

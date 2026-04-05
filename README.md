@@ -198,12 +198,11 @@ Since Vault installation is by far the most complex component a separate README 
     [ Cert Manager uses Hashicorp Vault to sign the certificate and manages rotation]
 
 ### Internal Vs External Certificates
-Ideally you want one set of certificates for internal TLS of vault or minio and another set for external facing certificate however since I only have one set is all done with the same certificate
+Ideally you want one set of certificates for internal TLS of vault and another set for external facing certificate however since I only have one set is all done with the same certificate
 
 # Backups
 
-We use Velero for Backups. It authenticates with minio to create the necessary assets using environment variables
-
+We use Velero for Backups. It authenticates with an objet store to create the necessary assets using environment variables
 
 # Terraform Apps
 
