@@ -10,13 +10,14 @@ module "kube_prometheus_stack" {
     vault_csi_ca_cert_path = var.vault_csi_ca_cert_path
     secret_path            = format("%s/grafana", var.onepassword_vault_path)
   }
-  grafana_url = local.grafana_url
+
+  persistent_storage_class_name = var.persistent_storage_class
   security_context = {
     user_id  = var.monitoring_credentials.user_id
     group_id = var.monitoring_credentials.group_id
   }
 
-  storage_class_name = var.persistent_storage_class
+  grafana_url = local.grafana_url
   grafana_ingress_annotations = {
     "kubernetes.io/tls-acme"      = "true"
     "cert-manager.io/common-name" = local.grafana_url

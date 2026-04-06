@@ -36,7 +36,7 @@ variable "vault_password" {
 # -----------------------------------------------------------------------------
 # Storage
 # -----------------------------------------------------------------------------
-variable "storage_class_name" {
+variable "persistent_storage_class_name" {
   description = "Storage class name for prometheus and alertmanager"
   type        = string
 }

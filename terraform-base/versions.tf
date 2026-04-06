@@ -16,26 +16,6 @@ variable "nginx_chart_version" {
   default     = "4.14.2"
 }
 
-variable "vault_chart_version" {
-  description = "Hashicorp Vault Chart Version"
-  default     = "0.32.0"
-}
-
-variable "csi_driver_nfs_version" {
-  description = "CSI Driver NFS Chart Version"
-  default     = "4.12.1"
-}
-
-variable "onepassword_chart_version" {
-  description = "1password Connect Chart Version"
-  default     = "2.2.1"
-}
-
-variable "vault_plugin_onepasswordconnect_version" {
-  description = "Version of 1password connect vault plugin"
-  default     = "1.1.0"
-}
-
 variable "cert_manager_version" {
   description = "Cert Manager Version"
   default     = "v1.19.2"

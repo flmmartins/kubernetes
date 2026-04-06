@@ -69,6 +69,6 @@ No modules.
 | Name | Description |
 |------|-------------|
 | <a name="output_admin_url"></a> [admin\_url](#output\_admin\_url) | SeaweedFS Admin UI |
-| <a name="output_s3_endpoint"></a> [s3\_endpoint](#output\_s3\_endpoint) | S3-compatible endpoint |
-| <a name="output_s3_internal_endpoint"></a> [s3\_internal\_endpoint](#output\_s3\_internal\_endpoint) | S3-compatible internal to the cluster |
+| <a name="output_s3_kubernetes_svc"></a> [s3\_kubernetes\_svc](#output\_s3\_kubernetes\_svc) | S3-compatible internal to the cluster |
+| <a name="output_s3_url"></a> [s3\_url](#output\_s3\_url) | S3-compatible endpoint |
 <!-- END_TF_DOCS -->

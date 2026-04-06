@@ -20,12 +20,12 @@ resource "kubernetes_namespace_v1" "cert-manager" {
 }
 
 resource "vault_kubernetes_auth_backend_role" "cert-manager" {
-  backend                          = vault_auth_backend.kubernetes.path
+  backend                          = module.vault.kubernetes_backend
   role_name                        = "cert-manager"
   bound_service_account_names      = ["cert-manager"]
   bound_service_account_namespaces = ["cert-manager"]
   token_max_ttl                    = 1440 #24H
-  token_policies                   = [vault_policy.issuer-apps-tamrieltower-local.name, vault_policy.cloudflare_api_token.name]
+  token_policies                   = [module.vault.pki_policy, vault_policy.cloudflare_api_token.name]
 }
 
 resource "helm_release" "cert-manager" {
@@ -137,8 +137,8 @@ resource "kubernetes_manifest" "private_issuer" {
 
     spec = {
       vault = {
-        server   = var.vault_address_internal
-        path     = "${vault_mount.pki-apps-root.path}/sign/${vault_pki_secret_backend_role.apps-tamrieltower-local.name}"
+        server   = module.vault-install.kubernetes_svc
+        path     = module.vault.pki_sign_path
         caBundle = base64encode(data.kubernetes_config_map_v1.vault_ca.data["ca.crt"])
         auth = {
           kubernetes = {
@@ -155,7 +155,6 @@ resource "kubernetes_manifest" "private_issuer" {
 }
 
 resource "kubernetes_manifest" "cloudflare-api-token" {
-  depends_on = [helm_release.vault]
   manifest = {
     apiVersion = "secrets-store.csi.x-k8s.io/v1"
     kind       = "SecretProviderClass"
@@ -170,7 +169,7 @@ resource "kubernetes_manifest" "cloudflare-api-token" {
       parameters = {
         roleName        = vault_kubernetes_auth_backend_role.cert-manager.role_name
         vaultAddress    = var.vault_address_internal
-        vaultCACertPath = "${local.vault_csi_cert_mounth_path}/vault.ca"
+        vaultCACertPath = module.vault-install.csi_ca_path
         objects         = <<EOT
 - objectName: ${local.cloudflare_secret_name}
   secretPath: ${var.onepassword_vault_path}/${local.cloudflare_secret_name}

@@ -8,7 +8,7 @@ module "velero" {
       name = "talos-truenas"
       config = {
         region = "seaweedfs"
-        s3Url  = module.seaweedfs.s3_internal_endpoint
+        s3Url  = module.seaweedfs.s3_kubernetes_svc
       }
     }
   ]

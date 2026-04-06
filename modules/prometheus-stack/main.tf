@@ -105,7 +105,7 @@ resource "helm_release" "this" {
         storageSpec:
           volumeClaimTemplate:
             spec:
-              storageClassName: ${var.storage_class_name}
+              storageClassName: ${var.persistent_storage_class_name}
               accessModes:
                 - ReadWriteOnce
               resources:
@@ -132,7 +132,7 @@ resource "helm_release" "this" {
         storage:
           volumeClaimTemplate:
             spec:
-              storageClassName: ${var.storage_class_name}
+              storageClassName: ${var.persistent_storage_class_name}
               accessModes:
                 - ReadWriteOnce
               resources:
@@ -156,7 +156,7 @@ resource "helm_release" "this" {
           secretName: ${split(".", var.grafana_url)[0]}-tls
       persistence:
         enabled: true
-        storageClassName: ${var.storage_class_name}
+        storageClassName: ${var.persistent_storage_class_name}
         accessModes:
           - ReadWriteOnce
         size: ${var.grana_storage_size}
