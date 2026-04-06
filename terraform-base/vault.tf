@@ -30,9 +30,9 @@ resource "helm_release" "vault" {
       securityContext:
         pod:
           runAsNonRoot: true
-          runAsUser: ${var.vault_user_uid}
-          runAsGroup: ${var.vault_group_uid}
-          fsGroup: ${var.vault_group_uid}
+          runAsUser: ${var.vault_user_id}
+          runAsGroup: ${var.vault_group_id}
+          fsGroup: ${var.vault_group_id}
           fsGroupChangePolicy: "OnRootMismatch"
         container:
           allowPrivilegeEscalation: false
@@ -108,9 +108,9 @@ resource "helm_release" "vault" {
         securityContext:
           pod:
             runAsNonRoot: true
-            runAsUser: ${var.vault_user_uid}
-            runAsGroup: ${var.vault_group_uid}
-            fsGroup: ${var.vault_group_uid}
+            runAsUser: ${var.vault_user_id}
+            runAsGroup: ${var.vault_group_id}
+            fsGroup: ${var.vault_group_id}
             fsGroupChangePolicy: "OnRootMismatch"
           container: #vault defaults
             allowPrivilegeEscalation: false
@@ -247,9 +247,9 @@ resource "vault_generic_endpoint" "op_connect_mount" {
     }
   })
   # Due to data being sensitive it always changes
-  #lifecycle {
-  #  ignore_changes = [data_json]
-  #}
+  lifecycle {
+    ignore_changes = [data_json]
+  }
 }
 
 resource "vault_generic_endpoint" "onepassword-connect-config" {

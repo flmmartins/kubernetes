@@ -31,12 +31,12 @@ variable "vault_address_internal" {
   default     = "https://vault.vault:8200"
 }
 
-variable "vault_user_uid" {
+variable "vault_user_id" {
   description = "Vault User UID"
   default     = ""
 }
 
-variable "vault_group_uid" {
+variable "vault_group_id" {
   description = "Vault Group UID"
   default     = ""
 }

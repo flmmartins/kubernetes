@@ -75,3 +75,30 @@ variable "vault_password" {
   })
   default = null
 }
+
+# =============================================================================
+# Resource Variables
+# =============================================================================
+variable "requests_cpu" {
+  description = "CPU request for the pod (e.g. '50m', '1')."
+  type        = string
+  default     = "50m"
+}
+
+variable "requests_memory" {
+  description = "Memory request for the pod (e.g. '100Mi', '1Gi')."
+  type        = string
+  default     = "100Mi"
+}
+
+variable "limits_cpu" {
+  description = "CPU limit for the pod (e.g. '250m', '1')."
+  type        = string
+  default     = "250m"
+}
+
+variable "limits_memory" {
+  description = "Memory limit for the pod (e.g. '256Mi', '1Gi')."
+  type        = string
+  default     = "256Mi"
+}

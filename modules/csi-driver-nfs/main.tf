@@ -31,39 +31,39 @@ resource "helm_release" "this" {
       resources:
         csiProvisioner:
           requests:
-            cpu: 25m
-            memory: 32Mi
+            cpu: ${var.controller_csi_provisioner_requests_cpu}
+            memory: ${var.controller_csi_provisioner_requests_memory}
           limits:
-            cpu: 100m
-            memory: 128Mi
+            cpu: ${var.controller_csi_provisioner_limits_cpu}
+            memory: ${var.controller_csi_provisioner_limits_memory}
         csiResizer:
           requests:
-            cpu: 25m
-            memory: 32Mi
+            cpu: ${var.controller_csi_resizer_requests_cpu}
+            memory: ${var.controller_csi_resizer_requests_memory}
           limits:
-            cpu: 100m
-            memory: 128Mi
+            cpu: ${var.controller_csi_resizer_limits_cpu}
+            memory: ${var.controller_csi_resizer_limits_memory}
         csiSnapshotter:
           requests:
-            cpu: 15m
-            memory: 32Mi
+            cpu: ${var.controller_csi_snapshotter_requests_cpu}
+            memory: ${var.controller_csi_snapshotter_requests_memory}
           limits:
-            cpu: 75m
-            memory: 96Mi
+            cpu: ${var.controller_csi_snapshotter_limits_cpu}
+            memory: ${var.controller_csi_snapshotter_limits_memory}
         livenessProbe:
           requests:
-            cpu: 10m
-            memory: 16Mi
+            cpu: ${var.controller_liveness_probe_requests_cpu}
+            memory: ${var.controller_liveness_probe_requests_memory}
           limits:
-            cpu: 50m
-            memory: 32Mi
+            cpu: ${var.controller_liveness_probe_limits_cpu}
+            memory: ${var.controller_liveness_probe_limits_memory}
         nfs:
           requests:
-            cpu: 25m
-            memory: 32Mi
+            cpu: ${var.controller_nfs_requests_cpu}
+            memory: ${var.controller_nfs_requests_memory}
           limits:
-            cpu: 100m
-            memory: 128Mi
+            cpu: ${var.controller_nfs_limits_cpu}
+            memory: ${var.controller_nfs_limits_memory}
       # Do not schedule pods on same node
       affinity:
         podAntiAffinity:
@@ -81,25 +81,25 @@ resource "helm_release" "this" {
       resources:
         livenessProbe:
           requests:
-            cpu: 10m
-            memory: 28Mi
+            cpu: ${var.node_liveness_probe_requests_cpu}
+            memory: ${var.node_liveness_probe_requests_memory}
           limits:
-            cpu: 50m
-            memory: 56Mi
+            cpu: ${var.node_liveness_probe_limits_cpu}
+            memory: ${var.node_liveness_probe_limits_memory}
         nodeDriverRegistrar:
           requests:
-            cpu: 10m
-            memory: 28Mi
+            cpu: ${var.node_driver_registrar_requests_cpu}
+            memory: ${var.node_driver_registrar_requests_memory}
           limits:
-            cpu: 50m
-            memory: 56Mi
+            cpu: ${var.node_driver_registrar_limits_cpu}
+            memory: ${var.node_driver_registrar_limits_memory}
         nfs:
           requests:
-            cpu: 25m
-            memory: 64Mi
+            cpu: ${var.node_nfs_requests_cpu}
+            memory: ${var.node_nfs_requests_memory}
           limits:
-            cpu: 100m
-            memory: 128Mi
+            cpu: ${var.node_nfs_limits_cpu}
+            memory: ${var.node_nfs_limits_memory}
     customLabels: ${jsonencode(local.labels)}
     storageClass:
       create: false #Not all options are present

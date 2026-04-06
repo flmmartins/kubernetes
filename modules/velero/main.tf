@@ -111,11 +111,11 @@ resource "helm_release" "this" {
     podLabels: ${jsonencode(merge(local.labels, { "component" = "velero" }))}
     resources:
       requests:
-        cpu: "50m"
-        memory: "100Mi"
+        cpu: ${var.requests_cpu}
+        memory: ${var.requests_memory}
       limits:
-        cpu: "250m"
-        memory: "256Mi"
+        cpu: ${var.limits_cpu}
+        memory: ${var.limits_memory}
   %{~if var.vault_password != null~}
     extraVolumeMounts:
     - name: csi-secret-driver
