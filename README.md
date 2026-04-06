@@ -52,6 +52,8 @@ Where COMMAND can be plan, apply....
 
 Teoretically since now my secrets are not text-clear I could commit to git but better not provide any information on my Vault Name to the outside
 
+Besides that for apps, I provide a terraform.tfars with some maps. Sadly it's not easy to provider map of objects using TF_VAR sintax
+
 **Old way of running**
 
 Before having integration with 1password I did like this:

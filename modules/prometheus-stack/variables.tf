@@ -21,7 +21,7 @@ variable "retention_days" {
 }
 
 variable "vault_password" {
-  description = "Object containing vault data to read grafana password from vault"
+  description = "Object containing vault data to read grafana password from vault. If not, provided a password will be generated"
   type = object({
     secret_path            = optional(string)
     vault_address          = optional(string)
@@ -30,7 +30,7 @@ variable "vault_password" {
     username_field = optional(string, "username")
     password_field = optional(string, "password")
   })
-  default = {}
+  default = null
 }
 
 # -----------------------------------------------------------------------------
@@ -65,7 +65,7 @@ variable "security_context" {
     user_id  = optional(number)
     group_id = optional(number)
   })
-  default = {}
+  default = null
 }
 
 # =============================================================================

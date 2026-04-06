@@ -118,13 +118,13 @@ resource "kubernetes_manifest" "this" {
         vaultAddress    = var.vault_password.vault_address
         vaultCACertPath = var.vault_password.vault_csi_ca_cert_path
         objects         = <<EOT
-- objectName: ${var.vault_password.admin_username_field}
+- objectName: admin-username
   secretPath: ${var.vault_password.secret_path}
   secretKey: ${var.vault_password.admin_username_field}
-- objectName: ${var.vault_password.admin_password_field}
+- objectName: admin-password
   secretPath: ${var.vault_password.secret_path}
   secretKey: ${var.vault_password.admin_password_field}
-- objectName: ${var.vault_password.s3_admin_credentials_json_field}
+- objectName: s3-credentials-json
   secretPath: ${var.vault_password.secret_path}
   secretKey: ${var.vault_password.s3_admin_credentials_json_field}
         EOT
@@ -134,8 +134,8 @@ resource "kubernetes_manifest" "this" {
         type       = "Opaque"
         data = [
           {
-            objectName = var.vault_password.s3_admin_credentials_json_field
-            key        = var.vault_password.s3_admin_credentials_json_field
+            objectName = "s3-credentials-json"
+            key        = "seaweedfs_s3_config" # This key has to be hardcoded bc it's the only that seadweed accepts
           }
         ]
         },
@@ -144,11 +144,11 @@ resource "kubernetes_manifest" "this" {
           type       = "Opaque"
           data = [
             {
-              objectName = var.vault_password.admin_username_field
+              objectName = "admin-username"
               key        = var.vault_password.admin_username_field
             },
             {
-              objectName = var.vault_password.admin_password_field
+              objectName = "admin-password"
               key        = var.vault_password.admin_password_field
             }
           ]
@@ -298,6 +298,7 @@ resource "helm_release" "this" {
       enableAuth: true  # enables access key / secret key authentication
       existingConfigSecret: ${local.s3_k8s_secret_name}
       serviceAccountName: ${local.service_account} #this is the default account but chart has a bug
+    %{~if var.vault_password != null~}
       extraVolumes: |
         - name: csi-secret-driver-for-seaweedfs-credentials
           csi:
@@ -309,6 +310,7 @@ resource "helm_release" "this" {
         - name: csi-secret-driver-for-seaweedfs-credentials
           mountPath: /mnt/secrets-store
           readOnly: true
+    %{~endif~}
       logs:
         type: persistentVolumeClaim
         size: 1G
@@ -340,16 +342,7 @@ resource "helm_release" "this" {
                       values:
                         - s3
                 topologyKey: kubernetes.io/hostname
-      createBuckets:
-      - name: terraform
-        anonymousRead: false
-        objectLock: true
-        versioning: Enabled
-        ttl: 90d
-      - name: velero
-        anonymousRead: false
-        versioning: Enabled
-        ttl: 30d
+      createBuckets: ${jsonencode(var.buckets)}
 
     # -------------------------------------------------------------------------
     # Admin UI
@@ -357,10 +350,12 @@ resource "helm_release" "this" {
     admin:
       enabled: true
       port: ${var.admin_ui_port}
+    %{~if var.vault_password != null~}
       secret:
         existingSecret: ${local.admin_k8s_secret_name}
         userKey: ${var.vault_password.admin_username_field}
         pwKey: ${var.vault_password.admin_password_field}
+    %{~endif~}
       ingress:
         enabled: true
         className: "nginx"

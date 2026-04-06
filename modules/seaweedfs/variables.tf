@@ -34,8 +34,45 @@ variable "admin_ui_ingress_annotations" {
   default = {}
 }
 
+variable "buckets" {
+  description = "List of buckets to add to seadweedfs"
+  type = list(object({
+    name          = string
+    ttl           = string
+    anonymousRead = optional(bool, false)
+    objectLock    = optional(bool, false)
+    versioning    = optional(string, "Enabled")
+  }))
+  default = [{
+    name       = "terraform"
+    objectLock = true
+    ttl        = "90d"
+  }]
+}
+
 variable "vault_password" {
-  description = "Object containing vault data to read grafana password from vault"
+  description = <<-EOT
+    Vault configuration to read SeaweedFS credentials from.
+    Supports reading admin credentials and S3 config JSON from a Vault secret.
+    If this is not provided, secrets will be auto generated for s3 and seadweedfs admin secret will be empty
+
+    Example:
+    vault_password = {
+      secret_path   = "secret/seaweedfs"
+      vault_address = "https://vault.internal:8200"
+
+      # Optional overrides (these are the defaults):
+      vault_csi_ca_cert_path          = "/vault/tls/vault.ca"
+      admin_username_field            = "Secret Field which represents admin user, username is default"
+      admin_password_field            = "Secret Field which represents admin pwd, password is default"
+      s3_admin_credentials_json_field = "Secret Field which represents s3 object store credentials, defaults to seaweedfs_s3_config, This is independent from admin credentials"
+    }
+
+    The s3_admin_credentials_json_field must point to a Vault field containing
+    the SeaweedFS S3 config in JSON format. Format has to be:
+    seaweedfs_s3_config = {"identities":[{"name":"admin","credentials":[{"accessKey”:” ACCESID,”secretKey”:”SECRET”}],”actions":["Admin","Read","Write"]}]}]}
+
+  EOT
   type = object({
     secret_path            = optional(string)
     vault_address          = optional(string)
@@ -46,7 +83,7 @@ variable "vault_password" {
     # The S3 has to be in json format and to interact with CSI is best to store the json
     s3_admin_credentials_json_field = optional(string, "seaweedfs_s3_config")
   })
-  default = {}
+  default = null
 }
 
 # -----------------------------------------------------------------------------
@@ -75,7 +112,7 @@ variable "security_context" {
     user_id  = optional(number)
     group_id = optional(number)
   })
-  default = {}
+  default = null
 }
 
 # =============================================================================
