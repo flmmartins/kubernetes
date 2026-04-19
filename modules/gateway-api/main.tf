@@ -1,5 +1,15 @@
+terraform {
+  required_providers {
+    helm = {
+      source = "hashicorp/helm"
+    }
+    kubernetes = {
+      source = "hashicorp/kubernetes"
+    }
+  }
+}
+
 locals {
-  name = "1password-connect"
   labels = {
     part-of = "loadbalancer"
   }
@@ -28,7 +38,7 @@ resource "helm_release" "metallb" {
   values = [
     <<-EOF
     controller:
-      additionalLabels: ${jsonencode(local.labels)}
+      additionalLabels: ${jsonencode(merge(local.labels, { "component" = "loadbalancer" }))}
       resources:
         requests:
           memory: ${var.controller_memory_request}
