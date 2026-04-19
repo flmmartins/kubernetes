@@ -2,6 +2,16 @@ locals {
   vault_url = "vault.${var.private_domain}"
 }
 
+resource "kubernetes_priority_class_v1" "priority_class_critical" {
+  metadata {
+    name = var.priority_class
+  }
+
+  value          = 900000000
+  global_default = false
+  description    = "Critical infrastructure pods"
+}
+
 module "onepassword" {
   depends_on = [helm_release.metrics-server]
 
@@ -34,6 +44,7 @@ module "vault-install" {
   }
 
   persistent_storage_class_name = module.csi-driver-nfs[0].persistent_storage_class
+  priority_class                = var.priority_class
 }
 
 
@@ -53,3 +64,4 @@ module "vault" {
     role_name    = "apps-tamrieltower-local"
   }
 }
+

@@ -58,7 +58,7 @@ resource "kubernetes_manifest" "nginx-ip-address-pool" {
     kind       = "IPAddressPool"
     metadata = {
       name      = "default"
-      namespace = kubernetes_namespace_v1.metallb.metadata[0].name
+      namespace = module.gateway-api.metallb_namespace
       labels = {
         "part-of" = "ingress-controller"
       }
@@ -76,7 +76,7 @@ resource "kubernetes_manifest" "nginx-l2-advertisement" {
     kind       = "L2Advertisement"
     metadata = {
       name      = "default"
-      namespace = kubernetes_namespace_v1.metallb.metadata[0].name
+      namespace = module.gateway-api.metallb_namespace
       labels = {
         "part-of" = "ingress-controller"
       }
