@@ -8,7 +8,7 @@ No requirements.
 | Name | Version |
 |------|---------|
 | <a name="provider_helm"></a> [helm](#provider\_helm) | n/a |
-| <a name="provider_terraform"></a> [terraform](#provider\_terraform) | n/a |
+| <a name="provider_kubernetes"></a> [kubernetes](#provider\_kubernetes) | n/a |
 
 ## Modules
 
@@ -19,12 +19,14 @@ No modules.
 | Name | Type |
 |------|------|
 | [helm_release.this](https://registry.terraform.io/providers/hashicorp/helm/latest/docs/resources/release) | resource |
-| [terraform_data.create-tls-cert](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data) | resource |
+| [kubernetes_manifest.certmanager_vault_tls](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/manifest) | resource |
+| [kubernetes_namespace_v1.this](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/namespace_v1) | resource |
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_certificate_issuer"></a> [certificate\_issuer](#input\_certificate\_issuer) | Cert Manager certificate issuer to issue the vault certificate | `any` | `null` | no |
 | <a name="input_chart_version"></a> [chart\_version](#input\_chart\_version) | Hashicorp Vault Chart Version | `string` | `"0.32.0"` | no |
 | <a name="input_csi_limits_cpu"></a> [csi\_limits\_cpu](#input\_csi\_limits\_cpu) | CPU limit for the csi container (e.g. '100m', '1'). | `string` | `"100m"` | no |
 | <a name="input_csi_limits_memory"></a> [csi\_limits\_memory](#input\_csi\_limits\_memory) | Memory limit for the csi container (e.g. '600Mi', '1Gi'). | `string` | `"600Mi"` | no |

@@ -1,226 +1,30 @@
-locals {
-  default_cert_issuer_name = "letsencrypt-issuer"
-  cloudflare_secret_name   = "cloudflare-api-token"
-  cloudflare_secret_key    = "password"
-}
+module "cert-manager" {
+  source = "../modules/cert-manager"
 
-resource "vault_policy" "cloudflare_api_token" {
-  name   = local.cloudflare_secret_name
-  policy = <<EOT
-path "op/vaults/+/items/${local.cloudflare_secret_name}" {
-  capabilities = ["read"]
-}
-EOT
-}
+  default_cert_issuer = "letsencrypt-issuer"
 
-resource "kubernetes_namespace_v1" "cert-manager" {
-  metadata {
-    name = "cert-manager"
+  letsencrypt_issuer = {
+    issuer_name = "letsencrypt-issuer"
+    dns_provider_vault_password = {
+      vault_address = var.vault_address_internal
+      secret_path   = format("%s/cloudflare-api-token", var.onepassword_vault_path)
+    }
+    dns_provider = {
+      name   = "cloudflare"
+      e-mail = var.cloudflare_email
+    }
+  }
+
+  uploaded_ca_issuer = {
+    certificate_cert = var.internal_ca_certificate
+    certificate_key  = var.internal_ca_key
+  }
+
+  vault_pki_issuer = {
+    ca_file   = base64encode(var.internal_ca_certificate)
+    server    = module.vault-install.kubernetes_svc
+    sign_path = module.vault.pki_sign_path
+    policy    = module.vault.pki_policy
   }
 }
 
-resource "vault_kubernetes_auth_backend_role" "cert-manager" {
-  backend                          = module.vault.kubernetes_backend
-  role_name                        = "cert-manager"
-  bound_service_account_names      = ["cert-manager"]
-  bound_service_account_namespaces = ["cert-manager"]
-  token_max_ttl                    = 1440 #24H
-  token_policies                   = [module.vault.pki_policy, vault_policy.cloudflare_api_token.name]
-}
-
-resource "helm_release" "cert-manager" {
-  name       = "cert-manager"
-  namespace  = kubernetes_namespace_v1.cert-manager.metadata[0].name
-  repository = "https://charts.jetstack.io"
-  version    = var.cert_manager_version
-  chart      = "cert-manager"
-  values = [
-    <<-EOF
-    crds:
-      enabled: true
-    replicaCount: 2
-    podLabels:
-      component: cert-manager
-      part-of: certificates
-    podDisruptionBudget:
-      enabled: true
-      minAvailable: 1
-    affinity:
-      podAntiAffinity:
-        preferredDuringSchedulingIgnoredDuringExecution:
-        - weight: 100
-          podAffinityTerm:
-            labelSelector:
-              matchExpressions:
-              - key: component
-                operator: In
-                values:
-                - cert-manager
-            topologyKey: kubernetes.io/hostname
-    resources:
-      requests:
-        memory: 25Mi
-        cpu: 5m
-      limits:
-        memory: 100Mi
-        cpu: 20m
-    ingressShim:
-      defaultIssuerName: ${local.default_cert_issuer_name}
-      defaultIssuerKind: ClusterIssuer
-      defaultIssuerGroup: cert-manager.io
-    webhook:
-      resources:
-        requests:
-          memory: 75Mi
-          cpu: 5m
-        limits:
-          memory: 120Mi
-          cpu: 20m
-    cainjector:
-      resources:
-        requests:
-          memory: 90Mi
-          cpu: 20m
-        limits:
-          memory: 200Mi
-          cpu: 100m
-    # Volumes are defined only so CSI Secret Driver can run
-    volumeMounts:
-      - name: csi-secret-driver-for-cloudflare-token
-        mountPath: '/mnt/secrets-store'
-        readOnly: true
-    volumes:
-      - name: csi-secret-driver-for-cloudflare-token
-        csi:
-          driver: 'secrets-store.csi.k8s.io'
-          readOnly: true
-          volumeAttributes:
-            secretProviderClass: ${kubernetes_manifest.cloudflare-api-token.manifest.metadata.name}
-  EOF
-  ]
-}
-
-resource "kubernetes_secret_v1" "cert-manager-sa-token" {
-  metadata {
-    name      = "cert-manager-sa-token"
-    namespace = kubernetes_namespace_v1.cert-manager.metadata[0].name
-    annotations = {
-      "kubernetes.io/service-account.name" = "cert-manager"
-    }
-    labels = {
-      part-of   = "certificates"
-      component = "service-account"
-    }
-  }
-  type = "kubernetes.io/service-account-token"
-}
-
-data "kubernetes_config_map_v1" "vault_ca" {
-  metadata {
-    name      = "kube-root-ca.crt"
-    namespace = kubernetes_namespace_v1.cert-manager.metadata[0].name
-  }
-}
-
-resource "kubernetes_manifest" "private_issuer" {
-  manifest = {
-    apiVersion = "cert-manager.io/v1"
-    kind       = "ClusterIssuer"
-
-    metadata = {
-      name = var.private_cert_issuer
-      labels = {
-        part-of   = "certificates"
-        component = "issuer"
-      }
-    }
-
-    spec = {
-      vault = {
-        server   = module.vault-install.kubernetes_svc
-        path     = module.vault.pki_sign_path
-        caBundle = base64encode(data.kubernetes_config_map_v1.vault_ca.data["ca.crt"])
-        auth = {
-          kubernetes = {
-            role = vault_kubernetes_auth_backend_role.cert-manager.role_name
-            secretRef = {
-              name = kubernetes_secret_v1.cert-manager-sa-token.metadata[0].name
-              key  = "token"
-            }
-          }
-        }
-      }
-    }
-  }
-}
-
-resource "kubernetes_manifest" "cloudflare-api-token" {
-  manifest = {
-    apiVersion = "secrets-store.csi.x-k8s.io/v1"
-    kind       = "SecretProviderClass"
-
-    metadata = {
-      name      = local.cloudflare_secret_name
-      namespace = kubernetes_namespace_v1.cert-manager.metadata[0].name
-    }
-
-    spec = {
-      provider = "vault"
-      parameters = {
-        roleName        = vault_kubernetes_auth_backend_role.cert-manager.role_name
-        vaultAddress    = var.vault_address_internal
-        vaultCACertPath = module.vault-install.csi_ca_path
-        objects         = <<EOT
-- objectName: ${local.cloudflare_secret_name}
-  secretPath: ${var.onepassword_vault_path}/${local.cloudflare_secret_name}
-  secretKey: ${local.cloudflare_secret_key}
-        EOT
-      }
-      # Will become the following K8s secret
-      secretObjects = [{
-        secretName = local.cloudflare_secret_name
-        type       = "Opaque"
-        data = [{
-          objectName = local.cloudflare_secret_name
-          key        = local.cloudflare_secret_key
-        }]
-      }]
-    }
-  }
-}
-
-resource "kubernetes_manifest" "letsencrypt_issuer" {
-  manifest = {
-    apiVersion = "cert-manager.io/v1"
-    kind       = "ClusterIssuer"
-
-    metadata = {
-      name = local.default_cert_issuer_name
-      labels = {
-        part-of   = "certificates"
-        component = "issuer"
-      }
-    }
-
-    spec = {
-      acme = {
-        server = "https://acme-v02.api.letsencrypt.org/directory"
-        email  = var.cloudflare_email
-        privateKeySecretRef = {
-          name = "letsencrypt-dns-account-key"
-        }
-        solvers = [{
-          dns01 = {
-            cloudflare = {
-              # Watch out - this can be either api key or token
-              apiTokenSecretRef = {
-                name = local.cloudflare_secret_name
-                key  = local.cloudflare_secret_key
-              }
-            }
-          }
-        }]
-      }
-    }
-  }
-}

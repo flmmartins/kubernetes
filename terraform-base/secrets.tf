@@ -28,11 +28,12 @@ module "vault-install" {
   source     = "../modules/hashicorp-vault-install"
 
   install_onepassword_plugin = true
+  certificate_issuer         = module.cert-manager.uploaded_ca_issuer
 
   url = local.vault_url
   ingress_annotations = {
     "kubernetes.io/tls-acme"                       = "true"
-    "cert-manager.io/cluster-issuer"               = var.private_cert_issuer
+    "cert-manager.io/cluster-issuer"               = module.cert-manager.vault_pki_issuer
     "cert-manager.io/common-name"                  = local.vault_url
     "cert-manager.io/dns-names"                    = local.vault_url
     "nginx.ingress.kubernetes.io/backend-protocol" = "HTTPS"

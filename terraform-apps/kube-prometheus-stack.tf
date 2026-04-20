@@ -6,9 +6,8 @@ module "kube_prometheus_stack" {
   source = "../modules/prometheus-stack"
 
   vault_password = {
-    vault_address          = var.vault_address_internal
-    vault_csi_ca_cert_path = var.vault_csi_ca_cert_path
-    secret_path            = format("%s/grafana", var.onepassword_vault_path)
+    vault_address = var.vault_address_internal
+    secret_path   = format("%s/grafana", var.onepassword_vault_path)
   }
 
   persistent_storage_class_name = var.persistent_storage_class

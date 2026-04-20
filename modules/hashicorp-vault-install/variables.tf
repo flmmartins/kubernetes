@@ -43,6 +43,11 @@ variable "priority_class" {
   default     = null
 }
 
+variable "certificate_issuer" {
+  description = "Cert Manager certificate issuer to issue the vault certificate"
+  default     = null
+}
+
 # =============================================================================
 # Resource Variables
 # =============================================================================

@@ -70,7 +70,7 @@ variable "vault_password" {
   type = object({
     secret_path            = optional(string)
     vault_address          = optional(string)
-    vault_csi_ca_cert_path = optional(string, "/vault/tls/vault.ca")
+    vault_csi_ca_cert_path = optional(string, "/vault/tls/ca.crt")
     aws_credentials_field  = optional(string, "notesPlain")
   })
   default = null

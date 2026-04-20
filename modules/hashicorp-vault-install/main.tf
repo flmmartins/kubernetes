@@ -10,23 +10,75 @@ terraform {
 }
 
 locals {
-  name                 = "vault"
-  namespace            = "vault"
+  name = "vault"
+  labels = {
+    part-of = "secrets"
+  }
+  vault_tls_secret     = "vault-ha-tls"
   plugin_folder        = "/usr/local/libexec/vault"
   csi_cert_mounth_path = "/vault/tls"
 }
 
-# Namespace is created on with this script
-resource "terraform_data" "create-tls-cert" {
-  provisioner "local-exec" {
-    command = "bash ${path.module}/create-vault-tls-cert.sh "
+resource "kubernetes_namespace_v1" "this" {
+  metadata {
+    name = local.name
+    labels = merge(local.labels, {
+      "pod-security.kubernetes.io/enforce" = "privileged"
+    })
+  }
+}
+
+# Since I use certificate with Vault CSI. I don't need to replicate this secret accross every namespace
+resource "kubernetes_manifest" "certmanager_vault_tls" {
+  count = var.certificate_issuer != null ? 1 : 0
+
+  manifest = {
+    apiVersion = "cert-manager.io/v1"
+    kind       = "Certificate"
+    metadata = {
+      name      = local.vault_tls_secret
+      namespace = kubernetes_namespace_v1.this.metadata[0].name
+    }
+    spec = {
+      secretName  = local.vault_tls_secret
+      duration    = "8760h"
+      renewBefore = "720h"
+      privateKey = {
+        rotationPolicy = "Always"
+      }
+      usages = [
+        "server auth",
+        "client auth",
+      ]
+      dnsNames = [
+        "vault.${kubernetes_namespace_v1.this.metadata[0].name}",
+        "*.vault.${kubernetes_namespace_v1.this.metadata[0].name}",
+        "vault.${kubernetes_namespace_v1.this.metadata[0].name}.svc",
+        "*.vault.${kubernetes_namespace_v1.this.metadata[0].name}.svc",
+        "vault.${kubernetes_namespace_v1.this.metadata[0].name}.svc.cluster.local",
+        "*.vault.${kubernetes_namespace_v1.this.metadata[0].name}.svc.cluster.local",
+        "vault-internal.${kubernetes_namespace_v1.this.metadata[0].name}.svc",
+        "*.vault-internal.${kubernetes_namespace_v1.this.metadata[0].name}.svc",
+        "vault-internal.${kubernetes_namespace_v1.this.metadata[0].name}.svc.cluster.local",
+        "*.vault-internal.${kubernetes_namespace_v1.this.metadata[0].name}.svc.cluster.local",
+        "*.vault-internal"
+      ],
+
+      ipAddresses = ["127.0.0.1"]
+
+      issuerRef = {
+        name  = var.certificate_issuer
+        kind  = "ClusterIssuer"
+        group = "cert-manager.io"
+      }
+    }
   }
 }
 
 resource "helm_release" "this" {
-  depends_on = [terraform_data.create-tls-cert]
+  depends_on = [kubernetes_manifest.certmanager_vault_tls]
   name       = "vault"
-  namespace  = local.namespace
+  namespace  = kubernetes_namespace_v1.this.metadata[0].name
   repository = "https://helm.releases.hashicorp.com"
   version    = var.chart_version
   chart      = "vault"
@@ -76,11 +128,17 @@ resource "helm_release" "this" {
       volumes:
         - name: tls
           secret:
-            secretName: vault-ha-tls
+            secretName: ${local.vault_tls_secret}
       volumeMounts:
         - name: tls
           mountPath: ${local.csi_cert_mounth_path}
           readOnly: true
+      extraArgs:
+      - -vault-tls-ca-cert=${local.csi_cert_mounth_path}/ca.crt
+      agent:
+        extraEnv:
+        - name: VAULT_CACERT
+          value: ${local.csi_cert_mounth_path}/ca.crt
       resources:
         requests:
           cpu: ${var.csi_requests_cpu}
@@ -117,9 +175,9 @@ resource "helm_release" "this" {
           cpu: ${var.server_limits_cpu}
           memory: ${var.server_limits_memory}
       extraEnvironmentVars:
-        VAULT_CACERT: /vault/userconfig/vault-ha-tls/vault.ca
-        VAULT_TLSCERT: /vault/userconfig/vault-ha-tls/vault.crt
-        VAULT_TLSKEY: /vault/userconfig/vault-ha-tls/vault.key
+        VAULT_CACERT: /vault/userconfig/vault-ha-tls/ca.crt
+        VAULT_TLSCERT: /vault/userconfig/vault-ha-tls/tls.crt
+        VAULT_TLSKEY: /vault/userconfig/vault-ha-tls/tls.key
       statefulSet:
       %{~if var.security_context != null~}
         securityContext:
@@ -136,7 +194,7 @@ resource "helm_release" "this" {
         - name: userconfig-vault-ha-tls
           secret:
             defaultMode: 420
-            secretName: vault-ha-tls # Secret containing certificates
+            secretName: ${local.vault_tls_secret} # Secret containing certificates
         - name: plugins
           emptyDir: {}
       volumeMounts:
@@ -185,9 +243,9 @@ resource "helm_release" "this" {
               tls_disable = 0
               address = "[::]:8200"
               cluster_address = "[::]:8201"
-              tls_cert_file = "/vault/userconfig/vault-ha-tls/vault.crt"
-              tls_key_file  = "/vault/userconfig/vault-ha-tls/vault.key"
-              tls_client_ca_file = "/vault/userconfig/vault-ha-tls/vault.ca"
+              tls_cert_file = "/vault/userconfig/vault-ha-tls/tls.crt"
+              tls_key_file  = "/vault/userconfig/vault-ha-tls/tls.key"
+              tls_client_ca_file = "/vault/userconfig/vault-ha-tls/ca.crt"
             }
             storage "raft" {
               path = "/vault/data"

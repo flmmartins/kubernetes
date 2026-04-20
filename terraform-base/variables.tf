@@ -46,14 +46,19 @@ variable "vault_apps_cert_pembundle" {
   default     = null
 }
 
+variable "internal_ca_certificate" {
+  description = "Internal CA certificate which will be used to generate vault ca"
+  default     = null
+}
+
+variable "internal_ca_key" {
+  description = "Internal CA certificate which will be used to generate vault ca"
+  default     = null
+}
+
 variable "private_domain" {
   description = "Private domain name"
   default     = ""
-}
-
-variable "private_cert_issuer" {
-  description = "Cluster Issuer responsible for internal self signed certificates"
-  default     = "private-issuer"
 }
 
 variable "onepassword_vault_path" {

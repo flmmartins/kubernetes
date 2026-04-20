@@ -3,11 +3,6 @@ variable "vault_address_internal" {
   default     = "https://vault.vault:8200"
 }
 
-variable "vault_csi_ca_cert_path" {
-  description = "Vault Parameters used by CSI Secret Provider Classes"
-  default     = "/vault/tls/vault.ca"
-}
-
 variable "onepassword_vault_path" {
   type        = string
   description = "1password vault path for secrets. It contain the <path prefix>/<vault id>"
@@ -18,9 +13,9 @@ variable "private_domain" {
   description = "Apps private domain name"
 }
 
-variable "private_cert_issuer" {
+variable "vault_pki_issuer" {
   description = "Cluster Issuer responsible for internal self signed certificates"
-  default     = "private-issuer"
+  default     = "vault-issuer"
 }
 
 variable "public_domain" {

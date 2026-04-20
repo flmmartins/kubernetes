@@ -6,7 +6,4 @@ variable "nginx_chart_version" {
   default     = "4.14.2"
 }
 
-variable "cert_manager_version" {
-  description = "Cert Manager Version"
-  default     = "v1.19.2"
-}
+

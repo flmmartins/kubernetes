@@ -14,8 +14,7 @@ module "velero" {
   ]
 
   vault_password = {
-    vault_address          = var.vault_address_internal
-    vault_csi_ca_cert_path = var.vault_csi_ca_cert_path
-    secret_path            = format("%s/velero", var.onepassword_vault_path)
+    vault_address = var.vault_address_internal
+    secret_path   = format("%s/velero", var.onepassword_vault_path)
   }
 }
