@@ -1,3 +1,25 @@
+# -----------------------------------------------------------------------------
+# Istio Gateway
+# -----------------------------------------------------------------------------
+variable "istio_chart_version" {
+  description = "Istio Chart Version"
+  default     = "1.29.2"
+}
+
+variable "gateway_crds_version" {
+  description = "Gateway API CRDs Version"
+  default     = "v1.5.1"
+}
+
+variable "istio_ip" {
+  description = "Load Balancer IP assigned for Istio"
+  type        = string
+}
+
+# -----------------------------------------------------------------------------
+# Metallb
+# -----------------------------------------------------------------------------
+
 variable "metallb_chart_version" {
   description = "Metal LB Chart Version"
   default     = "0.15.3"
@@ -12,9 +34,6 @@ variable "uses_metallb" {
 # Resource Variables
 # =============================================================================
 
-# -----------------------------------------------------------------------------
-# Metallb
-# -----------------------------------------------------------------------------
 variable "controller_memory_request" {
   type    = string
   default = "50Mi"

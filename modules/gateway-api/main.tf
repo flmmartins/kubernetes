@@ -57,3 +57,72 @@ resource "helm_release" "metallb" {
     EOF
   ]
 }
+
+resource "kubernetes_namespace_v1" "istio" {
+  metadata {
+    name = "istio-system"
+  }
+}
+
+resource "helm_release" "istio-base" {
+  name       = "istio-base"
+  namespace  = kubernetes_namespace_v1.istio.metadata[0].name
+  repository = "https://istio-release.storage.googleapis.com/charts"
+  version    = var.istio_chart_version
+  chart      = "base"
+}
+
+resource "helm_release" "istiod" {
+  name       = "istiod"
+  namespace  = kubernetes_namespace_v1.istio.metadata[0].name
+  repository = "https://istio-release.storage.googleapis.com/charts"
+  version    = var.istio_chart_version
+  chart      = "istiod"
+}
+resource "terraform_data" "gateway_crds" {
+  triggers_replace = {
+    version = var.gateway_crds_version
+  }
+
+  provisioner "local-exec" {
+    command = <<EOT
+    kubectl get crd gateways.gateway.networking.k8s.io &> /dev/null || \
+    { kubectl kustomize "github.com/kubernetes-sigs/gateway-api/config/crd?ref=${var.gateway_crds_version}" | kubectl apply -f -; }
+    EOT
+  }
+}
+
+resource "kubernetes_manifest" "istio_ip_address_pool" {
+  count = var.uses_metallb == true ? 1 : 0
+
+  manifest = {
+    apiVersion = "metallb.io/v1beta1"
+    kind       = "IPAddressPool"
+    metadata = {
+      name      = "istio"
+      namespace = kubernetes_namespace_v1.metallb[0].metadata[0].name
+      labels    = local.labels
+    }
+    spec = {
+      addresses  = ["${var.istio_ip}/32"]
+      autoAssign = true
+    }
+  }
+}
+
+resource "kubernetes_manifest" "istio_l2_advertisement" {
+  count = var.uses_metallb == true ? 1 : 0
+
+  manifest = {
+    apiVersion = "metallb.io/v1beta1"
+    kind       = "L2Advertisement"
+    metadata = {
+      name      = "istio"
+      namespace = kubernetes_namespace_v1.metallb[0].metadata[0].name
+      labels    = local.labels
+    }
+    spec = {
+      ipAddressPools = [kubernetes_manifest.istio_ip_address_pool[0].manifest.metadata.name]
+    }
+  }
+}

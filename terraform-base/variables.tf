@@ -9,7 +9,11 @@ variable "nfs_folder" {
 variable "nginx_ip" {
   type        = string
   description = "IP assigned to NGINX"
+}
 
+variable "istio_ip" {
+  description = "Load Balancer IP assigned for Istio"
+  type        = string
 }
 
 variable "onepassword_connect_token" {
