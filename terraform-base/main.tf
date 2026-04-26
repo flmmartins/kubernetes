@@ -1,5 +1,48 @@
 locals {
   vault_url = "vault.${var.private_domain}"
+  csi_driver_nfs_labels = {
+    part-of = "truenas"
+  }
+}
+
+module "csi-driver-nfs" {
+  count = var.enable_csi_nfs == true ? 1 : 0
+
+  source = "../modules/csi-driver-nfs"
+
+  labels = local.csi_driver_nfs_labels
+  server = var.nfs_ip
+  folder = var.nfs_folder
+}
+
+module "cert-manager" {
+  source = "../modules/cert-manager"
+
+  default_cert_issuer = "letsencrypt-issuer"
+
+  letsencrypt_issuer = {
+    issuer_name = "letsencrypt-issuer"
+    dns_provider_vault_password = {
+      vault_address = var.vault_address_internal
+      secret_path   = format("%s/cloudflare-api-token", var.onepassword_vault_path)
+    }
+    dns_provider = {
+      name   = "cloudflare"
+      e-mail = var.cloudflare_email
+    }
+  }
+
+  uploaded_ca_issuer = {
+    certificate_cert = var.internal_ca_certificate
+    certificate_key  = var.internal_ca_key
+  }
+
+  vault_pki_issuer = {
+    ca_file   = base64encode(var.internal_ca_certificate)
+    server    = module.vault-install.kubernetes_svc
+    sign_path = module.vault.pki_sign_path
+    policy    = module.vault.pki_policy
+  }
 }
 
 resource "kubernetes_priority_class_v1" "priority_class_critical" {
@@ -12,8 +55,12 @@ resource "kubernetes_priority_class_v1" "priority_class_critical" {
   description    = "Critical infrastructure pods"
 }
 
+module "metrics-server" {
+  source = "../modules/metrics-server"
+}
+
 module "onepassword" {
-  depends_on = [helm_release.metrics-server]
+  depends_on = [module.metrics-server]
 
   source                  = "../modules/1password-connect"
   credentials_json_base64 = var.onepassword_credentials_json_base64
@@ -48,7 +95,6 @@ module "vault-install" {
   priority_class                = var.priority_class
 }
 
-
 module "vault" {
   source = "../modules/hashicorp-vault-configure"
 
@@ -66,3 +112,8 @@ module "vault" {
   }
 }
 
+module "gateway-api" {
+  source       = "../modules/gateway-api"
+  uses_metallb = true
+  istio_ip     = var.istio_ip
+}

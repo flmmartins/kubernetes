@@ -1,10 +1,10 @@
 resource "helm_release" "nginx" {
-  depends_on       = [helm_release.metrics-server]
+  depends_on       = [module.metrics-server]
   name             = "nginx"
   namespace        = "nginx"
   create_namespace = true
   repository       = "https://kubernetes.github.io/ingress-nginx"
-  version          = var.nginx_chart_version
+  version          = "4.14.2"
   chart            = "ingress-nginx"
   values = [
     <<-EOF

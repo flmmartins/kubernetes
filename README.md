@@ -6,12 +6,7 @@ Execution is done via terraform:
 
 This differentiation is necessary because there're several dependencies between infrastructure and apps. Additionaly almost all apps require a Vault ID which can only be fetched after Vault is configured.
 
-**Migrating to Terraform Stacks**
-Hopefully the problems above can be resolved in the future with Terraform Stacks. This repository is slowly migrating to conform to the terraform stack organization so you will see some code as modules and things might be a messy while is being migrated!!
-
 ## Terraform init
-
-tfinit.sh was created to allow handling of multiple states from different backends. Terraform Stacks hopefully will be used in the future to handle this better than using a script!
 
 Currently there are 2 environments: 
 * dev => Which is a kind cluster, using a local terraform state
@@ -53,15 +48,6 @@ Where COMMAND can be plan, apply....
 Teoretically since now my secrets are not text-clear I could commit to git but better not provide any information on my Vault Name to the outside
 
 Besides that for apps, I provide a terraform.tfars with some maps. Sadly it's not easy to provider map of objects using TF_VAR sintax
-
-**Old way of running**
-
-Before having integration with 1password I did like this:
-
-`terraform plan/apply`
-
-It will automatically get the terraform.tfvars file which is was not commited in the repo.
-
 
 # Archiecture & Components
 
@@ -145,7 +131,7 @@ securityContext:
 Minio was deprecated and is now in maintenance mode. Seaweedfs is the replacement
 
 ## AutoScaling
-Metric server is installing to enable HPA
+Metric server is installed to enable HPA
 
 ## LoadBalancer
 
@@ -162,8 +148,27 @@ MetalLB is an open-source load-balancer implementation for Kubernetes clusters r
 [MetalLB](https://github.com/kubernetes/ingress-nginx/blob/main/docs/deploy/baremetal.md) requires a pool of IP addresses in order to be able to take ownership of the ingress-nginx Service. This pool can be defined through IPAddressPool objects in the same namespace as the MetalLB controller. This pool of IPs must be dedicated to MetalLB's use, you can't reuse the Kubernetes node IPs or IPs handed out by a DHCP server.
 
 #### IP Configuration
-IP pool and advertisement can only be created on metallb namespace
-It's always necessary to create both and an  advertisement points to a pool
+IP pool and advertisement can only be created on metallb namespace. It's always necessary to create both and an  advertisement points to a pool
+
+## Certificates 
+    [ Application needs certificate ]
+           |
+           |
+           v
+    [ Creates an ingress ]
+           |
+           |
+           v
+    [ Cert Manager detects ingress and issue a certificate]
+           |
+           |
+           v
+    [ Cert Manager an ISSUER to sign the certificate and manages rotation]
+
+We have currently 3 issuers:
+1. Manual Uploaded Issuer which is a private CA that was uploaded to cert manager. This allows Vault to be installed using a Vault TLS of it's own without relying on Kubernetes CA.
+2. Hashicorp Vault issuer: We uploaded another private CA to Hashicorp Vault PKI and sensitive apps make use of this certificate chain
+3. Let's Encrypt issuer: For other apps which require a Public Authority like TVs and embedded
 
 ## Secret Management
 
@@ -180,46 +185,8 @@ Vault Agent: Injects secrets into pods using environment variables or file. Sadl
 
 CSI Secret Store & Vault Provider: Creates Kubernetes Secret from Secret
 
-Since Vault installation is by far the most complex component a separate README was created for [Vault](Vault.md)
-
-## Certificates 
-    [ Vault has a PKI with a imported CA]
-
-    [ Application needs certificate ]
-           |
-           |
-           v
-    [ Creates an ingress ]
-           |
-           |
-           v
-    [ Cert Manager detects ingress and issue a certificate]
-           |
-           |
-           v
-    [ Cert Manager uses Hashicorp Vault to sign the certificate and manages rotation]
-
-### Internal Vs External Certificates
-Ideally you want one set of certificates for internal TLS of vault and another set for external facing certificate however since I only have one set is all done with the same certificate
+Since Vault installation is by far the most complex component a separate README in it's modules
 
 # Backups
 
 We use Velero for Backups. It authenticates with an objet store to create the necessary assets using environment variables
-
-# Terraform Apps
-
-## DNS Resolution
-
-      [ Users access a website in local network ] 
-             |
-             v
-      [ Ad-Guard: Local DNS Server, resolves the URL - outside kubernetes ]   
-             |
-             v
-      [ Nginx: Reverse Proxy / Load Balancer ]
-
-Ad Guard has DNS masq so it will resolve all DNS to reverse proxy IP. However in a setup without DNS Masq you can install External DNS to automatically add each record to each IP.
-
-## Plex
-
-Check [Plex](Plex.md)
