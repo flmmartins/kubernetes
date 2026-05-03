@@ -1,6 +1,6 @@
 # TODO: Test passing password later
 resource "kubernetes_secret_v1" "dns_provider" {
-  count = var.letsencrypt_issuer.dns_provider_vault_password == null ? 1 : 0
+  count = var.letsencrypt_issuer == null ? 1 : 0
 
   metadata {
     name      = local.dns_provider_secret
@@ -14,7 +14,7 @@ resource "kubernetes_secret_v1" "dns_provider" {
 }
 
 resource "vault_policy" "dns_provider" {
-  count = var.letsencrypt_issuer.dns_provider_vault_password != null ? 1 : 0
+  count = var.letsencrypt_issuer != null ? 1 : 0
 
   name   = local.dns_provider_secret
   policy = <<EOT

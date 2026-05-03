@@ -17,8 +17,8 @@ locals {
   labels = {
     part-of = "certificates"
   }
-  dns_provider_secret = "${var.letsencrypt_issuer.dns_provider.name}-api-token"
-  dns_policies        = var.letsencrypt_issuer.dns_provider_vault_password != null ? [vault_policy.dns_provider[0].name] : []
+  dns_provider_secret = var.letsencrypt_issuer != null ? "${var.letsencrypt_issuer.dns_provider.name}-api-token" : null
+  dns_policies        = var.letsencrypt_issuer != null ? [vault_policy.dns_provider[0].name] : []
   pki_policies        = var.vault_pki_issuer != null ? [var.vault_pki_issuer.policy] : []
   vault_policies      = concat(local.dns_policies, local.pki_policies)
 }
@@ -74,6 +74,8 @@ resource "helm_release" "this" {
       limits:
         memory: ${var.cert_manager_memory_limit}
         cpu: ${var.cert_manager_cpu_limit}
+    config:
+      enableGatewayAPI: true
     ingressShim:
       defaultIssuerName: ${var.default_cert_issuer}
       defaultIssuerKind: ClusterIssuer

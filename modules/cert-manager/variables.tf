@@ -1,6 +1,6 @@
 variable "chart_version" {
   description = "Cert Manager Version"
-  default     = "v1.19.2"
+  default     = "v1.20.2"
 }
 
 variable "default_cert_issuer" {
