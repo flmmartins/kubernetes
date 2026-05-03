@@ -76,12 +76,13 @@ resource "kubernetes_manifest" "certmanager_vault_tls" {
 }
 
 resource "helm_release" "this" {
-  depends_on = [kubernetes_manifest.certmanager_vault_tls]
-  name       = "vault"
-  namespace  = kubernetes_namespace_v1.this.metadata[0].name
-  repository = "https://helm.releases.hashicorp.com"
-  version    = var.chart_version
-  chart      = "vault"
+  depends_on  = [kubernetes_manifest.certmanager_vault_tls]
+  name        = "vault"
+  namespace   = kubernetes_namespace_v1.this.metadata[0].name
+  repository  = "https://helm.releases.hashicorp.com"
+  version     = var.chart_version
+  max_history = 10
+  chart       = "vault"
   values = [
     <<-EOF
     global:

@@ -6,3 +6,9 @@ output "istio_ip" {
   value = var.istio_ip
 }
 
+output "gateway" {
+  value = {
+    name      = kubernetes_manifest.gateway.manifest.metadata.name
+    namespace = kubernetes_namespace_v1.gateway.metadata[0].name
+  }
+}

@@ -60,7 +60,8 @@ resource "helm_release" "metallb" {
 
 resource "kubernetes_namespace_v1" "istio" {
   metadata {
-    name = "istio-system"
+    name   = "istio-system"
+    labels = local.labels
   }
 }
 
@@ -78,6 +79,17 @@ resource "helm_release" "istiod" {
   repository = "https://istio-release.storage.googleapis.com/charts"
   version    = var.istio_chart_version
   chart      = "istiod"
+  # Pilot variables are required by ListenerSet
+  values = [<<-EOT
+    values:
+      pilot:
+        env:
+          PILOT_ENABLE_GATEWAY_API: "true"
+          PILOT_ENABLE_GATEWAY_API_STATUS: "true"
+          PILOT_ENABLE_GATEWAY_API_DEPLOYMENT_CONTROLLER: "true"
+          PILOT_ENABLE_ALPHA_GATEWAY_API: "true"
+  EOT
+  ]
 }
 resource "terraform_data" "gateway_crds" {
   triggers_replace = {
@@ -123,6 +135,48 @@ resource "kubernetes_manifest" "istio_l2_advertisement" {
     }
     spec = {
       ipAddressPools = [kubernetes_manifest.istio_ip_address_pool[0].manifest.metadata.name]
+    }
+  }
+}
+
+resource "kubernetes_namespace_v1" "gateway" {
+  metadata {
+    name = "gateway"
+    labels = merge(local.labels, {
+      "pod-security.kubernetes.io/enforce" = "baseline"
+    })
+  }
+}
+
+# WIP -  ListenerSet were added here to resolve a certificate problem - check Readme
+resource "kubernetes_manifest" "gateway" {
+  manifest = {
+    apiVersion = "gateway.networking.k8s.io/v1"
+    kind       = "Gateway"
+    metadata = {
+      name      = "gateway"
+      namespace = kubernetes_namespace_v1.gateway.metadata[0].name
+      labels    = local.labels
+      annotations = {
+        "metallb.universe.tf/address-pool" = kubernetes_manifest.istio_ip_address_pool[0].manifest.metadata.name
+      }
+    }
+    spec = {
+      gatewayClassName = "istio"
+      allowedListeners = {
+        namespaces = {
+          from = "All"
+        }
+      }
+      # You need at least 1 listener in the array so the gateway can be created so http 80 it is
+      listeners = [
+        {
+          name          = "http"
+          port          = 80
+          protocol      = "HTTP"
+          allowedRoutes = { namespaces = { from = "All" } }
+        }
+      ]
     }
   }
 }
