@@ -86,10 +86,6 @@ resource "helm_release" "istiod" {
     ###############################
     # ISTIO D
     ###############################
-    global:
-      proxy:
-        seccompProfile:
-          type: RuntimeDefault
     autoscaleMin: 2
     autoscaleMax: 4
     podLabels: ${jsonencode(merge(local.labels, { "component" = "istiod" }))}
@@ -207,6 +203,9 @@ resource "kubernetes_config_map_v1" "gateway" {
       spec:
         template:
           spec:
+            securityContext:
+              seccompProfile:
+                type: RuntimeDefault
             containers:
             - name: istio-proxy
               resources:
@@ -274,14 +273,6 @@ resource "kubernetes_manifest" "gateway" {
         namespaces = { from = "All" }
       }
       listeners = concat(
-        [
-          {
-            name          = "http"
-            port          = 80
-            protocol      = "HTTP"
-            allowedRoutes = { namespaces = { from = "All" } }
-          }
-        ],
         [
           for idx, cert in local.gateway_certificates : {
             name          = "https-${replace(replace(cert.hostname, "*", "start"), ".", "-")}"
