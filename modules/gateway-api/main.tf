@@ -13,6 +13,8 @@ locals {
   labels = {
     part-of = "loadbalancer"
   }
+  gateway_certificates = { for idx, cert in var.gateway_certificates : idx => cert }
+
 }
 
 resource "kubernetes_namespace_v1" "metallb" {
@@ -74,6 +76,7 @@ resource "helm_release" "istio-base" {
 }
 
 resource "helm_release" "istiod" {
+  depends_on = [helm_release.istio-base]
   name       = "istiod"
   namespace  = kubernetes_namespace_v1.istio.metadata[0].name
   repository = "https://istio-release.storage.googleapis.com/charts"
@@ -81,16 +84,77 @@ resource "helm_release" "istiod" {
   chart      = "istiod"
   # Pilot variables are required by ListenerSet
   values = [<<-EOT
-    values:
-      pilot:
-        env:
-          PILOT_ENABLE_GATEWAY_API: "true"
-          PILOT_ENABLE_GATEWAY_API_STATUS: "true"
-          PILOT_ENABLE_GATEWAY_API_DEPLOYMENT_CONTROLLER: "true"
-          PILOT_ENABLE_ALPHA_GATEWAY_API: "true"
+    #gatewayClasses:
+    #  istio:
+    #    deployment:
+    #      spec:
+    #        template:
+    #          spec:
+    #            containers:
+    #            - name: istio-proxy
+    #              resources:
+    #                requests:
+    #                  cpu: ${var.gateway_resources_requests_cpu}
+    #                  memory: ${var.gateway_resources_requests_memory}
+    #                limits:
+    #                  cpu: ${var.gateway_resources_limits_cpu}
+    #                  memory: ${var.gateway_resources_limits_memory}
+    #            affinity:
+    #              podAntiAffinity:
+    #                preferredDuringSchedulingIgnoredDuringExecution:
+    #                - weight: 100
+    #                  podAffinityTerm:
+    #                    labelSelector:
+    #                      matchExpressions:
+    #                      - key: component
+    #                        operator: In
+    #                        values:
+    #                        - gateway
+    #                    topologyKey: kubernetes.io/hostname
+    #    horizontalPodAutoscaler:
+    #      spec:
+    #        minReplicas: 2
+    #        maxReplicas: 4
+    #        metrics:
+    #        - type: Resource
+    #          resource:
+    #            name: cpu
+    #            target:
+    #              type: Utilization
+    #              averageUtilization: 80
+    ###############################
+    # ISTIO D
+    ###############################
+    global:
+      proxy:
+        seccompProfile:
+          type: RuntimeDefault
+    autoscaleMin: 2
+    autoscaleMax: 4
+    podLabels: ${jsonencode(merge(local.labels, { "component" = "istiod" }))}
+    resources:
+      requests:
+        cpu: ${var.istiod_resources_requests_cpu}
+        memory: ${var.istiod_resources_requests_memory}
+      limits:
+        cpu: ${var.istiod_resources_limits_cpu}
+        memory: ${var.istiod_resources_limits_memory}
+    affinity:
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+              - key: component
+                operator: In
+                values:
+                - istiod
+            topologyKey: kubernetes.io/hostname
   EOT
   ]
 }
+
 resource "terraform_data" "gateway_crds" {
   triggers_replace = {
     version = var.gateway_crds_version
@@ -148,35 +212,133 @@ resource "kubernetes_namespace_v1" "gateway" {
   }
 }
 
-# WIP -  ListenerSet were added here to resolve a certificate problem - check Readme
+resource "kubernetes_manifest" "gateway_certificates" {
+  for_each = local.gateway_certificates
+
+  manifest = {
+    apiVersion = "cert-manager.io/v1"
+    kind       = "Certificate"
+    metadata = {
+      name      = replace(replace(each.value.hostname, "*", "start"), ".", "-")
+      namespace = kubernetes_namespace_v1.gateway.metadata[0].name
+    }
+    spec = {
+      commonName = each.value.hostname
+      secretName = replace(replace(each.value.hostname, "*", "start"), ".", "-")
+      issuerRef = {
+        name  = each.value.cluster_issuer
+        kind  = "ClusterIssuer"
+        group = "cert-manager.io"
+      }
+      dnsNames = [each.value.hostname]
+    }
+  }
+}
+
+resource "kubernetes_config_map_v1" "gateway" {
+  metadata {
+    name      = "gateway"
+    namespace = kubernetes_namespace_v1.gateway.metadata[0].name
+  }
+
+  data = {
+    deployment = <<-YAML
+      spec:
+        template:
+          spec:
+            containers:
+            - name: istio-proxy
+              resources:
+                requests:
+                  cpu: ${var.gateway_resources_requests_cpu}
+                  memory: ${var.gateway_resources_requests_memory}
+                limits:
+                  cpu: ${var.gateway_resources_limits_cpu}
+                  memory: ${var.gateway_resources_limits_memory}
+            affinity:
+              podAntiAffinity:
+                preferredDuringSchedulingIgnoredDuringExecution:
+                - weight: 100
+                  podAffinityTerm:
+                    labelSelector:
+                      matchExpressions:
+                      - key: app
+                        operator: In
+                        values:
+                        - gateway
+                    topologyKey: kubernetes.io/hostname
+    YAML
+
+    horizontalPodAutoscaler = <<-YAML
+      spec:
+        minReplicas: 1
+        maxReplicas: 3
+        metrics:
+        - type: Resource
+          resource:
+            name: cpu
+            target:
+              type: Utilization
+              averageUtilization: 80
+    YAML
+  }
+}
+
 resource "kubernetes_manifest" "gateway" {
+  depends_on = [helm_release.istiod]
   manifest = {
     apiVersion = "gateway.networking.k8s.io/v1"
     kind       = "Gateway"
     metadata = {
       name      = "gateway"
       namespace = kubernetes_namespace_v1.gateway.metadata[0].name
-      labels    = local.labels
+      labels = {
+        component = "gateway"
+        part-of   = "istio"
+      }
       annotations = {
         "metallb.universe.tf/address-pool" = kubernetes_manifest.istio_ip_address_pool[0].manifest.metadata.name
       }
     }
     spec = {
       gatewayClassName = "istio"
-      allowedListeners = {
-        namespaces = {
-          from = "All"
+      infrastructure = {
+        parametersRef = {
+          group = ""
+          name  = kubernetes_config_map_v1.gateway.metadata[0].name
+          kind  = "ConfigMap"
         }
       }
-      # You need at least 1 listener in the array so the gateway can be created so http 80 it is
-      listeners = [
-        {
-          name          = "http"
-          port          = 80
-          protocol      = "HTTP"
-          allowedRoutes = { namespaces = { from = "All" } }
-        }
-      ]
+      allowedListeners = {
+        namespaces = { from = "All" }
+      }
+      listeners = concat(
+        [
+          {
+            name          = "http"
+            port          = 80
+            protocol      = "HTTP"
+            allowedRoutes = { namespaces = { from = "All" } }
+          }
+        ],
+        [
+          for idx, cert in local.gateway_certificates : {
+            name          = "https-${replace(replace(cert.hostname, "*", "start"), ".", "-")}"
+            port          = 443
+            protocol      = "HTTPS"
+            hostname      = cert.hostname
+            allowedRoutes = { namespaces = { from = "All" } }
+            tls = {
+              mode = "Terminate"
+              certificateRefs = [{
+                name  = kubernetes_manifest.gateway_certificates[idx].manifest.metadata.name
+                kind  = "Certificate"
+                group = "cert-manager.io"
+              }]
+            }
+          }
+        ]
+      )
     }
   }
 }
