@@ -293,8 +293,8 @@ resource "kubernetes_manifest" "gateway" {
               mode = "Terminate"
               certificateRefs = [{
                 name  = kubernetes_manifest.gateway_certificates[idx].manifest.metadata.name
-                kind  = "Certificate"
-                group = "cert-manager.io"
+                kind  = "Secret"
+                group = ""
               }]
             }
           }
