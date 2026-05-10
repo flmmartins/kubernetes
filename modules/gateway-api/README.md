@@ -1,3 +1,5 @@
+Using GTW API requires all gtw certs to be wildcards. Bellow is why:
+
 # Using non-wildcard certificates
 
 When trying to install Gateway API with Let's Encrypt issuer when using non-wildcard certificates you need all certificates declared in the listener in the gateway.

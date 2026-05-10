@@ -8,14 +8,14 @@ variable "onepassword_vault_path" {
   description = "1password vault path for secrets. It contain the <path prefix>/<vault id>"
 }
 
-variable "private_domain" {
-  type        = string
-  description = "Apps private domain name"
-}
-
 variable "vault_pki_issuer" {
   description = "Cluster Issuer responsible for internal self signed certificates"
   default     = "vault-issuer"
+}
+
+variable "private_domain" {
+  type        = string
+  description = "Apps private domain name"
 }
 
 variable "public_domain" {
@@ -26,6 +26,18 @@ variable "public_domain" {
 variable "nginx_ip" {
   type        = string
   description = "IP of NGINX"
+}
+
+variable "gateway" {
+  description = "Gateway to use for the apps"
+  type = object({
+    name      = string
+    namespace = string
+  })
+  default = {
+    name      = "gateway"
+    namespace = "gateway"
+  }
 }
 
 variable "persistent_storage_class" {

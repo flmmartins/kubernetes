@@ -116,4 +116,14 @@ module "gateway-api" {
   source       = "../modules/gateway-api"
   uses_metallb = true
   istio_ip     = var.istio_ip
+  gateway_certificates = [
+    {
+      hostname       = "*.${var.private_domain}"
+      cluster_issuer = module.cert-manager.vault_pki_issuer
+    },
+    {
+      hostname       = "*.${var.public_domain}"
+      cluster_issuer = module.cert-manager.letsencrypt_issuer
+    }
+  ]
 }

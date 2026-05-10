@@ -94,5 +94,13 @@ module "home-apps" {
   domain                   = var.public_domain
   persistent_storage_class = var.persistent_storage_class
   plex_ip                  = var.nginx_ip
-  existing_nfs_share       = var.existing_nfs_share
+  gateway                  = var.gateway
+
+  movies_nfs_share         = var.existing_nfs_share["movies"]
+  music_nfs_share          = var.existing_nfs_share["music"]
+  tvshows_nfs_share        = var.existing_nfs_share["tv-shows"]
+  ebooks_comics_nfs_share  = var.existing_nfs_share["ebooks-comics"]
+  emulatorsrooms_nfs_share = var.existing_nfs_share["emuladores-rooms"]
+  photos_nfs_share         = var.existing_nfs_share["photos"]
+
 }

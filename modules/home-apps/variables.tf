@@ -3,6 +3,14 @@ variable "komga_image_version" {
   default     = "latest"
 }
 
+variable "gateway" {
+  description = "Gateway to use for the app"
+  type = object({
+    name      = string
+    namespace = string
+  })
+}
+
 variable "plex_chart_version" {
   description = "Plex Version"
   default     = "1.4.0"
@@ -28,15 +36,80 @@ variable "persistent_storage_class" {
   description = "Name of the storage class which persist data"
 }
 
-variable "existing_nfs_share" {
-  description = "NFS shares"
-  type = map(object({
+variable "movies_nfs_share" {
+  description = "NFS share to use for movies storage"
+  type = object({
     size        = string
     user_id     = number
     group_id    = number
     access_mode = string
     path        = string
     server      = string
-  }))
+  })
+  default = null
 }
 
+variable "music_nfs_share" {
+  description = "NFS share to use for music storage"
+  type = object({
+    size        = string
+    user_id     = number
+    group_id    = number
+    access_mode = string
+    path        = string
+    server      = string
+  })
+  default = null
+}
+
+variable "tvshows_nfs_share" {
+  description = "NFS share to use for TV shows storage"
+  type = object({
+    size        = string
+    user_id     = number
+    group_id    = number
+    access_mode = string
+    path        = string
+    server      = string
+  })
+  default = null
+}
+
+variable "ebooks_comics_nfs_share" {
+  description = "NFS share to use for ebooks and comics storage"
+  type = object({
+    size        = string
+    user_id     = number
+    group_id    = number
+    access_mode = string
+    path        = string
+    server      = string
+  })
+  default = null
+}
+
+variable "emulatorsrooms_nfs_share" {
+  description = "NFS share to use for old games emulators storage"
+  type = object({
+    size        = string
+    user_id     = number
+    group_id    = number
+    access_mode = string
+    path        = string
+    server      = string
+  })
+  default = null
+}
+
+variable "photos_nfs_share" {
+  description = "NFS share to use for photos storage"
+  type = object({
+    size        = string
+    user_id     = number
+    group_id    = number
+    access_mode = string
+    path        = string
+    server      = string
+  })
+  default = null
+}

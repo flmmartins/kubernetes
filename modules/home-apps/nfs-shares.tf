@@ -1,3 +1,21 @@
+locals {
+  nfs_share_labels = {
+    part-of = "nfs-shares"
+  }
+
+  nfs_shares = {
+    for k, v in tomap({
+      movies          = var.movies_nfs_share
+      music           = var.music_nfs_share
+      tv-shows        = var.tvshows_nfs_share
+      ebooks-comics   = var.ebooks_comics_nfs_share
+      emulators-rooms = var.emulatorsrooms_nfs_share
+      photos          = var.photos_nfs_share
+    }) : k => v
+    if v != null
+  }
+}
+
 # Necessary to create because otherwise apps would try to use dynamic provisioning
 resource "kubernetes_storage_class_v1" "manual" {
   metadata {
@@ -11,7 +29,7 @@ resource "kubernetes_storage_class_v1" "manual" {
 }
 
 resource "kubernetes_persistent_volume_v1" "data_volumes" {
-  for_each = var.existing_nfs_share
+  for_each = local.nfs_shares
   metadata {
     name = each.key
   }

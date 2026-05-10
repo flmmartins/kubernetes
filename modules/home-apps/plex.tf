@@ -4,80 +4,49 @@ locals {
   plex_common_labels = {
     "part-of" = "media-server"
   }
+  plex_shares = {
+    for k, v in {
+      movies   = var.movies_nfs_share
+      music    = var.music_nfs_share
+      tv-shows = var.tvshows_nfs_share
+    } : k => v
+    if v != null
+  }
 }
 
 resource "kubernetes_namespace_v1" "plex" {
+  count = length(local.plex_shares) != null ? 1 : 0
   metadata {
     name = local.plex_app_name
   }
 }
 
-resource "kubernetes_persistent_volume_claim_v1" "plex_movies" {
+resource "kubernetes_persistent_volume_claim_v1" "plex" {
+  for_each = local.plex_shares
+
   metadata {
-    name      = "${local.plex_app_name}-movies"
-    namespace = kubernetes_namespace_v1.plex.metadata[0].name
+    name      = "${local.plex_app_name}-${each.key}"
+    namespace = kubernetes_namespace_v1.plex[0].metadata[0].name
     labels = merge(local.plex_common_labels, {
       component = "data"
     })
   }
 
   spec {
-    access_modes = [var.existing_nfs_share["movies"].access_mode]
+    access_modes = [each.value.access_mode]
     resources {
       requests = {
-        storage = var.existing_nfs_share["movies"].size
+        storage = each.value.size
       }
     }
-    volume_name        = kubernetes_persistent_volume_v1.data_volumes["movies"].metadata[0].name
-    storage_class_name = kubernetes_storage_class_v1.manual.metadata[0].name
-  }
-}
-
-resource "kubernetes_persistent_volume_claim_v1" "plex_music" {
-  metadata {
-    name      = "${local.plex_app_name}-music"
-    namespace = kubernetes_namespace_v1.plex.metadata[0].name
-    labels = merge(local.plex_common_labels, {
-      component = "data"
-    })
-  }
-
-  spec {
-    access_modes = [var.existing_nfs_share["music"].access_mode]
-    resources {
-      requests = {
-        storage = var.existing_nfs_share["music"].size
-      }
-    }
-    volume_name        = kubernetes_persistent_volume_v1.data_volumes["music"].metadata[0].name
-    storage_class_name = kubernetes_storage_class_v1.manual.metadata[0].name
-  }
-}
-
-resource "kubernetes_persistent_volume_claim_v1" "plex_tvshows" {
-  metadata {
-    name      = "${local.plex_app_name}-tv-shows"
-    namespace = kubernetes_namespace_v1.plex.metadata[0].name
-    labels = merge(local.plex_common_labels, {
-      component = "data"
-    })
-  }
-
-  spec {
-    access_modes = [var.existing_nfs_share["tv-shows"].access_mode]
-    resources {
-      requests = {
-        storage = var.existing_nfs_share["tv-shows"].size
-      }
-    }
-    volume_name        = kubernetes_persistent_volume_v1.data_volumes["tv-shows"].metadata[0].name
+    volume_name        = kubernetes_persistent_volume_v1.data_volumes[each.key].metadata[0].name
     storage_class_name = kubernetes_storage_class_v1.manual.metadata[0].name
   }
 }
 
 resource "helm_release" "plex" {
   name       = local.plex_app_name
-  namespace  = kubernetes_namespace_v1.plex.metadata[0].name
+  namespace  = kubernetes_namespace_v1.plex[0].metadata[0].name
   repository = "https://raw.githubusercontent.com/plexinc/pms-docker/gh-pages"
   version    = var.plex_chart_version
   chart      = "plex-media-server"
@@ -102,25 +71,17 @@ resource "helm_release" "plex" {
       ADVERTISE_IP: "http://${var.plex_ip}:32400,https://${local.plex_url}"
       #PLEX_CLAIM:
     extraVolumes:
-    - name: movies
+    %{~for name, _ in local.plex_shares~}
+    - name: ${name}
       persistentVolumeClaim:
-        claimName: ${kubernetes_persistent_volume_claim_v1.plex_movies.metadata[0].name}
-    - name: music
-      persistentVolumeClaim:
-        claimName: ${kubernetes_persistent_volume_claim_v1.plex_music.metadata[0].name}
-    - name: tvshows
-      persistentVolumeClaim:
-        claimName: ${kubernetes_persistent_volume_claim_v1.plex_tvshows.metadata[0].name}
+        claimName: ${kubernetes_persistent_volume_claim_v1.plex[name].metadata[0].name}
+    %{~endfor~}
     extraVolumeMounts:
-    - name: movies
-      mountPath: /movies
+    %{~for name, _ in local.plex_shares~}
+    - name: ${name}
+      mountPath: /${name}
       readOnly: true
-    - name: music
-      mountPath: /music
-      readOnly: true
-    - name: tvshows
-      mountPath: /tv_shows
-      readOnly: true
+    %{~endfor~}
     ingress:
       enabled: true
       ingressClassName: "nginx"

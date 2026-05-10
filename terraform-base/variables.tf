@@ -65,6 +65,11 @@ variable "private_domain" {
   default     = ""
 }
 
+variable "public_domain" {
+  description = "Public domain name"
+  default     = ""
+}
+
 variable "onepassword_vault_path" {
   default     = ""
   description = "1password vault path for secrets. It contain the <path prefix>/<vault id>"

@@ -8,15 +8,17 @@
 #}
 #
 #resource "kubernetes_namespace_v1" "immich" {
+#  count = var.photos_nfs_share != null ? 1 : 0
 #  metadata {
 #    name = local.immich_app_name
 #  }
 #}
 #
 #resource "kubernetes_persistent_volume_claim_v1" "immich_data" {
+#  count = var.photos_nfs_share != null ? 1 : 0
 #  metadata {
 #    name = "${local.immich_app_name}-data"
-#    namespace = kubernetes_namespace_v1.immich.metadata[0].name
+#    namespace = kubernetes_namespace_v1.immich[0].metadata[0].name
 #    labels = merge(local.immich_common_labels, {
 #      component = "data"
 #    })
@@ -26,7 +28,7 @@
 #    access_modes = ["ReadWriteMany"]
 #    resources {
 #      requests = {
-#        storage = var.existing_nfs_share[local.immich_share].size
+#        storage = var.photos_nfs_share.size
 #      }
 #    }
 #    volume_name        = kubernetes_persistent_volume_v1.data_volumes[local.immich_share].metadata[0].name
@@ -35,8 +37,10 @@
 #}
 #
 #resource "helm_release" "immich" {
+#  count = var.photos_nfs_share != null ? 1 : 0
+
 #  name       = local.immich_app_name
-#  namespace  = kubernetes_namespace_v1.immich.metadata[0].name
+#  namespace  = kubernetes_namespace_v1.immich[0].metadata[0].name
 #  repository = "oci://ghcr.io/immich-app/immich-charts/immich"
 #  version    = var.immich_chart_version
 #  chart      = "immichr"
@@ -53,27 +57,11 @@
 #    enabled: true
 #  persistence:
 #    library:
-#      existingClaim: ${kubernetes_persistent_volume_claim_v1.immich_data.metadata[0].name}
+#      existingClaim: ${kubernetes_persistent_volume_claim_v1.immich_data[0].metadata[0].name}
 #  server:
 #    image:
 #      repository: ghcr.io/immich-app/immich-server
 #      pullPolicy: IfNotPresent
-#    ingress:
-#      main:
-#        enabled: true
-#        annotations:
-#          # proxy-body-size is set to 0 to remove the body limit on file uploads
-#          nginx.ingress.kubernetes.io/proxy-body-size: "0"
-#          kubernetes.io/tls-acme: "true" #Auto-tls creation by cert-manager
-#          cert-manager.io/common-name: ${local.immich_url}
-#        hosts:
-#          - host: ${local.immich_url}
-#            paths:
-#              - path: "/"
-#        tls:
-#        - hosts:
-#          - "${local.immich_url}
-#          secretName: ${local.immich_app_name}-tls
 #   machine-learning:
 #     enabled: true
 #     image:

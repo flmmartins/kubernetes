@@ -2,7 +2,6 @@ locals {
   komga_app_name = "komga-reader"
   komga_port     = 25600
   komga_url      = "reader.${var.domain}"
-  komga_share    = "ebooks-comics"
   komga_common_labels = {
     part-of = "reader"
   }
@@ -13,15 +12,19 @@ locals {
 }
 
 resource "kubernetes_namespace_v1" "komga" {
+  count = var.ebooks_comics_nfs_share != null ? 1 : 0
+
   metadata {
     name = local.komga_app_name
   }
 }
 
 resource "kubernetes_persistent_volume_claim_v1" "komga_config" {
+  count = var.ebooks_comics_nfs_share != null ? 1 : 0
+
   metadata {
     name      = "komga-config"
-    namespace = kubernetes_namespace_v1.komga.metadata[0].name
+    namespace = kubernetes_namespace_v1.komga[0].metadata[0].name
     labels = merge(local.komga_common_labels, {
       component = "config"
     })
@@ -41,30 +44,34 @@ resource "kubernetes_persistent_volume_claim_v1" "komga_config" {
 }
 
 resource "kubernetes_persistent_volume_claim_v1" "komga_data" {
+  count = var.ebooks_comics_nfs_share != null ? 1 : 0
+
   metadata {
     name      = "komga-data"
-    namespace = kubernetes_namespace_v1.komga.metadata[0].name
+    namespace = kubernetes_namespace_v1.komga[0].metadata[0].name
     labels = merge(local.komga_common_labels, {
       component = "data"
     })
   }
 
   spec {
-    access_modes = [var.existing_nfs_share[local.komga_share].access_mode]
+    access_modes = [var.ebooks_comics_nfs_share.access_mode]
     resources {
       requests = {
-        storage = var.existing_nfs_share[local.komga_share].size
+        storage = var.ebooks_comics_nfs_share.size
       }
     }
-    volume_name        = kubernetes_persistent_volume_v1.data_volumes[local.komga_share].metadata[0].name
+    volume_name        = kubernetes_persistent_volume_v1.data_volumes["ebooks-comics"].metadata[0].name
     storage_class_name = kubernetes_storage_class_v1.manual.metadata[0].name
   }
 }
 
 resource "kubernetes_deployment_v1" "komga" {
+  count = var.ebooks_comics_nfs_share != null ? 1 : 0
+
   metadata {
     name      = local.komga_app_name
-    namespace = kubernetes_namespace_v1.komga.metadata[0].name
+    namespace = kubernetes_namespace_v1.komga[0].metadata[0].name
     labels    = local.komga_app_labels
   }
 
@@ -83,9 +90,9 @@ resource "kubernetes_deployment_v1" "komga" {
       spec {
         security_context {
           run_as_non_root        = true
-          run_as_user            = var.existing_nfs_share[local.komga_share].user_id
-          run_as_group           = var.existing_nfs_share[local.komga_share].group_id
-          fs_group               = var.existing_nfs_share[local.komga_share].group_id
+          run_as_user            = var.ebooks_comics_nfs_share.user_id
+          run_as_group           = var.ebooks_comics_nfs_share.group_id
+          fs_group               = var.ebooks_comics_nfs_share.group_id
           fs_group_change_policy = "OnRootMismatch" #Only applicable to dynamic
         }
         container {
@@ -131,14 +138,14 @@ resource "kubernetes_deployment_v1" "komga" {
           name = "config"
 
           persistent_volume_claim {
-            claim_name = kubernetes_persistent_volume_claim_v1.komga_config.metadata[0].name
+            claim_name = kubernetes_persistent_volume_claim_v1.komga_config[0].metadata[0].name
           }
         }
 
         volume {
           name = "data"
           persistent_volume_claim {
-            claim_name = kubernetes_persistent_volume_claim_v1.komga_data.metadata[0].name
+            claim_name = kubernetes_persistent_volume_claim_v1.komga_data[0].metadata[0].name
           }
         }
       }
@@ -147,16 +154,18 @@ resource "kubernetes_deployment_v1" "komga" {
 }
 
 resource "kubernetes_service_v1" "komga" {
+  count = var.ebooks_comics_nfs_share != null ? 1 : 0
+
   metadata {
     name      = local.komga_app_name
-    namespace = kubernetes_namespace_v1.komga.metadata[0].name
+    namespace = kubernetes_namespace_v1.komga[0].metadata[0].name
     labels = merge(local.komga_common_labels, {
       component = "service"
     })
   }
 
   spec {
-    selector = kubernetes_deployment_v1.komga.metadata[0].labels
+    selector = kubernetes_deployment_v1.komga[0].metadata[0].labels
 
     port {
       port        = 80
@@ -168,42 +177,49 @@ resource "kubernetes_service_v1" "komga" {
   }
 }
 
-resource "kubernetes_ingress_v1" "komga" {
-  metadata {
-    name      = local.komga_app_name
-    namespace = kubernetes_namespace_v1.komga.metadata[0].name
-    annotations = {
-      "kubernetes.io/tls-acme"      = "true"
-      "cert-manager.io/common-name" = local.komga_url
-      "cert-manager.io/dns-names"   = local.komga_url
+resource "kubernetes_manifest" "komga-http-route" {
+  count = var.ebooks_comics_nfs_share != null ? 1 : 0
+
+  manifest = {
+    apiVersion = "gateway.networking.k8s.io/v1"
+    kind       = "HTTPRoute"
+
+    metadata = {
+      name      = local.komga_app_name
+      namespace = kubernetes_namespace_v1.komga[0].metadata[0].name
     }
-    labels = merge(local.komga_common_labels, {
-      component = "ingress"
-    })
-  }
 
-  spec {
-    rule {
-      host = local.komga_url
+    spec = {
+      parentRefs = [
+        {
+          name      = var.gateway.name
+          namespace = var.gateway.namespace
+        }
+      ]
 
-      http {
-        path {
-          path = "/"
-          backend {
-            service {
-              name = kubernetes_service_v1.komga.metadata[0].name
-              port {
-                number = 80
+      hostnames = [
+        local.komga_url
+      ]
+
+      rules = [
+        {
+          matches = [
+            {
+              path = {
+                type  = "PathPrefix"
+                value = "/"
               }
             }
-          }
-        }
-      }
-    }
+          ]
 
-    tls {
-      hosts       = [local.komga_url]
-      secret_name = "${local.komga_app_name}-tls" # must match a TLS secret in the same namespace
+          backendRefs = [
+            {
+              name = kubernetes_service_v1.komga[0].metadata[0].name
+              port = 80
+            }
+          ]
+        }
+      ]
     }
   }
 }
