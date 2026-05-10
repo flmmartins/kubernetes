@@ -82,46 +82,7 @@ resource "helm_release" "istiod" {
   repository = "https://istio-release.storage.googleapis.com/charts"
   version    = var.istio_chart_version
   chart      = "istiod"
-  # Pilot variables are required by ListenerSet
   values = [<<-EOT
-    #gatewayClasses:
-    #  istio:
-    #    deployment:
-    #      spec:
-    #        template:
-    #          spec:
-    #            containers:
-    #            - name: istio-proxy
-    #              resources:
-    #                requests:
-    #                  cpu: ${var.gateway_resources_requests_cpu}
-    #                  memory: ${var.gateway_resources_requests_memory}
-    #                limits:
-    #                  cpu: ${var.gateway_resources_limits_cpu}
-    #                  memory: ${var.gateway_resources_limits_memory}
-    #            affinity:
-    #              podAntiAffinity:
-    #                preferredDuringSchedulingIgnoredDuringExecution:
-    #                - weight: 100
-    #                  podAffinityTerm:
-    #                    labelSelector:
-    #                      matchExpressions:
-    #                      - key: component
-    #                        operator: In
-    #                        values:
-    #                        - gateway
-    #                    topologyKey: kubernetes.io/hostname
-    #    horizontalPodAutoscaler:
-    #      spec:
-    #        minReplicas: 2
-    #        maxReplicas: 4
-    #        metrics:
-    #        - type: Resource
-    #          resource:
-    #            name: cpu
-    #            target:
-    #              type: Utilization
-    #              averageUtilization: 80
     ###############################
     # ISTIO D
     ###############################
@@ -262,7 +223,7 @@ resource "kubernetes_config_map_v1" "gateway" {
                   podAffinityTerm:
                     labelSelector:
                       matchExpressions:
-                      - key: app
+                      - key: component
                         operator: In
                         values:
                         - gateway
@@ -271,8 +232,8 @@ resource "kubernetes_config_map_v1" "gateway" {
 
     horizontalPodAutoscaler = <<-YAML
       spec:
-        minReplicas: 1
-        maxReplicas: 3
+        minReplicas: 2
+        maxReplicas: 4
         metrics:
         - type: Resource
           resource:
