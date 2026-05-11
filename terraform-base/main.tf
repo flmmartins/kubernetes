@@ -126,4 +126,11 @@ module "gateway-api" {
       cluster_issuer = module.cert-manager.letsencrypt_issuer
     }
   ]
+  tcp_routes = [
+    {
+      name      = "plex-tcp"
+      port      = 32400
+      namespace = "plex"
+    },
+  ]
 }
