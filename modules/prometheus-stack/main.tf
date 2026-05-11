@@ -145,15 +145,6 @@ resource "helm_release" "this" {
       %{~else~}
         existingSecret: ${kubernetes_secret_v1.this[0].metadata[0].name}
       %{~endif~}
-      ingress:
-        enabled: true
-        annotations: ${jsonencode(var.grafana_ingress_annotations)}
-        hosts:
-        - ${var.grafana_url}
-        tls:
-        - hosts:
-          - ${var.grafana_url}
-          secretName: ${split(".", var.grafana_url)[0]}-tls
       persistence:
         enabled: true
         storageClassName: ${var.persistent_storage_class_name}
@@ -211,4 +202,50 @@ resource "helm_release" "this" {
       %{~endif~}
   EOF
   ]
+}
+
+# No support for grafana on helm chart
+resource "kubernetes_manifest" "grafana-http-route" {
+  manifest = {
+    apiVersion = "gateway.networking.k8s.io/v1"
+    kind       = "HTTPRoute"
+
+    metadata = {
+      name      = "grafana"
+      namespace = kubernetes_namespace_v1.this.metadata[0].name
+    }
+
+    spec = {
+      parentRefs = [
+        {
+          name      = var.gateway.name
+          namespace = var.gateway.namespace
+        }
+      ]
+
+      hostnames = [
+        var.grafana_url
+      ]
+
+      rules = [
+        {
+          matches = [
+            {
+              path = {
+                type  = "PathPrefix"
+                value = "/"
+              }
+            }
+          ]
+
+          backendRefs = [
+            {
+              name = "prometheus-stack-grafana"
+              port = 80
+            }
+          ]
+        }
+      ]
+    }
+  }
 }

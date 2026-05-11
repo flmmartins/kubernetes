@@ -82,11 +82,7 @@ module "kube_prometheus_stack" {
   }
 
   grafana_url = local.grafana_url
-  grafana_ingress_annotations = {
-    "kubernetes.io/tls-acme"      = "true"
-    "cert-manager.io/common-name" = local.grafana_url
-    "cert-manager.io/dns-names"   = local.grafana_url
-  }
+  gateway     = var.gateway
 }
 
 module "home-apps" {

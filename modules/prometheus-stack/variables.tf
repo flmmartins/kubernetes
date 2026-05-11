@@ -1,7 +1,7 @@
 variable "chart_version" {
   type        = string
   description = "Prometheus Stack Chart Version"
-  default     = "81.4.2"
+  default     = "84.5.0"
 }
 
 variable "grafana_url" {
@@ -9,9 +9,12 @@ variable "grafana_url" {
   description = "Grafana URL"
 }
 
-variable "grafana_ingress_annotations" {
-  type    = map(string)
-  default = {}
+variable "gateway" {
+  description = "Gateway to use for the app"
+  type = object({
+    name      = string
+    namespace = string
+  })
 }
 
 variable "retention_days" {
@@ -90,13 +93,13 @@ variable "prometheus_cpu_limit" {
 variable "prometheus_memory_request" {
   type        = string
   description = "Prometheus Memory Request"
-  default     = "450Mi"
+  default     = "1Gi"
 }
 
 variable "prometheus_memory_limit" {
   type        = string
   description = "Prometheus Memory Limit"
-  default     = "512Mi"
+  default     = "2Gi"
 }
 
 # -----------------------------------------------------------------------------
