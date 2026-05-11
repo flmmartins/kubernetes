@@ -11,14 +11,19 @@ variable "gateway" {
   })
 }
 
-variable "plex_chart_version" {
-  description = "Plex Version"
-  default     = "1.4.0"
+variable "domain" {
+  type        = string
+  description = "Domain to use on apps"
 }
 
-variable "immich_chart_version" {
-  description = "Photos Processing App Version"
-  default     = "0.9.3"
+variable "plex_chart_version" {
+  description = "Plex Version"
+  default     = "1.5.0"
+}
+
+variable "plex_gateway_tcp_listener" {
+  description = "Name of the listener that will be used by plex to connect via IP"
+  type        = string
 }
 
 variable "plex_ip" {
@@ -26,9 +31,9 @@ variable "plex_ip" {
   type        = string
 }
 
-variable "domain" {
-  type        = string
-  description = "Domain to use on apps"
+variable "immich_chart_version" {
+  description = "Photos Processing App Version"
+  default     = "0.9.3"
 }
 
 variable "persistent_storage_class" {

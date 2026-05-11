@@ -28,6 +28,11 @@ variable "nginx_ip" {
   description = "IP of NGINX"
 }
 
+variable "istio_ip" {
+  type        = string
+  description = "IP of Istio Gateway. Necessary for Plex to work on TV without SSL"
+}
+
 variable "gateway" {
   description = "Gateway to use for the apps"
   type = object({

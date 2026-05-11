@@ -82,18 +82,43 @@ resource "helm_release" "plex" {
       mountPath: /${name}
       readOnly: true
     %{~endfor~}
-    ingress:
+    httpRoute:
       enabled: true
-      ingressClassName: "nginx"
-      url: ${local.plex_url}
-      annotations: 
-        kubernetes.io/tls-acme: "true" #Auto-tls creation by cert-manager
-        cert-manager.io/common-name: "${local.plex_url}"
-        cert-manager.io/dns-names: "${local.plex_url}"
-      tls:
-      - hosts:
-        - ${local.plex_url}
-        secretName: ${local.plex_app_name}-tls
+      parentRefs:
+      - name: ${var.gateway.name}
+        namespace: ${var.gateway.namespace}
+      hostnames: [${local.plex_url}]
     EOF
   ]
+}
+
+# For TV to work - not supported by helm chart
+resource "kubernetes_manifest" "tcproute_plex" {
+  manifest = {
+    apiVersion = "gateway.networking.k8s.io/v1alpha2"
+    kind       = "TCPRoute"
+    metadata = {
+      name      = local.plex_app_name
+      namespace = kubernetes_namespace_v1.plex[0].metadata[0].name
+    }
+    spec = {
+      parentRefs = [
+        {
+          name        = var.gateway.name
+          namespace   = var.gateway.namespace
+          sectionName = var.plex_gateway_tcp_listener
+        }
+      ]
+      rules = [
+        {
+          backendRefs = [
+            {
+              name = "plex-plex-media-server"
+              port = 32400
+            }
+          ]
+        }
+      ]
+    }
+  }
 }

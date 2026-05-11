@@ -108,6 +108,9 @@ resource "helm_release" "istiod" {
                 values:
                 - istiod
             topologyKey: kubernetes.io/hostname
+    env:
+      PILOT_ENABLE_ALPHA_GATEWAY_API: "true" # Enable TCP Route
+      PILOT_ENABLE_GATEWAY_API_GAMMA_API: "true" # Enable TCP Route
   EOT
   ]
 }
@@ -116,11 +119,9 @@ resource "terraform_data" "gateway_crds" {
   triggers_replace = {
     version = var.gateway_crds_version
   }
-
   provisioner "local-exec" {
     command = <<EOT
-    kubectl get crd gateways.gateway.networking.k8s.io &> /dev/null || \
-    { kubectl kustomize "github.com/kubernetes-sigs/gateway-api/config/crd?ref=${var.gateway_crds_version}" | kubectl apply -f -; }
+      kubectl kustomize "github.com/kubernetes-sigs/gateway-api/config/crd/experimental?ref=${var.gateway_crds_version}" | kubectl apply --server-side -f -
     EOT
   }
 }
@@ -287,6 +288,26 @@ resource "kubernetes_manifest" "gateway" {
                 kind  = "Secret"
                 group = ""
               }]
+            }
+          }
+        ],
+        [
+          for route in var.tcp_routes : {
+            name     = route.name
+            port     = route.port
+            protocol = "TCP"
+            allowedRoutes = {
+              namespaces = route.namespace != null ? {
+                from = "Selector"
+                selector = {
+                  matchLabels = {
+                    "kubernetes.io/metadata.name" = route.namespace
+                  }
+                }
+                } : {
+                from     = "All",
+                selector = null # terraform requires objects with same attributes
+              }
             }
           }
         ]
