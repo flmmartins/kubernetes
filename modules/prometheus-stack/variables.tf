@@ -87,7 +87,7 @@ variable "prometheus_cpu_request" {
 variable "prometheus_cpu_limit" {
   type        = string
   description = "Prometheus CPU Limit"
-  default     = "600m"
+  default     = "300m"
 }
 
 variable "prometheus_memory_request" {
@@ -99,7 +99,54 @@ variable "prometheus_memory_request" {
 variable "prometheus_memory_limit" {
   type        = string
   description = "Prometheus Memory Limit"
-  default     = "2Gi"
+  default     = "1Gi"
+}
+
+# -----------------------------------------------------------------------------
+# Grafana
+# -----------------------------------------------------------------------------
+variable "grafana_cpu_request" {
+  type    = string
+  default = "200m"
+}
+
+variable "grafana_cpu_limit" {
+  type    = string
+  default = "200m"
+}
+
+variable "grafana_memory_request" {
+  type    = string
+  default = "512Mi"
+}
+
+variable "grafana_memory_limit" {
+  type    = string
+  default = "512Mi"
+}
+
+
+# -----------------------------------------------------------------------------
+# Kube State metrics
+# -----------------------------------------------------------------------------
+variable "kube_state_metrics_cpu_request" {
+  type    = string
+  default = "100m"
+}
+
+variable "kube_state_metrics_cpu_limit" {
+  type    = string
+  default = "100m"
+}
+
+variable "kube_state_metrics_memory_request" {
+  type    = string
+  default = "256Mi"
+}
+
+variable "kube_state_metrics_memory_limit" {
+  type    = string
+  default = "256Mi"
 }
 
 # -----------------------------------------------------------------------------

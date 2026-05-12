@@ -75,6 +75,7 @@ resource "vault_kubernetes_auth_backend_role" "this" {
   token_policies                   = [vault_policy.this[0].name]
 }
 
+# This chart has subcharts
 resource "helm_release" "this" {
   name       = local.name
   namespace  = kubernetes_namespace_v1.this.metadata[0].name
@@ -111,6 +112,14 @@ resource "helm_release" "this" {
               resources:
                 requests:
                   storage: ${var.prometheus_storage_size}
+    kube-state-metrics:
+      resources:
+        requests:
+          cpu: ${var.kube_state_metrics_cpu_request}
+          memory: ${var.kube_state_metrics_memory_request}
+        limits:
+          cpu: ${var.kube_state_metrics_cpu_limit}
+          memory: ${var.kube_state_metrics_memory_limit}
     alertmanager:
       alertmanagerSpec:
         resources:
@@ -151,6 +160,21 @@ resource "helm_release" "this" {
         accessModes:
           - ReadWriteOnce
         size: ${var.grana_storage_size}
+      resources:
+        limits:
+          cpu: ${var.grafana_cpu_limit}
+          memory: ${var.grafana_memory_limit}
+        requests:
+          cpu: ${var.grafana_cpu_request}
+          memory: ${var.grafana_memory_request}
+      route:
+        main:
+          enabled: true
+          labels: ${jsonencode(merge(local.labels, { "component" = "prometheus_stack" }))}
+          hostnames: [${var.grafana_url}]
+          parentRefs:
+          - name: ${var.gateway.name}
+            namespace: ${var.gateway.namespace}
     commonLabels: ${jsonencode(merge(local.labels, { "component" = "prometheus_stack" }))}
     # There's no volumeMounts on grafana
     prometheusOperator:
@@ -202,50 +226,4 @@ resource "helm_release" "this" {
       %{~endif~}
   EOF
   ]
-}
-
-# No support for grafana on helm chart
-resource "kubernetes_manifest" "grafana-http-route" {
-  manifest = {
-    apiVersion = "gateway.networking.k8s.io/v1"
-    kind       = "HTTPRoute"
-
-    metadata = {
-      name      = "grafana"
-      namespace = kubernetes_namespace_v1.this.metadata[0].name
-    }
-
-    spec = {
-      parentRefs = [
-        {
-          name      = var.gateway.name
-          namespace = var.gateway.namespace
-        }
-      ]
-
-      hostnames = [
-        var.grafana_url
-      ]
-
-      rules = [
-        {
-          matches = [
-            {
-              path = {
-                type  = "PathPrefix"
-                value = "/"
-              }
-            }
-          ]
-
-          backendRefs = [
-            {
-              name = "prometheus-stack-grafana"
-              port = 80
-            }
-          ]
-        }
-      ]
-    }
-  }
 }

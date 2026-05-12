@@ -9,6 +9,8 @@ locals {
     app       = local.komga_app_name
     component = "app"
   })
+  memory_usage_gb      = 1
+  cpu_usage_millicores = 500
 }
 
 resource "kubernetes_namespace_v1" "komga" {
@@ -107,18 +109,24 @@ resource "kubernetes_deployment_v1" "komga" {
             value = "FALSE"
           }
 
+          # Use 75% of allocated memory from kubernetes. If this goes higher we get OOM KIlls
+          env {
+            name  = "JAVA_TOOL_OPTIONS"
+            value = "-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
+          }
+
           port {
             container_port = local.komga_port
           }
 
           resources {
             requests = {
-              memory = "500Mi"
-              cpu    = "200m"
+              memory = "${local.memory_usage_gb}Gi"
+              cpu    = "${local.cpu_usage_millicores}m"
             }
             limits = {
-              memory = "500Mi"
-              cpu    = "200m"
+              memory = "${local.memory_usage_gb}Gi"
+              cpu    = "${local.cpu_usage_millicores}m"
             }
           }
 
