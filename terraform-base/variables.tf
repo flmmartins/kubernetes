@@ -16,6 +16,18 @@ variable "istio_ip" {
   type        = string
 }
 
+variable "gateway" {
+  description = "Gateway to use for the apps"
+  type = object({
+    name      = string
+    namespace = string
+  })
+  default = {
+    name      = "gateway"
+    namespace = "gateway"
+  }
+}
+
 variable "onepassword_connect_token" {
   description = "1password Connect Token"
   type        = string

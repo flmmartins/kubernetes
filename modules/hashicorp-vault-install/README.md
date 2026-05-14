@@ -267,20 +267,23 @@ No modules.
 | Name | Type |
 |------|------|
 | [helm_release.this](https://registry.terraform.io/providers/hashicorp/helm/latest/docs/resources/release) | resource |
+| [kubernetes_config_map_v1.vault_internal_ca](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/config_map_v1) | resource |
+| [kubernetes_manifest.backendtlspolicy_vault](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/manifest) | resource |
 | [kubernetes_manifest.certmanager_vault_tls](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/manifest) | resource |
+| [kubernetes_manifest.httproute_vault](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/manifest) | resource |
 | [kubernetes_namespace_v1.this](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/namespace_v1) | resource |
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_certificate_issuer"></a> [certificate\_issuer](#input\_certificate\_issuer) | Cert Manager certificate issuer to issue the vault certificate | `any` | `null` | no |
+| <a name="input_certificate_issuer"></a> [certificate\_issuer](#input\_certificate\_issuer) | Cert Manager certificate issuer to issue the vault internal kubernetes certificate | `any` | `null` | no |
 | <a name="input_chart_version"></a> [chart\_version](#input\_chart\_version) | Hashicorp Vault Chart Version | `string` | `"0.32.0"` | no |
 | <a name="input_csi_limits_cpu"></a> [csi\_limits\_cpu](#input\_csi\_limits\_cpu) | CPU limit for the csi container (e.g. '100m', '1'). | `string` | `"100m"` | no |
 | <a name="input_csi_limits_memory"></a> [csi\_limits\_memory](#input\_csi\_limits\_memory) | Memory limit for the csi container (e.g. '600Mi', '1Gi'). | `string` | `"600Mi"` | no |
 | <a name="input_csi_requests_cpu"></a> [csi\_requests\_cpu](#input\_csi\_requests\_cpu) | CPU request for the csi container (e.g. '50m', '1'). | `string` | `"50m"` | no |
 | <a name="input_csi_requests_memory"></a> [csi\_requests\_memory](#input\_csi\_requests\_memory) | Memory request for the csi container (e.g. '390Mi', '1Gi'). | `string` | `"390Mi"` | no |
-| <a name="input_ingress_annotations"></a> [ingress\_annotations](#input\_ingress\_annotations) | n/a | `map(string)` | `{}` | no |
+| <a name="input_gateway"></a> [gateway](#input\_gateway) | Gateway to use for the app | <pre>object({<br/>    name                    = string<br/>    namespace               = string<br/>    internal_ca_certificate = string<br/>  })</pre> | n/a | yes |
 | <a name="input_injector_limits_cpu"></a> [injector\_limits\_cpu](#input\_injector\_limits\_cpu) | CPU limit for the injector container (e.g. '100m', '1'). | `string` | `"100m"` | no |
 | <a name="input_injector_limits_memory"></a> [injector\_limits\_memory](#input\_injector\_limits\_memory) | Memory limit for the injector container (e.g. '100Mi', '1Gi'). | `string` | `"100Mi"` | no |
 | <a name="input_injector_requests_cpu"></a> [injector\_requests\_cpu](#input\_injector\_requests\_cpu) | CPU request for the injector container (e.g. '20m', '1'). | `string` | `"20m"` | no |

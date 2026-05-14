@@ -13,9 +13,13 @@ variable "url" {
   description = "Vault URL"
 }
 
-variable "ingress_annotations" {
-  type    = map(string)
-  default = {}
+variable "gateway" {
+  description = "Gateway to use for the app"
+  type = object({
+    name                    = string
+    namespace               = string
+    internal_ca_certificate = string
+  })
 }
 
 variable "install_onepassword_plugin" {
@@ -44,7 +48,7 @@ variable "priority_class" {
 }
 
 variable "certificate_issuer" {
-  description = "Cert Manager certificate issuer to issue the vault certificate"
+  description = "Cert Manager certificate issuer to issue the vault internal kubernetes certificate"
   default     = null
 }
 

@@ -17,6 +17,7 @@ locals {
   vault_tls_secret     = "vault-ha-tls"
   plugin_folder        = "/usr/local/libexec/vault"
   csi_cert_mounth_path = "/vault/tls"
+  vault_service        = "vault-ui"
 }
 
 resource "kubernetes_namespace_v1" "this" {
@@ -205,15 +206,6 @@ resource "helm_release" "this" {
         - mountPath: ${local.plugin_folder}
           name: plugins
           readOnly: true
-      ingress:
-        enabled: true
-        annotations: ${jsonencode(var.ingress_annotations)}
-        hosts:
-        - host: ${var.url}
-        tls:
-          - hosts:
-            - ${var.url}
-            secretName: ${split(".", var.url)[0]}-ui-tls
       # This configures the Vault Statefulset to create a PVC for audit logs.
       # See https://www.vaultproject.io/docs/audit/index.html to know more
       auditStorage:
