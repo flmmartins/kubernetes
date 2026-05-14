@@ -1,7 +1,7 @@
 variable "chart_version" {
   type        = string
   description = "Seaweedfs Chart Version"
-  default     = "4.17.0"
+  default     = "4.23.0"
 }
 
 variable "s3api_port" {
@@ -14,9 +14,12 @@ variable "s3api_url" {
   description = "S3 api URL"
 }
 
-variable "s3api_ingress_annotations" {
-  type    = map(string)
-  default = {}
+variable "gateway" {
+  description = "Gateway to use for the app"
+  type = object({
+    name      = string
+    namespace = string
+  })
 }
 
 variable "admin_ui_port" {
@@ -27,11 +30,6 @@ variable "admin_ui_port" {
 variable "admin_ui_url" {
   type        = string
   description = "Admin URL"
-}
-
-variable "admin_ui_ingress_annotations" {
-  type    = map(string)
-  default = {}
 }
 
 variable "buckets" {

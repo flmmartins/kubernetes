@@ -321,15 +321,6 @@ resource "helm_release" "this" {
         limits:
           cpu: ${var.s3_cpu_limit}
           memory: ${var.s3_memory_limit}
-      ingress:
-        enabled: true
-        className: "nginx"
-        annotations: ${jsonencode(var.s3api_ingress_annotations)}
-        host: "${var.s3api_url}"
-        tls:
-        - hosts:
-          - ${var.s3api_url}
-          secretName: ${split(".", var.s3api_url)[0]}-tls
       affinity: |
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
@@ -356,15 +347,6 @@ resource "helm_release" "this" {
         userKey: ${var.vault_password.admin_username_field}
         pwKey: ${var.vault_password.admin_password_field}
     %{~endif~}
-      ingress:
-        enabled: true
-        className: "nginx"
-        annotations: ${jsonencode(var.admin_ui_ingress_annotations)}
-        host: "${var.admin_ui_url}"
-        tls:
-          - hosts:
-              - ${var.admin_ui_url}
-            secretName: ${split(".", var.admin_ui_url)[0]}-tls
       resources:
         requests:
           cpu: ${var.admin_cpu_request}
@@ -380,4 +362,94 @@ resource "helm_release" "this" {
       enabled: false
   EOF
   ]
+}
+
+resource "kubernetes_manifest" "httproute_seaweedfs_admin" {
+  depends_on = [helm_release.this]
+  manifest = {
+    apiVersion = "gateway.networking.k8s.io/v1"
+    kind       = "HTTPRoute"
+
+    metadata = {
+      name      = "seaweedfs-admin"
+      namespace = kubernetes_namespace_v1.this.metadata[0].name
+      labels    = merge(local.labels, { component = "httproute" })
+    }
+
+    spec = {
+      parentRefs = [
+        {
+          name      = var.gateway.name
+          namespace = var.gateway.namespace
+        }
+      ]
+
+      hostnames = [var.admin_ui_url]
+
+      rules = [
+        {
+          matches = [
+            {
+              path = {
+                type  = "PathPrefix"
+                value = "/"
+              }
+            }
+          ]
+
+          backendRefs = [
+            {
+              name = "seaweedfs-admin"
+              port = var.admin_ui_port
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
+
+resource "kubernetes_manifest" "httproute_s3_api" {
+  depends_on = [helm_release.this]
+  manifest = {
+    apiVersion = "gateway.networking.k8s.io/v1"
+    kind       = "HTTPRoute"
+
+    metadata = {
+      name      = "s3-admin"
+      namespace = kubernetes_namespace_v1.this.metadata[0].name
+      labels    = merge(local.labels, { component = "httproute" })
+    }
+
+    spec = {
+      parentRefs = [
+        {
+          name      = var.gateway.name
+          namespace = var.gateway.namespace
+        }
+      ]
+
+      hostnames = [var.s3api_url]
+
+      rules = [
+        {
+          matches = [
+            {
+              path = {
+                type  = "PathPrefix"
+                value = "/"
+              }
+            }
+          ]
+
+          backendRefs = [
+            {
+              name = "seaweedfs-s3"
+              port = var.s3api_port
+            }
+          ]
+        }
+      ]
+    }
+  }
 }

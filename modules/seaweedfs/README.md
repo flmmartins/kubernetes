@@ -20,6 +20,8 @@ No modules.
 | Name | Type |
 |------|------|
 | [helm_release.this](https://registry.terraform.io/providers/hashicorp/helm/latest/docs/resources/release) | resource |
+| [kubernetes_manifest.httproute_s3_api](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/manifest) | resource |
+| [kubernetes_manifest.httproute_seaweedfs_admin](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/manifest) | resource |
 | [kubernetes_manifest.this](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/manifest) | resource |
 | [kubernetes_namespace_v1.this](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/namespace_v1) | resource |
 | [kubernetes_secret_v1.s3](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/secret_v1) | resource |
@@ -34,16 +36,16 @@ No modules.
 | <a name="input_admin_cpu_request"></a> [admin\_cpu\_request](#input\_admin\_cpu\_request) | CPU request for SeaweedFS admin UI pods | `string` | `"50m"` | no |
 | <a name="input_admin_memory_limit"></a> [admin\_memory\_limit](#input\_admin\_memory\_limit) | Memory limit for SeaweedFS admin UI pods | `string` | `"128Mi"` | no |
 | <a name="input_admin_memory_request"></a> [admin\_memory\_request](#input\_admin\_memory\_request) | Memory request for SeaweedFS admin UI pods | `string` | `"64Mi"` | no |
-| <a name="input_admin_ui_ingress_annotations"></a> [admin\_ui\_ingress\_annotations](#input\_admin\_ui\_ingress\_annotations) | n/a | `map(string)` | `{}` | no |
 | <a name="input_admin_ui_port"></a> [admin\_ui\_port](#input\_admin\_ui\_port) | S3 api port | `number` | `23646` | no |
 | <a name="input_admin_ui_url"></a> [admin\_ui\_url](#input\_admin\_ui\_url) | Admin URL | `string` | n/a | yes |
 | <a name="input_buckets"></a> [buckets](#input\_buckets) | List of buckets to add to seadweedfs | <pre>list(object({<br/>    name          = string<br/>    ttl           = string<br/>    anonymousRead = optional(bool, false)<br/>    objectLock    = optional(bool, false)<br/>    versioning    = optional(string, "Enabled")<br/>  }))</pre> | <pre>[<br/>  {<br/>    "name": "terraform",<br/>    "objectLock": true,<br/>    "ttl": "90d"<br/>  }<br/>]</pre> | no |
-| <a name="input_chart_version"></a> [chart\_version](#input\_chart\_version) | Seaweedfs Chart Version | `string` | `"4.17.0"` | no |
+| <a name="input_chart_version"></a> [chart\_version](#input\_chart\_version) | Seaweedfs Chart Version | `string` | `"4.23.0"` | no |
 | <a name="input_filer_cpu_limit"></a> [filer\_cpu\_limit](#input\_filer\_cpu\_limit) | CPU limit for SeaweedFS filer pods | `string` | `"250m"` | no |
 | <a name="input_filer_cpu_request"></a> [filer\_cpu\_request](#input\_filer\_cpu\_request) | CPU request for SeaweedFS filer pods | `string` | `"50m"` | no |
 | <a name="input_filer_memory_limit"></a> [filer\_memory\_limit](#input\_filer\_memory\_limit) | Memory limit for SeaweedFS filer pods | `string` | `"400Mi"` | no |
 | <a name="input_filer_memory_request"></a> [filer\_memory\_request](#input\_filer\_memory\_request) | Memory request for SeaweedFS filer pods | `string` | `"100Mi"` | no |
 | <a name="input_filer_storage_size"></a> [filer\_storage\_size](#input\_filer\_storage\_size) | PVC size for SeaweedFS file — where file metadata is stored | `string` | `"5Gi"` | no |
+| <a name="input_gateway"></a> [gateway](#input\_gateway) | Gateway to use for the app | <pre>object({<br/>    name      = string<br/>    namespace = string<br/>  })</pre> | n/a | yes |
 | <a name="input_master_cpu_limit"></a> [master\_cpu\_limit](#input\_master\_cpu\_limit) | CPU limit for SeaweedFS master pods | `string` | `"100m"` | no |
 | <a name="input_master_cpu_request"></a> [master\_cpu\_request](#input\_master\_cpu\_request) | CPU request for SeaweedFS master pods | `string` | `"50m"` | no |
 | <a name="input_master_memory_limit"></a> [master\_memory\_limit](#input\_master\_memory\_limit) | Memory limit for SeaweedFS master pods | `string` | `"128Mi"` | no |
@@ -53,7 +55,6 @@ No modules.
 | <a name="input_s3_cpu_request"></a> [s3\_cpu\_request](#input\_s3\_cpu\_request) | CPU request for SeaweedFS S3 gateway pods | `string` | `"50m"` | no |
 | <a name="input_s3_memory_limit"></a> [s3\_memory\_limit](#input\_s3\_memory\_limit) | Memory limit for SeaweedFS S3 gateway pods | `string` | `"400Mi"` | no |
 | <a name="input_s3_memory_request"></a> [s3\_memory\_request](#input\_s3\_memory\_request) | Memory request for SeaweedFS S3 gateway pods | `string` | `"100Mi"` | no |
-| <a name="input_s3api_ingress_annotations"></a> [s3api\_ingress\_annotations](#input\_s3api\_ingress\_annotations) | n/a | `map(string)` | `{}` | no |
 | <a name="input_s3api_port"></a> [s3api\_port](#input\_s3api\_port) | S3 api port | `number` | `8333` | no |
 | <a name="input_s3api_url"></a> [s3api\_url](#input\_s3api\_url) | S3 api URL | `string` | n/a | yes |
 | <a name="input_security_context"></a> [security\_context](#input\_security\_context) | Security context for the cluster | <pre>object({<br/>    user_id  = optional(number)<br/>    group_id = optional(number)<br/>  })</pre> | `null` | no |

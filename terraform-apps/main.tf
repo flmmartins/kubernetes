@@ -29,21 +29,10 @@ module "seaweedfs" {
     group_id = var.objstore_credentials.group_id
   }
 
-  s3api_url = local.seaweedfs_s3api_url
-  s3api_ingress_annotations = {
-    "nginx.ingress.kubernetes.io/proxy-body-size" = "50m"
-    "kubernetes.io/tls-acme"                      = "true"
-    "cert-manager.io/cluster-issuer"              = var.vault_pki_issuer
-    "cert-manager.io/common-name"                 = local.seaweedfs_s3api_url
-    "cert-manager.io/dns-names"                   = local.seaweedfs_s3api_url
-  }
+  s3api_url    = local.seaweedfs_s3api_url
   admin_ui_url = local.seaweedfs_admin_url
-  admin_ui_ingress_annotations = {
-    "kubernetes.io/tls-acme"         = "true"
-    "cert-manager.io/cluster-issuer" = var.vault_pki_issuer
-    "cert-manager.io/common-name"    = local.seaweedfs_admin_url
-    "cert-manager.io/dns-names"      = local.seaweedfs_admin_url
-  }
+  gateway      = var.gateway
+
   persistent_storage_class_name = var.persistent_storage_class
 }
 
