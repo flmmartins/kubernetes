@@ -20,7 +20,6 @@ No modules.
 | Name | Type |
 |------|------|
 | [helm_release.this](https://registry.terraform.io/providers/hashicorp/helm/latest/docs/resources/release) | resource |
-| [kubernetes_manifest.grafana-http-route](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/manifest) | resource |
 | [kubernetes_namespace_v1.this](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/namespace_v1) | resource |
 | [kubernetes_secret_v1.this](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/secret_v1) | resource |
 | [vault_kubernetes_auth_backend_role.this](https://registry.terraform.io/providers/hashicorp/vault/latest/docs/resources/kubernetes_auth_backend_role) | resource |
@@ -37,16 +36,24 @@ No modules.
 | <a name="input_alertmanager_storage_size"></a> [alertmanager\_storage\_size](#input\_alertmanager\_storage\_size) | Alert Manager Storage Size | `string` | `"10Gi"` | no |
 | <a name="input_chart_version"></a> [chart\_version](#input\_chart\_version) | Prometheus Stack Chart Version | `string` | `"84.5.0"` | no |
 | <a name="input_gateway"></a> [gateway](#input\_gateway) | Gateway to use for the app | <pre>object({<br/>    name      = string<br/>    namespace = string<br/>  })</pre> | n/a | yes |
+| <a name="input_grafana_cpu_limit"></a> [grafana\_cpu\_limit](#input\_grafana\_cpu\_limit) | n/a | `string` | `"200m"` | no |
+| <a name="input_grafana_cpu_request"></a> [grafana\_cpu\_request](#input\_grafana\_cpu\_request) | ----------------------------------------------------------------------------- Grafana ----------------------------------------------------------------------------- | `string` | `"200m"` | no |
+| <a name="input_grafana_memory_limit"></a> [grafana\_memory\_limit](#input\_grafana\_memory\_limit) | n/a | `string` | `"512Mi"` | no |
+| <a name="input_grafana_memory_request"></a> [grafana\_memory\_request](#input\_grafana\_memory\_request) | n/a | `string` | `"512Mi"` | no |
 | <a name="input_grafana_url"></a> [grafana\_url](#input\_grafana\_url) | Grafana URL | `string` | n/a | yes |
 | <a name="input_grana_storage_size"></a> [grana\_storage\_size](#input\_grana\_storage\_size) | Grafana Storage Size | `string` | `"10Gi"` | no |
+| <a name="input_kube_state_metrics_cpu_limit"></a> [kube\_state\_metrics\_cpu\_limit](#input\_kube\_state\_metrics\_cpu\_limit) | n/a | `string` | `"100m"` | no |
+| <a name="input_kube_state_metrics_cpu_request"></a> [kube\_state\_metrics\_cpu\_request](#input\_kube\_state\_metrics\_cpu\_request) | ----------------------------------------------------------------------------- Kube State metrics ----------------------------------------------------------------------------- | `string` | `"100m"` | no |
+| <a name="input_kube_state_metrics_memory_limit"></a> [kube\_state\_metrics\_memory\_limit](#input\_kube\_state\_metrics\_memory\_limit) | n/a | `string` | `"256Mi"` | no |
+| <a name="input_kube_state_metrics_memory_request"></a> [kube\_state\_metrics\_memory\_request](#input\_kube\_state\_metrics\_memory\_request) | n/a | `string` | `"256Mi"` | no |
 | <a name="input_operator_cpu_limit"></a> [operator\_cpu\_limit](#input\_operator\_cpu\_limit) | Operator CPU Limit | `string` | `"200m"` | no |
 | <a name="input_operator_cpu_request"></a> [operator\_cpu\_request](#input\_operator\_cpu\_request) | Operator CPU Request | `string` | `"100m"` | no |
 | <a name="input_operator_memory_limit"></a> [operator\_memory\_limit](#input\_operator\_memory\_limit) | Operator Memory Limit | `string` | `"200Mi"` | no |
 | <a name="input_operator_memory_request"></a> [operator\_memory\_request](#input\_operator\_memory\_request) | Operator Memory Request | `string` | `"100Mi"` | no |
 | <a name="input_persistent_storage_class_name"></a> [persistent\_storage\_class\_name](#input\_persistent\_storage\_class\_name) | Storage class name for prometheus and alertmanager | `string` | n/a | yes |
-| <a name="input_prometheus_cpu_limit"></a> [prometheus\_cpu\_limit](#input\_prometheus\_cpu\_limit) | Prometheus CPU Limit | `string` | `"600m"` | no |
+| <a name="input_prometheus_cpu_limit"></a> [prometheus\_cpu\_limit](#input\_prometheus\_cpu\_limit) | Prometheus CPU Limit | `string` | `"300m"` | no |
 | <a name="input_prometheus_cpu_request"></a> [prometheus\_cpu\_request](#input\_prometheus\_cpu\_request) | Prometheus CPU Request | `string` | `"300m"` | no |
-| <a name="input_prometheus_memory_limit"></a> [prometheus\_memory\_limit](#input\_prometheus\_memory\_limit) | Prometheus Memory Limit | `string` | `"2Gi"` | no |
+| <a name="input_prometheus_memory_limit"></a> [prometheus\_memory\_limit](#input\_prometheus\_memory\_limit) | Prometheus Memory Limit | `string` | `"1Gi"` | no |
 | <a name="input_prometheus_memory_request"></a> [prometheus\_memory\_request](#input\_prometheus\_memory\_request) | Prometheus Memory Request | `string` | `"1Gi"` | no |
 | <a name="input_prometheus_storage_size"></a> [prometheus\_storage\_size](#input\_prometheus\_storage\_size) | Prometheus Storage Size | `string` | `"50Gi"` | no |
 | <a name="input_retention_days"></a> [retention\_days](#input\_retention\_days) | Prometheus retention days | `string` | `"15d"` | no |
