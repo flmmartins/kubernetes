@@ -3,21 +3,14 @@ variable "chart_version" {
   default     = "v1.20.2"
 }
 
+variable "trust_manager_version" {
+  description = "Trust Manager Version"
+  default     = "0.22.1"
+}
+
 variable "default_cert_issuer" {
   description = "Default cluster issuer name. If this is changed make sure it has a matching issuer block"
   default     = "uploaded-ca-issuer"
-}
-
-variable "vault_pki_issuer" {
-  description = "Vault pki issuer"
-  type = object({
-    issuer_name = optional(string, "vault-issuer")
-    ca_file     = string
-    server      = string
-    sign_path   = string
-    policy      = string
-  })
-  default = null
 }
 
 variable "letsencrypt_issuer" {

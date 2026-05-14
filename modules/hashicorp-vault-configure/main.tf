@@ -6,6 +6,12 @@ terraform {
   }
 }
 
+locals {
+  labels = {
+    part-of = "secrets"
+  }
+}
+
 ##################################
 # KUBERNETES AUTH
 ##################################
@@ -111,7 +117,7 @@ resource "vault_pki_secret_backend_config_ca" "pki" {
   backend = vault_mount.pki[0].path
 
   pem_bundle = <<EOT
-  ${var.pki.ca_pembundle}
+  ${var.pki.root_ca}
   EOT
 }
 

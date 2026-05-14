@@ -6,9 +6,6 @@ terraform {
     kubernetes = {
       source = "hashicorp/kubernetes"
     }
-    vault = {
-      source = "hashicorp/vault"
-    }
   }
 }
 
@@ -17,20 +14,8 @@ locals {
   labels = {
     part-of = "certificates"
   }
-  dns_provider_secret = var.letsencrypt_issuer != null ? "${var.letsencrypt_issuer.dns_provider.name}-api-token" : null
-  dns_policies        = var.letsencrypt_issuer != null ? [vault_policy.dns_provider[0].name] : []
-  pki_policies        = var.vault_pki_issuer != null ? [var.vault_pki_issuer.policy] : []
-  vault_policies      = concat(local.dns_policies, local.pki_policies)
-}
-
-resource "vault_kubernetes_auth_backend_role" "this" {
-  count = length(local.vault_policies) > 0 ? 1 : 0
-
-  role_name                        = local.name
-  bound_service_account_names      = ["cert-manager"]
-  bound_service_account_namespaces = [kubernetes_namespace_v1.this.metadata[0].name]
-  token_max_ttl                    = 1440 #24H
-  token_policies                   = local.vault_policies
+  dns_provider_secret  = var.letsencrypt_issuer != null ? "${var.letsencrypt_issuer.dns_provider.name}-api-token" : null
+  service_account_name = "cert-manager"
 }
 
 resource "kubernetes_namespace_v1" "this" {
@@ -111,4 +96,17 @@ resource "helm_release" "this" {
   %{~endif~}
   EOF
   ]
+}
+
+# This is required by Vault PKI, we are exposing the token so cert manager can authenticate with vault and request certificates
+resource "kubernetes_secret_v1" "cert_manager_sa_token" {
+  metadata {
+    name      = "cert-manager-sa-token"
+    namespace = kubernetes_namespace_v1.this.metadata[0].name
+    annotations = {
+      "kubernetes.io/service-account.name" = local.service_account_name
+    }
+    labels = local.labels
+  }
+  type = "kubernetes.io/service-account-token"
 }

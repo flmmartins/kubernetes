@@ -36,13 +36,6 @@ module "cert-manager" {
     certificate_cert = var.internal_ca_certificate
     certificate_key  = var.internal_ca_key
   }
-
-  vault_pki_issuer = {
-    ca_file   = base64encode(var.internal_ca_certificate)
-    server    = module.vault-install.kubernetes_svc
-    sign_path = module.vault.pki_sign_path
-    policy    = module.vault.pki_policy
-  }
 }
 
 resource "kubernetes_priority_class_v1" "priority_class_critical" {
@@ -106,9 +99,15 @@ module "vault" {
   address = module.vault-install.kubernetes_svc
 
   pki = {
-    ca_pembundle = var.vault_apps_cert_pembundle
-    path         = "pki/apps/root"
-    role_name    = "apps-tamrieltower-local"
+    root_ca           = var.vault_apps_cert_pembundle
+    path              = "pki/apps/root"
+    role_name         = "apps-tamrieltower-local"
+    vault_internal_ca = base64encode(var.internal_ca_certificate)
+    certmanager_sa = {
+      namespace = module.cert-manager.namespace
+      name      = module.cert-manager.service_account_name
+      secret    = module.cert-manager.service_account_secret_name
+    }
   }
 }
 
@@ -119,7 +118,7 @@ module "gateway-api" {
   gateway_certificates = [
     {
       hostname       = "*.${var.private_domain}"
-      cluster_issuer = module.cert-manager.vault_pki_issuer
+      cluster_issuer = module.vault.vault_pki_issuer
     },
     {
       hostname       = "*.${var.public_domain}"

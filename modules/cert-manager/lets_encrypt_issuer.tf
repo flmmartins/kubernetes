@@ -14,12 +14,22 @@ resource "kubernetes_secret_v1" "dns_provider" {
 }
 
 resource "vault_policy" "dns_provider" {
-  count = var.letsencrypt_issuer != null ? 1 : 0
+  count = var.letsencrypt_issuer.dns_provider_vault_password != null ? 1 : 0
 
   name   = local.dns_provider_secret
   policy = <<EOT
 path "${var.letsencrypt_issuer.dns_provider_vault_password.secret_path}" { capabilities = ["read"] }
 EOT
+}
+
+resource "vault_kubernetes_auth_backend_role" "this" {
+  count = var.letsencrypt_issuer.dns_provider_vault_password != null ? 1 : 0
+
+  role_name                        = "dns-provider"
+  bound_service_account_names      = ["cert-manager"]
+  bound_service_account_namespaces = [kubernetes_namespace_v1.this.metadata[0].name]
+  token_max_ttl                    = 1440 #24H
+  token_policies                   = [vault_policy.dns_provider[0].name]
 }
 
 resource "kubernetes_manifest" "dns_provider" {

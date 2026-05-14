@@ -14,10 +14,6 @@ output "kv_backend" {
   value = try(vault_mount.kv[0].path, "")
 }
 
-output "pki_policy" {
-  value = try(vault_policy.pki[0].name, "")
-}
-
-output "pki_sign_path" {
-  value = try("${vault_mount.pki[0].path}/sign/${vault_pki_secret_backend_role.pki[0].name}", "")
+output "vault_pki_issuer" {
+  value = try(kubernetes_manifest.pki_issuer[0].manifest.metadata.name, "")
 }
