@@ -38,8 +38,8 @@ No modules.
 | <a name="input_gateway"></a> [gateway](#input\_gateway) | Gateway to use for the app | <pre>object({<br/>    name      = string<br/>    namespace = string<br/>  })</pre> | n/a | yes |
 | <a name="input_grafana_cpu_limit"></a> [grafana\_cpu\_limit](#input\_grafana\_cpu\_limit) | n/a | `string` | `"200m"` | no |
 | <a name="input_grafana_cpu_request"></a> [grafana\_cpu\_request](#input\_grafana\_cpu\_request) | ----------------------------------------------------------------------------- Grafana ----------------------------------------------------------------------------- | `string` | `"200m"` | no |
-| <a name="input_grafana_memory_limit"></a> [grafana\_memory\_limit](#input\_grafana\_memory\_limit) | n/a | `string` | `"512Mi"` | no |
-| <a name="input_grafana_memory_request"></a> [grafana\_memory\_request](#input\_grafana\_memory\_request) | n/a | `string` | `"512Mi"` | no |
+| <a name="input_grafana_memory_limit"></a> [grafana\_memory\_limit](#input\_grafana\_memory\_limit) | n/a | `string` | `"756Mi"` | no |
+| <a name="input_grafana_memory_request"></a> [grafana\_memory\_request](#input\_grafana\_memory\_request) | n/a | `string` | `"756Mi"` | no |
 | <a name="input_grafana_url"></a> [grafana\_url](#input\_grafana\_url) | Grafana URL | `string` | n/a | yes |
 | <a name="input_grana_storage_size"></a> [grana\_storage\_size](#input\_grana\_storage\_size) | Grafana Storage Size | `string` | `"10Gi"` | no |
 | <a name="input_kube_state_metrics_cpu_limit"></a> [kube\_state\_metrics\_cpu\_limit](#input\_kube\_state\_metrics\_cpu\_limit) | n/a | `string` | `"100m"` | no |

@@ -175,6 +175,8 @@ resource "helm_release" "this" {
           parentRefs:
           - name: ${var.gateway.name}
             namespace: ${var.gateway.namespace}
+      deploymentStrategy:
+        type: Recreate
     commonLabels: ${jsonencode(merge(local.labels, { "component" = "prometheus_stack" }))}
     # There's no volumeMounts on grafana
     prometheusOperator:

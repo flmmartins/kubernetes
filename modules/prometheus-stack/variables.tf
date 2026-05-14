@@ -117,12 +117,12 @@ variable "grafana_cpu_limit" {
 
 variable "grafana_memory_request" {
   type    = string
-  default = "512Mi"
+  default = "756Mi"
 }
 
 variable "grafana_memory_limit" {
   type    = string
-  default = "512Mi"
+  default = "756Mi"
 }
 
 

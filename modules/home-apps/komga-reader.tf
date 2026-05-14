@@ -80,6 +80,10 @@ resource "kubernetes_deployment_v1" "komga" {
   spec {
     replicas = 1
 
+    strategy {
+      type = "Recreate"
+    }
+
     selector {
       match_labels = local.komga_app_labels
     }
@@ -185,7 +189,7 @@ resource "kubernetes_service_v1" "komga" {
   }
 }
 
-resource "kubernetes_manifest" "komga-http-route" {
+resource "kubernetes_manifest" "httproute_komga" {
   count = var.ebooks_comics_nfs_share != null ? 1 : 0
 
   manifest = {
@@ -195,6 +199,9 @@ resource "kubernetes_manifest" "komga-http-route" {
     metadata = {
       name      = local.komga_app_name
       namespace = kubernetes_namespace_v1.komga[0].metadata[0].name
+      labels = merge(local.komga_common_labels, {
+        component = "httproute"
+      })
     }
 
     spec = {
