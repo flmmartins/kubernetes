@@ -6,11 +6,6 @@ variable "nfs_folder" {
   description = "NFS Folder"
 }
 
-variable "nginx_ip" {
-  type        = string
-  description = "IP assigned to NGINX"
-}
-
 variable "istio_ip" {
   description = "Load Balancer IP assigned for Istio"
   type        = string
@@ -40,6 +35,11 @@ variable "onepassword_credentials_json_base64" {
   type        = string
   sensitive   = true
   default     = null
+}
+
+variable "onepassword_vault_path" {
+  default     = ""
+  description = "1password vault path for secrets. It contain the <path prefix>/<vault id>"
 }
 
 variable "vault_address_internal" {
@@ -80,11 +80,6 @@ variable "private_domain" {
 variable "public_domain" {
   description = "Public domain name"
   default     = ""
-}
-
-variable "onepassword_vault_path" {
-  default     = ""
-  description = "1password vault path for secrets. It contain the <path prefix>/<vault id>"
 }
 
 variable "cloudflare_email" {

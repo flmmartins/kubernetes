@@ -23,11 +23,6 @@ variable "public_domain" {
   description = "Apps public domain name"
 }
 
-variable "nginx_ip" {
-  type        = string
-  description = "IP of NGINX"
-}
-
 variable "istio_ip" {
   type        = string
   description = "IP of Istio Gateway. Necessary for Plex to work on TV without SSL"
