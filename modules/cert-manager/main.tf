@@ -35,11 +35,8 @@ resource "helm_release" "this" {
     <<-EOF
     crds:
       enabled: true
-    replicaCount: 2
+    replicaCount: 1
     podLabels: ${jsonencode(merge(local.labels, { "component" = "cert-manager" }))}
-    podDisruptionBudget:
-      enabled: true
-      minAvailable: 1
     affinity:
       podAntiAffinity:
         preferredDuringSchedulingIgnoredDuringExecution:
