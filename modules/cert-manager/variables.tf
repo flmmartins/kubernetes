@@ -3,11 +3,6 @@ variable "chart_version" {
   default     = "v1.20.2"
 }
 
-variable "trust_manager_version" {
-  description = "Trust Manager Version"
-  default     = "0.22.1"
-}
-
 variable "default_cert_issuer" {
   description = "Default cluster issuer name. If this is changed make sure it has a matching issuer block"
   default     = "uploaded-ca-issuer"

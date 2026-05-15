@@ -1,8 +1,7 @@
 #locals {
 #  immich_app_name = "immich-photos"
-#  immich_share    = "photos"
-#  immich_url      = "${local.immich_app_name}.${var.private_domain}"
-#  immich_common_labels = {
+#  immich_url      = "${local.immich_app_name}.${var.domain}"
+#  immich_app_labels = {
 #    "part-of" = "photos"
 #  }
 #}
@@ -10,42 +9,43 @@
 #resource "kubernetes_namespace_v1" "immich" {
 #  count = var.photos_nfs_share != null ? 1 : 0
 #  metadata {
-#    name = local.immich_app_name
+#    name   = local.immich_app_name
+#    labels = local.immich_app_labels
 #  }
 #}
 #
 #resource "kubernetes_persistent_volume_claim_v1" "immich_data" {
 #  count = var.photos_nfs_share != null ? 1 : 0
 #  metadata {
-#    name = "${local.immich_app_name}-data"
+#    name      = "${local.immich_app_name}-data"
 #    namespace = kubernetes_namespace_v1.immich[0].metadata[0].name
-#    labels = merge(local.immich_common_labels, {
+#    labels = merge(local.immich_app_labels, {
 #      component = "data"
 #    })
 #  }
 #
 #  spec {
-#    access_modes = ["ReadWriteMany"]
+#    access_modes = [var.photos_nfs_share.access_mode]
 #    resources {
 #      requests = {
 #        storage = var.photos_nfs_share.size
 #      }
 #    }
-#    volume_name        = kubernetes_persistent_volume_v1.data_volumes[local.immich_share].metadata[0].name
+#    volume_name        = kubernetes_persistent_volume_v1.data_volumes["photos"].metadata[0].name
 #    storage_class_name = kubernetes_storage_class_v1.manual.metadata[0].name
 #  }
 #}
 #
 #resource "helm_release" "immich" {
 #  count = var.photos_nfs_share != null ? 1 : 0
-
+#
 #  name       = local.immich_app_name
 #  namespace  = kubernetes_namespace_v1.immich[0].metadata[0].name
 #  repository = "oci://ghcr.io/immich-app/immich-charts/immich"
 #  version    = var.immich_chart_version
 #  chart      = "immichr"
 #  values = [
-#  <<-EOF
+#    <<-EOF
 #  env:
 #    REDIS_HOSTNAME: '{{ printf "%s-redis-master" .Release.Name }}'
 #    DB_HOSTNAME: "TODO"

@@ -9,15 +9,17 @@ locals {
     app       = local.komga_app_name
     component = "app"
   })
-  memory_usage_gb      = 1
-  cpu_usage_millicores = 500
+  memory_in_mi      = 1024
+  java_memory_in_mi = floor(local.memory_in_mi * 75 / 100)
+
 }
 
 resource "kubernetes_namespace_v1" "komga" {
   count = var.ebooks_comics_nfs_share != null ? 1 : 0
 
   metadata {
-    name = local.komga_app_name
+    name   = local.komga_app_name
+    labels = local.komga_app_labels
   }
 }
 
@@ -113,10 +115,20 @@ resource "kubernetes_deployment_v1" "komga" {
             value = "FALSE"
           }
 
-          # Use 75% of allocated memory from kubernetes. If this goes higher we get OOM KIlls
+          # Trying to put memory under control
+          env {
+            name  = "KOMGA_LIBRARIES_SCAN-ON-STARTUP"
+            value = "false"
+          }
+
+          env {
+            name  = "KOMGA_TASKING_SCAN-THREADS"
+            value = "1"
+          }
+
           env {
             name  = "JAVA_TOOL_OPTIONS"
-            value = "-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
+            value = "-Xmx${local.java_memory_in_mi}m"
           }
 
           port {
@@ -125,12 +137,12 @@ resource "kubernetes_deployment_v1" "komga" {
 
           resources {
             requests = {
-              memory = "${local.memory_usage_gb}Gi"
-              cpu    = "${local.cpu_usage_millicores}m"
+              memory = "${local.memory_in_mi}Mi"
+              cpu    = "200m"
             }
             limits = {
-              memory = "${local.memory_usage_gb}Gi"
-              cpu    = "${local.cpu_usage_millicores}m"
+              memory = "${local.memory_in_mi}Mi"
+              cpu    = "900m"
             }
           }
 
