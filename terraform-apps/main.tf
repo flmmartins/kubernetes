@@ -74,6 +74,29 @@ module "kube_prometheus_stack" {
   gateway     = var.gateway
 }
 
+# PG Operator is different module due to the CRD manifest issue on plan
+# Where it can't find CRD, so you have to apply with target
+module "pg-operator" {
+  source = "../modules/cloudnative-pg"
+
+  security_context = {
+    user_id  = var.postgres_credentials.user_id
+    group_id = var.postgres_credentials.group_id
+  }
+}
+
+module "main-pg-cluster" {
+  source = "../modules/postgres-cluster"
+
+  cluster = {
+    name          = "pg-cluster"
+    storage_class = var.persistent_storage_class
+  }
+
+  pg_operator_service_account = module.pg-operator.service_account
+  certificate_issuer          = var.vault_pki_issuer
+}
+
 module "home-apps" {
   source                    = "../modules/home-apps"
   domain                    = var.public_domain

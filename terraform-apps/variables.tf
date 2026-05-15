@@ -72,3 +72,11 @@ variable "monitoring_credentials" {
     group_id = number
   })
 }
+
+variable "postgres_credentials" {
+  description = "Postgres User & Group ids"
+  type = object({
+    user_id  = number
+    group_id = number
+  })
+}
