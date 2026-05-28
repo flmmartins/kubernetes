@@ -120,6 +120,14 @@ resource "helm_release" "this" {
         limits:
           cpu: ${var.kube_state_metrics_cpu_limit}
           memory: ${var.kube_state_metrics_memory_limit}
+    prometheus-node-exporter:
+      resources:
+        requests:
+          cpu: ${var.node_exporter_cpu_request}
+          memory: ${var.node_exporter_memory_request}
+        limits:
+          cpu: ${var.node_exporter_cpu_limit}
+          memory: ${var.node_exporter_memory_limit}
     alertmanager:
       alertmanagerSpec:
         resources:

@@ -46,6 +46,10 @@ No modules.
 | <a name="input_kube_state_metrics_cpu_request"></a> [kube\_state\_metrics\_cpu\_request](#input\_kube\_state\_metrics\_cpu\_request) | ----------------------------------------------------------------------------- Kube State metrics ----------------------------------------------------------------------------- | `string` | `"100m"` | no |
 | <a name="input_kube_state_metrics_memory_limit"></a> [kube\_state\_metrics\_memory\_limit](#input\_kube\_state\_metrics\_memory\_limit) | n/a | `string` | `"256Mi"` | no |
 | <a name="input_kube_state_metrics_memory_request"></a> [kube\_state\_metrics\_memory\_request](#input\_kube\_state\_metrics\_memory\_request) | n/a | `string` | `"256Mi"` | no |
+| <a name="input_node_exporter_cpu_limit"></a> [node\_exporter\_cpu\_limit](#input\_node\_exporter\_cpu\_limit) | n/a | `string` | `"200m"` | no |
+| <a name="input_node_exporter_cpu_request"></a> [node\_exporter\_cpu\_request](#input\_node\_exporter\_cpu\_request) | ----------------------------------------------------------------------------- Node Exporter ----------------------------------------------------------------------------- | `string` | `"50m"` | no |
+| <a name="input_node_exporter_memory_limit"></a> [node\_exporter\_memory\_limit](#input\_node\_exporter\_memory\_limit) | n/a | `string` | `"128Mi"` | no |
+| <a name="input_node_exporter_memory_request"></a> [node\_exporter\_memory\_request](#input\_node\_exporter\_memory\_request) | n/a | `string` | `"64Mi"` | no |
 | <a name="input_operator_cpu_limit"></a> [operator\_cpu\_limit](#input\_operator\_cpu\_limit) | Operator CPU Limit | `string` | `"200m"` | no |
 | <a name="input_operator_cpu_request"></a> [operator\_cpu\_request](#input\_operator\_cpu\_request) | Operator CPU Request | `string` | `"100m"` | no |
 | <a name="input_operator_memory_limit"></a> [operator\_memory\_limit](#input\_operator\_memory\_limit) | Operator Memory Limit | `string` | `"200Mi"` | no |

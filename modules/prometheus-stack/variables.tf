@@ -202,3 +202,23 @@ variable "operator_memory_limit" {
   description = "Operator Memory Limit"
   default     = "200Mi"
 }
+
+# -----------------------------------------------------------------------------
+# Node Exporter
+# -----------------------------------------------------------------------------
+variable "node_exporter_cpu_request" {
+  type    = string
+  default = "50m"
+}
+variable "node_exporter_cpu_limit" {
+  type    = string
+  default = "200m"
+}
+variable "node_exporter_memory_request" {
+  type    = string
+  default = "64Mi"
+}
+variable "node_exporter_memory_limit" {
+  type    = string
+  default = "128Mi"
+}
