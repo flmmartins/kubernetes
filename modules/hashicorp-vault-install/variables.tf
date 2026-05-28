@@ -123,7 +123,7 @@ variable "server_requests_cpu" {
 variable "server_requests_memory" {
   description = "Memory request for the server container (e.g. '512Mi', '1Gi')."
   type        = string
-  default     = "200Mi"
+  default     = "400Mi"
 }
 
 variable "server_limits_cpu" {
@@ -135,5 +135,5 @@ variable "server_limits_cpu" {
 variable "server_limits_memory" {
   description = "Memory limit for the server container (e.g. '512Mi', '1Gi')."
   type        = string
-  default     = "512Mi"
+  default     = "400Mi"
 }

@@ -294,9 +294,9 @@ No modules.
 | <a name="input_priority_class"></a> [priority\_class](#input\_priority\_class) | Describe the priority class vault should be in | `string` | `null` | no |
 | <a name="input_security_context"></a> [security\_context](#input\_security\_context) | Security context for the vault | <pre>object({<br/>    user_id  = optional(number)<br/>    group_id = optional(number)<br/>  })</pre> | `null` | no |
 | <a name="input_server_limits_cpu"></a> [server\_limits\_cpu](#input\_server\_limits\_cpu) | CPU limit for the server container (e.g. '256m', '1'). | `string` | `"256m"` | no |
-| <a name="input_server_limits_memory"></a> [server\_limits\_memory](#input\_server\_limits\_memory) | Memory limit for the server container (e.g. '512Mi', '1Gi'). | `string` | `"512Mi"` | no |
+| <a name="input_server_limits_memory"></a> [server\_limits\_memory](#input\_server\_limits\_memory) | Memory limit for the server container (e.g. '512Mi', '1Gi'). | `string` | `"400Mi"` | no |
 | <a name="input_server_requests_cpu"></a> [server\_requests\_cpu](#input\_server\_requests\_cpu) | CPU request for the server container (e.g. '100m', '1'). | `string` | `"100m"` | no |
-| <a name="input_server_requests_memory"></a> [server\_requests\_memory](#input\_server\_requests\_memory) | Memory request for the server container (e.g. '512Mi', '1Gi'). | `string` | `"200Mi"` | no |
+| <a name="input_server_requests_memory"></a> [server\_requests\_memory](#input\_server\_requests\_memory) | Memory request for the server container (e.g. '512Mi', '1Gi'). | `string` | `"400Mi"` | no |
 | <a name="input_url"></a> [url](#input\_url) | Vault URL | `string` | n/a | yes |
 
 ## Outputs
