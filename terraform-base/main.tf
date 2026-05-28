@@ -15,6 +15,10 @@ module "csi-driver-nfs" {
   folder = var.nfs_folder
 }
 
+module "kubelet-cert-approver" {
+  source = "../modules/kubelet-cert-approver"
+}
+
 module "cert-manager" {
   source = "../modules/cert-manager"
 
