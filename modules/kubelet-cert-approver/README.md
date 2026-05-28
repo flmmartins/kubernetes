@@ -12,6 +12,8 @@ No requirements.
 
 | Name | Version |
 |------|---------|
+| <a name="provider_http"></a> [http](#provider\_http) | n/a |
+| <a name="provider_local"></a> [local](#provider\_local) | n/a |
 | <a name="provider_terraform"></a> [terraform](#provider\_terraform) | n/a |
 
 ## Modules
@@ -22,7 +24,9 @@ No modules.
 
 | Name | Type |
 |------|------|
-| [terraform_data.this](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data) | resource |
+| [local_file.kubelet_serving_cert_approver](https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/file) | resource |
+| [terraform_data.kubelet_serving_cert_approver](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data) | resource |
+| [http_http.this](https://registry.terraform.io/providers/hashicorp/http/latest/docs/data-sources/http) | data source |
 
 ## Inputs
 
