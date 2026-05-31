@@ -156,6 +156,9 @@ resource "helm_release" "this" {
                 requests:
                   storage: ${var.alertmanager_storage_size}
     grafana:
+      grafana.ini:
+        dataproxy:
+          max_concurrent_query_limit: 5
       admin:
       %{~if var.vault_password != null~} 
         existingSecret: grafana
@@ -175,6 +178,14 @@ resource "helm_release" "this" {
         requests:
           cpu: ${var.grafana_cpu_request}
           memory: ${var.grafana_memory_request}
+      sidecar:
+        resources:
+          requests:
+            cpu: ${var.grafana_sidecar_cpu_request}
+            memory: ${var.grafana_sidecar_memory_request}
+          limits:
+            cpu: ${var.grafana_sidecar_cpu_limit}
+            memory: ${var.grafana_sidecar_memory_limit}
       route:
         main:
           enabled: true

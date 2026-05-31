@@ -81,19 +81,19 @@ variable "security_context" {
 variable "prometheus_cpu_request" {
   type        = string
   description = "Prometheus CPU Request"
-  default     = "300m"
+  default     = "200m"
 }
 
 variable "prometheus_cpu_limit" {
   type        = string
   description = "Prometheus CPU Limit"
-  default     = "300m"
+  default     = "500m"
 }
 
 variable "prometheus_memory_request" {
   type        = string
   description = "Prometheus Memory Request"
-  default     = "1Gi"
+  default     = "512Mi"
 }
 
 variable "prometheus_memory_limit" {
@@ -107,31 +107,50 @@ variable "prometheus_memory_limit" {
 # -----------------------------------------------------------------------------
 variable "grafana_cpu_request" {
   type    = string
-  default = "200m"
+  default = "100m"
 }
 
 variable "grafana_cpu_limit" {
   type    = string
-  default = "200m"
+  default = "500m"
 }
 
 variable "grafana_memory_request" {
   type    = string
-  default = "756Mi"
+  default = "128Mi"
 }
 
 variable "grafana_memory_limit" {
   type    = string
-  default = "756Mi"
+  default = "768Mi"
 }
 
+variable "grafana_sidecar_cpu_request" {
+  type    = string
+  default = "10m"
+}
+
+variable "grafana_sidecar_cpu_limit" {
+  type    = string
+  default = "50m"
+}
+
+variable "grafana_sidecar_memory_request" {
+  type    = string
+  default = "32Mi"
+}
+
+variable "grafana_sidecar_memory_limit" {
+  type    = string
+  default = "128Mi"
+}
 
 # -----------------------------------------------------------------------------
 # Kube State metrics
 # -----------------------------------------------------------------------------
 variable "kube_state_metrics_cpu_request" {
   type    = string
-  default = "100m"
+  default = "25m"
 }
 
 variable "kube_state_metrics_cpu_limit" {
@@ -141,7 +160,7 @@ variable "kube_state_metrics_cpu_limit" {
 
 variable "kube_state_metrics_memory_request" {
   type    = string
-  default = "256Mi"
+  default = "64Mi"
 }
 
 variable "kube_state_metrics_memory_limit" {
@@ -182,7 +201,7 @@ variable "alertmanager_memory_limit" {
 variable "operator_cpu_request" {
   type        = string
   description = "Operator CPU Request"
-  default     = "100m"
+  default     = "50m"
 }
 
 variable "operator_cpu_limit" {
@@ -194,7 +213,7 @@ variable "operator_cpu_limit" {
 variable "operator_memory_request" {
   type        = string
   description = "Operator Memory Request"
-  default     = "100Mi"
+  default     = "64Mi"
 }
 
 variable "operator_memory_limit" {

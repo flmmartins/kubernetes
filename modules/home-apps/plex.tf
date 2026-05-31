@@ -58,10 +58,10 @@ resource "helm_release" "plex" {
       configStorage: 5Gi
       resources:
         requests:
-          cpu: 1
-          memory: 1Gi
+          cpu: 300m
+          memory: 512Mi
         limits:
-          cpu: 1
+          cpu: 1.5
           memory: 1Gi
     commonLabels: ${jsonencode(merge(local.plex_common_labels, { "component" = "plex" }))}
     extraEnv:
