@@ -19,6 +19,13 @@ resource "helm_release" "this" {
     enableSecretRotation: true
     rotationPollInterval: "2m"
     linux:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: node-role.kubernetes.io/control-plane
+                    operator: DoesNotExist
       driver:
         resources:
           limits:

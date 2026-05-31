@@ -49,6 +49,14 @@ resource "helm_release" "metallb" {
           memory: ${var.controller_memory_limit}
           cpu: ${var.controller_cpu_limit}
     speaker:
+      tolerations: []   # remove the control-plane toleration
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: node-role.kubernetes.io/control-plane
+                    operator: DoesNotExist
       resources:
         requests:
           memory: ${var.speaker_memory_request}

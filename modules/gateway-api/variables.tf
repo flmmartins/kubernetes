@@ -123,7 +123,7 @@ variable "speaker_memory_request" {
 
 variable "speaker_memory_limit" {
   type    = string
-  default = "200Mi"
+  default = "400Mi"
 }
 
 variable "speaker_cpu_request" {
