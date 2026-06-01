@@ -81,7 +81,7 @@ variable "security_context" {
 variable "prometheus_cpu_request" {
   type        = string
   description = "Prometheus CPU Request"
-  default     = "200m"
+  default     = "300m"
 }
 
 variable "prometheus_cpu_limit" {
@@ -93,7 +93,7 @@ variable "prometheus_cpu_limit" {
 variable "prometheus_memory_request" {
   type        = string
   description = "Prometheus Memory Request"
-  default     = "512Mi"
+  default     = "1Gi"
 }
 
 variable "prometheus_memory_limit" {
@@ -107,17 +107,17 @@ variable "prometheus_memory_limit" {
 # -----------------------------------------------------------------------------
 variable "grafana_cpu_request" {
   type    = string
-  default = "100m"
+  default = "200m"
 }
 
 variable "grafana_cpu_limit" {
   type    = string
-  default = "500m"
+  default = "200m"
 }
 
 variable "grafana_memory_request" {
   type    = string
-  default = "128Mi"
+  default = "256Mi"
 }
 
 variable "grafana_memory_limit" {
@@ -192,7 +192,7 @@ variable "alertmanager_memory_request" {
 variable "alertmanager_memory_limit" {
   type        = string
   description = "Alert Manager Memory Limit"
-  default     = "256Mi"
+  default     = "128Mi"
 }
 
 # -----------------------------------------------------------------------------

@@ -256,6 +256,9 @@ resource "helm_release" "this" {
                     app.kubernetes.io/name: vault
                     app.kubernetes.io/instance: vault
                     component: server
+      readinessProbe:
+        enabled: true
+        failureThreshold: 6
     # Vault UI
     ui:
       enabled: true

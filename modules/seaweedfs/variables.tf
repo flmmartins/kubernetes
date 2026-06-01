@@ -156,7 +156,7 @@ variable "filer_cpu_request" {
 variable "filer_memory_request" {
   description = "Memory request for SeaweedFS filer pods"
   type        = string
-  default     = "100Mi"
+  default     = "130Mi"
 }
 
 variable "filer_cpu_limit" {
@@ -168,7 +168,7 @@ variable "filer_cpu_limit" {
 variable "filer_memory_limit" {
   description = "Memory limit for SeaweedFS filer pods"
   type        = string
-  default     = "400Mi"
+  default     = "200Mi"
 }
 
 
@@ -185,7 +185,7 @@ variable "volume_cpu_request" {
 variable "volume_memory_request" {
   description = "Memory request for SeaweedFS volume pods"
   type        = string
-  default     = "100Mi"
+  default     = "70Mi"
 }
 
 variable "volume_cpu_limit" {
@@ -197,7 +197,7 @@ variable "volume_cpu_limit" {
 variable "volume_memory_limit" {
   description = "Memory limit for SeaweedFS volume pods"
   type        = string
-  default     = "400Mi"
+  default     = "200Mi"
 }
 
 # -----------------------------------------------------------------------------
@@ -212,7 +212,7 @@ variable "s3_cpu_request" {
 variable "s3_memory_request" {
   description = "Memory request for SeaweedFS S3 gateway pods"
   type        = string
-  default     = "100Mi"
+  default     = "70Mi"
 }
 
 variable "s3_cpu_limit" {
@@ -224,7 +224,7 @@ variable "s3_cpu_limit" {
 variable "s3_memory_limit" {
   description = "Memory limit for SeaweedFS S3 gateway pods"
   type        = string
-  default     = "400Mi"
+  default     = "200Mi"
 }
 
 # -----------------------------------------------------------------------------
@@ -239,7 +239,7 @@ variable "admin_cpu_request" {
 variable "admin_memory_request" {
   description = "Memory request for SeaweedFS admin UI pods"
   type        = string
-  default     = "64Mi"
+  default     = "50Mi"
 }
 
 variable "admin_cpu_limit" {
@@ -251,5 +251,5 @@ variable "admin_cpu_limit" {
 variable "admin_memory_limit" {
   description = "Memory limit for SeaweedFS admin UI pods"
   type        = string
-  default     = "128Mi"
+  default     = "100Mi"
 }

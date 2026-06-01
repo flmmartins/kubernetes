@@ -31,15 +31,15 @@ No modules.
 |------|-------------|------|---------|:--------:|
 | <a name="input_alertmanager_cpu_limit"></a> [alertmanager\_cpu\_limit](#input\_alertmanager\_cpu\_limit) | Alert Manager CPU Limit | `string` | `"100m"` | no |
 | <a name="input_alertmanager_cpu_request"></a> [alertmanager\_cpu\_request](#input\_alertmanager\_cpu\_request) | Alert Manager CPU Request | `string` | `"25m"` | no |
-| <a name="input_alertmanager_memory_limit"></a> [alertmanager\_memory\_limit](#input\_alertmanager\_memory\_limit) | Alert Manager Memory Limit | `string` | `"256Mi"` | no |
+| <a name="input_alertmanager_memory_limit"></a> [alertmanager\_memory\_limit](#input\_alertmanager\_memory\_limit) | Alert Manager Memory Limit | `string` | `"128Mi"` | no |
 | <a name="input_alertmanager_memory_request"></a> [alertmanager\_memory\_request](#input\_alertmanager\_memory\_request) | Alert Manager Memory Request | `string` | `"64Mi"` | no |
 | <a name="input_alertmanager_storage_size"></a> [alertmanager\_storage\_size](#input\_alertmanager\_storage\_size) | Alert Manager Storage Size | `string` | `"10Gi"` | no |
 | <a name="input_chart_version"></a> [chart\_version](#input\_chart\_version) | Prometheus Stack Chart Version | `string` | `"84.5.0"` | no |
 | <a name="input_gateway"></a> [gateway](#input\_gateway) | Gateway to use for the app | <pre>object({<br/>    name      = string<br/>    namespace = string<br/>  })</pre> | n/a | yes |
-| <a name="input_grafana_cpu_limit"></a> [grafana\_cpu\_limit](#input\_grafana\_cpu\_limit) | n/a | `string` | `"500m"` | no |
-| <a name="input_grafana_cpu_request"></a> [grafana\_cpu\_request](#input\_grafana\_cpu\_request) | ----------------------------------------------------------------------------- Grafana ----------------------------------------------------------------------------- | `string` | `"100m"` | no |
+| <a name="input_grafana_cpu_limit"></a> [grafana\_cpu\_limit](#input\_grafana\_cpu\_limit) | n/a | `string` | `"200m"` | no |
+| <a name="input_grafana_cpu_request"></a> [grafana\_cpu\_request](#input\_grafana\_cpu\_request) | ----------------------------------------------------------------------------- Grafana ----------------------------------------------------------------------------- | `string` | `"200m"` | no |
 | <a name="input_grafana_memory_limit"></a> [grafana\_memory\_limit](#input\_grafana\_memory\_limit) | n/a | `string` | `"768Mi"` | no |
-| <a name="input_grafana_memory_request"></a> [grafana\_memory\_request](#input\_grafana\_memory\_request) | n/a | `string` | `"128Mi"` | no |
+| <a name="input_grafana_memory_request"></a> [grafana\_memory\_request](#input\_grafana\_memory\_request) | n/a | `string` | `"256Mi"` | no |
 | <a name="input_grafana_sidecar_cpu_limit"></a> [grafana\_sidecar\_cpu\_limit](#input\_grafana\_sidecar\_cpu\_limit) | n/a | `string` | `"50m"` | no |
 | <a name="input_grafana_sidecar_cpu_request"></a> [grafana\_sidecar\_cpu\_request](#input\_grafana\_sidecar\_cpu\_request) | n/a | `string` | `"10m"` | no |
 | <a name="input_grafana_sidecar_memory_limit"></a> [grafana\_sidecar\_memory\_limit](#input\_grafana\_sidecar\_memory\_limit) | n/a | `string` | `"128Mi"` | no |
@@ -60,9 +60,9 @@ No modules.
 | <a name="input_operator_memory_request"></a> [operator\_memory\_request](#input\_operator\_memory\_request) | Operator Memory Request | `string` | `"64Mi"` | no |
 | <a name="input_persistent_storage_class_name"></a> [persistent\_storage\_class\_name](#input\_persistent\_storage\_class\_name) | Storage class name for prometheus and alertmanager | `string` | n/a | yes |
 | <a name="input_prometheus_cpu_limit"></a> [prometheus\_cpu\_limit](#input\_prometheus\_cpu\_limit) | Prometheus CPU Limit | `string` | `"500m"` | no |
-| <a name="input_prometheus_cpu_request"></a> [prometheus\_cpu\_request](#input\_prometheus\_cpu\_request) | Prometheus CPU Request | `string` | `"200m"` | no |
+| <a name="input_prometheus_cpu_request"></a> [prometheus\_cpu\_request](#input\_prometheus\_cpu\_request) | Prometheus CPU Request | `string` | `"300m"` | no |
 | <a name="input_prometheus_memory_limit"></a> [prometheus\_memory\_limit](#input\_prometheus\_memory\_limit) | Prometheus Memory Limit | `string` | `"1Gi"` | no |
-| <a name="input_prometheus_memory_request"></a> [prometheus\_memory\_request](#input\_prometheus\_memory\_request) | Prometheus Memory Request | `string` | `"512Mi"` | no |
+| <a name="input_prometheus_memory_request"></a> [prometheus\_memory\_request](#input\_prometheus\_memory\_request) | Prometheus Memory Request | `string` | `"1Gi"` | no |
 | <a name="input_prometheus_storage_size"></a> [prometheus\_storage\_size](#input\_prometheus\_storage\_size) | Prometheus Storage Size | `string` | `"50Gi"` | no |
 | <a name="input_retention_days"></a> [retention\_days](#input\_retention\_days) | Prometheus retention days | `string` | `"15d"` | no |
 | <a name="input_security_context"></a> [security\_context](#input\_security\_context) | Security context for the prometheus stack | <pre>object({<br/>    user_id  = optional(number)<br/>    group_id = optional(number)<br/>  })</pre> | `null` | no |

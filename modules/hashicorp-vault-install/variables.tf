@@ -108,7 +108,7 @@ variable "csi_limits_cpu" {
 variable "csi_limits_memory" {
   description = "Memory limit for the csi container (e.g. '600Mi', '1Gi')."
   type        = string
-  default     = "1024Mi"
+  default     = "300Mi"
 }
 
 # -----------------------------------------------------------------------------
@@ -117,7 +117,7 @@ variable "csi_limits_memory" {
 variable "server_requests_cpu" {
   description = "CPU request for the server container (e.g. '100m', '1')."
   type        = string
-  default     = "100m"
+  default     = "256m"
 }
 
 variable "server_requests_memory" {
@@ -135,5 +135,5 @@ variable "server_limits_cpu" {
 variable "server_limits_memory" {
   description = "Memory limit for the server container (e.g. '512Mi', '1Gi')."
   type        = string
-  default     = "1024Mi"
+  default     = "400Mi"
 }
