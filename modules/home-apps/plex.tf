@@ -45,6 +45,8 @@ resource "kubernetes_persistent_volume_claim_v1" "plex" {
 }
 
 resource "helm_release" "plex" {
+  count = length(local.plex_shares) != null ? 1 : 0
+
   name       = local.plex_app_name
   namespace  = kubernetes_namespace_v1.plex[0].metadata[0].name
   repository = "https://raw.githubusercontent.com/plexinc/pms-docker/gh-pages"
@@ -94,6 +96,9 @@ resource "helm_release" "plex" {
 
 # For TV to work - not supported by helm chart
 resource "kubernetes_manifest" "tcproute_plex" {
+  count      = length(local.plex_shares) != null ? 1 : 0
+  depends_on = [helm_release.plex]
+
   manifest = {
     apiVersion = "gateway.networking.k8s.io/v1alpha2"
     kind       = "TCPRoute"

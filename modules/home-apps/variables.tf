@@ -33,7 +33,16 @@ variable "plex_ip" {
 
 variable "immich_chart_version" {
   description = "Photos Processing App Version"
-  default     = "0.9.3"
+  default     = "0.12.0"
+}
+
+variable "immich_database" {
+  description = "Database spects for immich"
+  type = object({
+    server                  = string
+    database_name           = string
+    credentials_secret_name = string
+  })
 }
 
 variable "persistent_storage_class" {

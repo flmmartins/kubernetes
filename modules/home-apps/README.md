@@ -18,12 +18,17 @@ No modules.
 
 | Name | Type |
 |------|------|
+| [helm_release.immich](https://registry.terraform.io/providers/hashicorp/helm/latest/docs/resources/release) | resource |
 | [helm_release.plex](https://registry.terraform.io/providers/hashicorp/helm/latest/docs/resources/release) | resource |
 | [kubernetes_deployment_v1.komga](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/deployment_v1) | resource |
+| [kubernetes_manifest.httproute_immich](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/manifest) | resource |
 | [kubernetes_manifest.httproute_komga](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/manifest) | resource |
 | [kubernetes_manifest.tcproute_plex](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/manifest) | resource |
+| [kubernetes_namespace_v1.immich](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/namespace_v1) | resource |
 | [kubernetes_namespace_v1.komga](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/namespace_v1) | resource |
 | [kubernetes_namespace_v1.plex](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/namespace_v1) | resource |
+| [kubernetes_persistent_volume_claim_v1.immich_config](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/persistent_volume_claim_v1) | resource |
+| [kubernetes_persistent_volume_claim_v1.immich_data](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/persistent_volume_claim_v1) | resource |
 | [kubernetes_persistent_volume_claim_v1.komga_config](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/persistent_volume_claim_v1) | resource |
 | [kubernetes_persistent_volume_claim_v1.komga_data](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/persistent_volume_claim_v1) | resource |
 | [kubernetes_persistent_volume_claim_v1.plex](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/persistent_volume_claim_v1) | resource |
@@ -39,7 +44,8 @@ No modules.
 | <a name="input_ebooks_comics_nfs_share"></a> [ebooks\_comics\_nfs\_share](#input\_ebooks\_comics\_nfs\_share) | NFS share to use for ebooks and comics storage | <pre>object({<br/>    size        = string<br/>    user_id     = number<br/>    group_id    = number<br/>    access_mode = string<br/>    path        = string<br/>    server      = string<br/>  })</pre> | `null` | no |
 | <a name="input_emulatorsrooms_nfs_share"></a> [emulatorsrooms\_nfs\_share](#input\_emulatorsrooms\_nfs\_share) | NFS share to use for old games emulators storage | <pre>object({<br/>    size        = string<br/>    user_id     = number<br/>    group_id    = number<br/>    access_mode = string<br/>    path        = string<br/>    server      = string<br/>  })</pre> | `null` | no |
 | <a name="input_gateway"></a> [gateway](#input\_gateway) | Gateway to use for the app | <pre>object({<br/>    name      = string<br/>    namespace = string<br/>  })</pre> | n/a | yes |
-| <a name="input_immich_chart_version"></a> [immich\_chart\_version](#input\_immich\_chart\_version) | Photos Processing App Version | `string` | `"0.9.3"` | no |
+| <a name="input_immich_chart_version"></a> [immich\_chart\_version](#input\_immich\_chart\_version) | Photos Processing App Version | `string` | `"0.12.0"` | no |
+| <a name="input_immich_database"></a> [immich\_database](#input\_immich\_database) | Database spects for immich | <pre>object({<br/>    server                  = string<br/>    database_name           = string<br/>    credentials_secret_name = string<br/>  })</pre> | n/a | yes |
 | <a name="input_komga_image_version"></a> [komga\_image\_version](#input\_komga\_image\_version) | Komga Ebooks & Comic Reader Version | `string` | `"latest"` | no |
 | <a name="input_movies_nfs_share"></a> [movies\_nfs\_share](#input\_movies\_nfs\_share) | NFS share to use for movies storage | <pre>object({<br/>    size        = string<br/>    user_id     = number<br/>    group_id    = number<br/>    access_mode = string<br/>    path        = string<br/>    server      = string<br/>  })</pre> | `null` | no |
 | <a name="input_music_nfs_share"></a> [music\_nfs\_share](#input\_music\_nfs\_share) | NFS share to use for music storage | <pre>object({<br/>    size        = string<br/>    user_id     = number<br/>    group_id    = number<br/>    access_mode = string<br/>    path        = string<br/>    server      = string<br/>  })</pre> | `null` | no |

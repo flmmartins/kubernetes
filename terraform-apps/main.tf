@@ -93,17 +93,34 @@ module "main-pg-cluster" {
     storage_class = var.persistent_storage_class
   }
 
-  pg_operator_service_account = module.pg-operator.service_account
-  certificate_issuer          = var.vault_pki_issuer
+  certificate_issuer = var.vault_pki_issuer
+
+  # When adding a role, it will create the password in the namespace
+  roles = [{
+    name                       = "immich"
+    create_secret_in_namespace = "immich-photos"
+  }]
+
+  databases = [{
+    name       = "immich"
+    owner      = "immich"
+    extensions = ["cube", "earthdistance", "vector"]
+  }]
 }
 
 module "home-apps" {
+  depends_on                = [module.main-pg-cluster]
   source                    = "../modules/home-apps"
   domain                    = var.public_domain
   persistent_storage_class  = var.persistent_storage_class
   plex_ip                   = var.istio_ip
   plex_gateway_tcp_listener = "plex-tcp"
   gateway                   = var.gateway
+  immich_database = {
+    server                  = module.main-pg-cluster.rw_svc
+    database_name           = "immich"
+    credentials_secret_name = module.main-pg-cluster.role_secret_names["immich"]
+  }
 
   movies_nfs_share         = var.existing_nfs_share["movies"]
   music_nfs_share          = var.existing_nfs_share["music"]
