@@ -3,6 +3,14 @@ variable "vault_address_internal" {
   default     = "https://vault.vault:8200"
 }
 
+variable "vault_ca_configmap" {
+  description = "Vault CA configmap. This configmap was created on vault so it can be replicated to services that needs to call it internally"
+  default = {
+    name      = "vault-internal-ca"
+    namespace = "vault"
+  }
+}
+
 variable "onepassword_vault_path" {
   type        = string
   description = "1password vault path for secrets. It contain the <path prefix>/<vault id>"

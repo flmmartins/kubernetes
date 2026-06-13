@@ -121,6 +121,12 @@ module "home-apps" {
     database_name           = "immich"
     credentials_secret_name = module.main-pg-cluster.role_secret_names["immich"]
   }
+  immich_api_key_vault = {
+    vault_address                = var.vault_address_internal
+    vault_ca_configmap_name      = var.vault_ca_configmap.name
+    vault_ca_configmap_namespace = var.vault_ca_configmap.namespace
+    secret_path                  = format("%s/immich", var.onepassword_vault_path)
+  }
 
   movies_nfs_share         = var.existing_nfs_share["movies"]
   music_nfs_share          = var.existing_nfs_share["music"]
