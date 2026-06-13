@@ -345,17 +345,6 @@ resource "kubernetes_cron_job_v1" "immich_album_creator" {
                 value = "1"
               }
 
-              resources {
-                requests = {
-                  cpu    = "50m"
-                  memory = "64Mi"
-                }
-                limits = {
-                  cpu    = "100m"
-                  memory = "128Mi"
-                }
-              }
-
               security_context {
                 allow_privilege_escalation = false
                 read_only_root_filesystem  = false
