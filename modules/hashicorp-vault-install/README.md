@@ -280,12 +280,12 @@ No modules.
 | <a name="input_certificate_issuer"></a> [certificate\_issuer](#input\_certificate\_issuer) | Cert Manager certificate issuer to issue the vault internal kubernetes certificate | `any` | `null` | no |
 | <a name="input_chart_version"></a> [chart\_version](#input\_chart\_version) | Hashicorp Vault Chart Version | `string` | `"0.32.0"` | no |
 | <a name="input_csi_limits_cpu"></a> [csi\_limits\_cpu](#input\_csi\_limits\_cpu) | CPU limit for the csi container (e.g. '100m', '1'). | `string` | `"100m"` | no |
-| <a name="input_csi_limits_memory"></a> [csi\_limits\_memory](#input\_csi\_limits\_memory) | Memory limit for the csi container (e.g. '600Mi', '1Gi'). | `string` | `"300Mi"` | no |
+| <a name="input_csi_limits_memory"></a> [csi\_limits\_memory](#input\_csi\_limits\_memory) | Memory limit for the csi container (e.g. '600Mi', '1Gi'). | `string` | `"500Mi"` | no |
 | <a name="input_csi_requests_cpu"></a> [csi\_requests\_cpu](#input\_csi\_requests\_cpu) | CPU request for the csi container (e.g. '50m', '1'). | `string` | `"50m"` | no |
 | <a name="input_csi_requests_memory"></a> [csi\_requests\_memory](#input\_csi\_requests\_memory) | Memory request for the csi container (e.g. '390Mi', '1Gi'). | `string` | `"100Mi"` | no |
 | <a name="input_gateway"></a> [gateway](#input\_gateway) | Gateway to use for the app | <pre>object({<br/>    name                    = string<br/>    namespace               = string<br/>    internal_ca_certificate = string<br/>  })</pre> | n/a | yes |
 | <a name="input_injector_limits_cpu"></a> [injector\_limits\_cpu](#input\_injector\_limits\_cpu) | CPU limit for the injector container (e.g. '100m', '1'). | `string` | `"100m"` | no |
-| <a name="input_injector_limits_memory"></a> [injector\_limits\_memory](#input\_injector\_limits\_memory) | Memory limit for the injector container (e.g. '100Mi', '1Gi'). | `string` | `"100Mi"` | no |
+| <a name="input_injector_limits_memory"></a> [injector\_limits\_memory](#input\_injector\_limits\_memory) | Memory limit for the injector container (e.g. '100Mi', '1Gi'). | `string` | `"200Mi"` | no |
 | <a name="input_injector_requests_cpu"></a> [injector\_requests\_cpu](#input\_injector\_requests\_cpu) | CPU request for the injector container (e.g. '20m', '1'). | `string` | `"20m"` | no |
 | <a name="input_injector_requests_memory"></a> [injector\_requests\_memory](#input\_injector\_requests\_memory) | Memory request for the injector container (e.g. '80Mi', '1Gi'). | `string` | `"80Mi"` | no |
 | <a name="input_install_onepassword_plugin"></a> [install\_onepassword\_plugin](#input\_install\_onepassword\_plugin) | Wether to install one password plugin or not | `bool` | `false` | no |
@@ -295,8 +295,8 @@ No modules.
 | <a name="input_security_context"></a> [security\_context](#input\_security\_context) | Security context for the vault | <pre>object({<br/>    user_id  = optional(number)<br/>    group_id = optional(number)<br/>  })</pre> | `null` | no |
 | <a name="input_server_limits_cpu"></a> [server\_limits\_cpu](#input\_server\_limits\_cpu) | CPU limit for the server container (e.g. '256m', '1'). | `string` | `"256m"` | no |
 | <a name="input_server_limits_memory"></a> [server\_limits\_memory](#input\_server\_limits\_memory) | Memory limit for the server container (e.g. '512Mi', '1Gi'). | `string` | `"400Mi"` | no |
-| <a name="input_server_requests_cpu"></a> [server\_requests\_cpu](#input\_server\_requests\_cpu) | CPU request for the server container (e.g. '100m', '1'). | `string` | `"256m"` | no |
-| <a name="input_server_requests_memory"></a> [server\_requests\_memory](#input\_server\_requests\_memory) | Memory request for the server container (e.g. '512Mi', '1Gi'). | `string` | `"400Mi"` | no |
+| <a name="input_server_requests_cpu"></a> [server\_requests\_cpu](#input\_server\_requests\_cpu) | CPU request for the server container (e.g. '100m', '1'). | `string` | `"100m"` | no |
+| <a name="input_server_requests_memory"></a> [server\_requests\_memory](#input\_server\_requests\_memory) | Memory request for the server container (e.g. '512Mi', '1Gi'). | `string` | `"200Mi"` | no |
 | <a name="input_url"></a> [url](#input\_url) | Vault URL | `string` | n/a | yes |
 
 ## Outputs

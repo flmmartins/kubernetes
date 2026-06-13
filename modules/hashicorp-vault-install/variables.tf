@@ -80,7 +80,7 @@ variable "injector_limits_cpu" {
 variable "injector_limits_memory" {
   description = "Memory limit for the injector container (e.g. '100Mi', '1Gi')."
   type        = string
-  default     = "100Mi"
+  default     = "200Mi"
 }
 
 # -----------------------------------------------------------------------------
@@ -108,7 +108,7 @@ variable "csi_limits_cpu" {
 variable "csi_limits_memory" {
   description = "Memory limit for the csi container (e.g. '600Mi', '1Gi')."
   type        = string
-  default     = "300Mi"
+  default     = "500Mi"
 }
 
 # -----------------------------------------------------------------------------
@@ -117,13 +117,13 @@ variable "csi_limits_memory" {
 variable "server_requests_cpu" {
   description = "CPU request for the server container (e.g. '100m', '1')."
   type        = string
-  default     = "256m"
+  default     = "100m"
 }
 
 variable "server_requests_memory" {
   description = "Memory request for the server container (e.g. '512Mi', '1Gi')."
   type        = string
-  default     = "400Mi"
+  default     = "200Mi"
 }
 
 variable "server_limits_cpu" {
