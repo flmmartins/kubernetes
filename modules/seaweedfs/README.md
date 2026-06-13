@@ -39,7 +39,7 @@ No modules.
 | <a name="input_admin_ui_port"></a> [admin\_ui\_port](#input\_admin\_ui\_port) | S3 api port | `number` | `23646` | no |
 | <a name="input_admin_ui_url"></a> [admin\_ui\_url](#input\_admin\_ui\_url) | Admin URL | `string` | n/a | yes |
 | <a name="input_buckets"></a> [buckets](#input\_buckets) | List of buckets to add to seadweedfs | <pre>list(object({<br/>    name          = string<br/>    ttl           = string<br/>    anonymousRead = optional(bool, false)<br/>    objectLock    = optional(bool, false)<br/>    versioning    = optional(string, "Enabled")<br/>  }))</pre> | <pre>[<br/>  {<br/>    "name": "terraform",<br/>    "objectLock": true,<br/>    "ttl": "90d"<br/>  }<br/>]</pre> | no |
-| <a name="input_chart_version"></a> [chart\_version](#input\_chart\_version) | Seaweedfs Chart Version | `string` | `"4.23.0"` | no |
+| <a name="input_chart_version"></a> [chart\_version](#input\_chart\_version) | Seaweedfs Chart Version | `string` | `"4.33.0"` | no |
 | <a name="input_filer_cpu_limit"></a> [filer\_cpu\_limit](#input\_filer\_cpu\_limit) | CPU limit for SeaweedFS filer pods | `string` | `"250m"` | no |
 | <a name="input_filer_cpu_request"></a> [filer\_cpu\_request](#input\_filer\_cpu\_request) | CPU request for SeaweedFS filer pods | `string` | `"50m"` | no |
 | <a name="input_filer_memory_limit"></a> [filer\_memory\_limit](#input\_filer\_memory\_limit) | Memory limit for SeaweedFS filer pods | `string` | `"200Mi"` | no |

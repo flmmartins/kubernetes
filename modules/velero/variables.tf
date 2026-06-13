@@ -18,7 +18,7 @@ variable "backup_storage_locations" {
   type = list(object({
     name        = string
     provider    = optional(string, "aws")
-    bucket      = optional(string, "velero")
+    bucket      = optional(string)
     default     = optional(bool, true)
     access_mode = optional(string, "ReadWrite")
     config = object({

@@ -16,6 +16,11 @@ module "seaweedfs" {
     {
       name = "velero"
       ttl  = "30d"
+    },
+    {
+      name       = "pg-cluster"
+      versioning = false
+      ttl        = "365d"
     }
   ]
 
@@ -42,7 +47,8 @@ module "velero" {
   snapshots_enabled = false
   backup_storage_locations = [
     {
-      name = "talos-truenas"
+      name   = "talos-truenas"
+      bucket = "velero"
       config = {
         region = "seaweedfs"
         s3Url  = module.seaweedfs.s3_kubernetes_svc
@@ -106,6 +112,17 @@ module "main-pg-cluster" {
     owner      = "immich"
     extensions = ["cube", "earthdistance", "vector"]
   }]
+
+  #backup = {
+  #  s3_endpoint      = module.seaweedfs.s3_kubernetes_svc
+  #  s3_bucket        = "pg-cluster"
+  #  schedule         = "0 0 0 * * *"
+  #  retention_policy = "180d"
+  #  vault_password = {
+  #    vault_address = var.vault_address_internal
+  #    secret_path   = format("%s/pg-cluster", var.onepassword_vault_path)
+  #  }
+  #}
 }
 
 module "home-apps" {

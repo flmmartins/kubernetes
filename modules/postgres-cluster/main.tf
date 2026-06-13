@@ -17,6 +17,8 @@ locals {
     for role in var.roles : role.name => role
     if role.create_secret_in_namespace != null
   }
+  backup_secret_name      = "${var.cluster.name}-backup"
+  certificate_server_name = "${var.cluster.name}-server"
 
 }
 
@@ -32,12 +34,12 @@ resource "kubernetes_manifest" "certificate_server" {
     apiVersion = "cert-manager.io/v1"
     kind       = "Certificate"
     metadata = {
-      name      = "${var.cluster.name}-server"
+      name      = local.certificate_server_name
       namespace = kubernetes_namespace_v1.this.metadata[0].name
       labels    = merge(local.labels, { component = "certificate" })
     }
     spec = {
-      secretName = "${var.cluster.name}-server"
+      secretName = local.certificate_server_name
       commonName = "${var.cluster.name}-server"
       secretTemplate = {
         #  serves as an instruction to the CNPG operator, guiding it to reload the database whenever there are changes
@@ -121,6 +123,69 @@ resource "kubernetes_secret_v1" "credentials_in_app_namespace" {
   data_wo_revision = 1
 }
 
+resource "vault_policy" "backup" {
+  count = var.backup != null ? 1 : 0
+
+  name   = "${var.cluster.name}-backup"
+  policy = <<-EOT
+    path "${var.backup.vault_password.secret_path}" { capabilities = ["read"] }
+  EOT
+}
+
+resource "vault_kubernetes_auth_backend_role" "backup" {
+  count = var.backup != null ? 1 : 0
+
+  role_name                        = "${var.cluster.name}-backup"
+  bound_service_account_names      = ["${var.cluster.name}"] # CNPG uses cluster name as SA
+  bound_service_account_namespaces = [kubernetes_namespace_v1.this.metadata[0].name]
+  token_max_ttl                    = 1440
+  token_policies                   = [vault_policy.backup[0].name]
+}
+
+resource "kubernetes_manifest" "backup_secret_provider" {
+  count = var.backup != null ? 1 : 0
+
+  manifest = {
+    apiVersion = "secrets-store.csi.x-k8s.io/v1"
+    kind       = "SecretProviderClass"
+    metadata = {
+      name      = local.backup_secret_name
+      namespace = kubernetes_namespace_v1.this.metadata[0].name
+      labels    = local.labels
+    }
+    spec = {
+      provider = "vault"
+      parameters = {
+        roleName        = vault_kubernetes_auth_backend_role.backup[0].role_name
+        vaultAddress    = var.backup.vault_password.vault_address
+        vaultCACertPath = var.backup.vault_password.vault_csi_ca_cert_path
+        objects         = <<-EOT
+          - objectName: s3-access-key
+            secretPath: ${var.backup.vault_password.secret_path}
+            secretKey: ${var.backup.vault_password.access_key_field}
+          - objectName: s3-secret-key
+            secretPath: ${var.backup.vault_password.secret_path}
+            secretKey: ${var.backup.vault_password.secret_key_field}
+        EOT
+      }
+      secretObjects = [{
+        secretName = local.backup_secret_name
+        type       = "Opaque"
+        data = [
+          {
+            objectName = "s3-access-key"
+            key        = "accessKey"
+          },
+          {
+            objectName = "s3-secret-key"
+            key        = "secretKey"
+          }
+        ]
+      }]
+    }
+  }
+}
+
 resource "helm_release" "this" {
   depends_on = [kubernetes_secret_v1.credentials_in_pg_namespace]
 
@@ -166,28 +231,12 @@ resource "helm_release" "this" {
       certificates:
         serverTLSSecret: ${kubernetes_manifest.certificate_server.manifest.spec.secretName}
         serverCASecret: ${kubernetes_manifest.certificate_server.manifest.spec.secretName}
-        # Somehow when trying to add my own client certificate I had incompatible key usage error so we operator create this one
-        # clientCASecret       = kubernetes_manifest.certificate_replicationclient.manifest.spec.secretName
-        # replicationTLSSecret = kubernetes_manifest.certificate_replicationclient.manifest.spec.secretName
       postgres:
         parameters:
           shared_buffers: ${var.cluster_shared_buffers}
       additionalLabels:
         part-of: "cloudnative-pg-operator"
         component: ${var.cluster.name}
-    %{~if var.backup != null~}
-      backups:
-        enable: true
-        endpointURL: ${var.backup.s3_endpoint}
-        provider: s3
-        s3:
-          region: ""
-          bucket: ${var.backup.s3_bucket}
-          path: "/"
-          secret:
-            create: false
-            name: ${var.backup.secret_name}
-    %{~endif~}
       resources:
         requests:
           memory: ${var.cluster_resources_requests_memory}
@@ -195,6 +244,45 @@ resource "helm_release" "this" {
         limits:
           memory: ${var.cluster_resources_limits_memory}
           cpu: ${var.cluster_resources_limits_cpu}
+    %{~if var.backup != null~}
+      projectedVolumeTemplate:
+        sources:
+        - csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: ${kubernetes_manifest.backup_secret_provider[0].manifest.metadata.name}
+    backups:
+      enabled: true
+      endpointURL: ${var.backup.s3_endpoint}
+      destinationPath: s3://${var.backup.s3_bucket}/
+      endpointCA:
+        create: false
+        name: ${kubernetes_manifest.certificate_server.manifest.metadata.name}
+        key: ca.crt
+      provider: s3
+      s3:
+        region: ""
+        bucket: ${var.backup.s3_bucket}
+        path: /
+      secret:
+        create: false
+        name: ${local.backup_secret_name}
+      wal:
+        compression: gzip
+        encryption: ""
+        maxParallel: 1
+      data:
+        compression: gzip
+        encryption: ""
+        jobs: 2
+      scheduledBackups:
+      - name: daily-backup
+        schedule: "${var.backup.schedule}"
+        backupOwnerReference: self
+        method: barmanObjectStore
+        retentionPolicy: "${var.backup.retention_policy}"
+    %{~endif~}
     EOF
   ]
 }

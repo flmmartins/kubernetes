@@ -53,15 +53,37 @@ EOT
 }
 
 variable "backup" {
-  description = "Backup to S3 specifications"
+  description = <<-EOT
+    Backup to S3 specifications via Vault CSI.
+    Example:
+    backup = {
+      s3_endpoint  = "http://...:8333"
+      s3_bucket    = "pg-backups"
+      schedule     = "0 0 0 * * *"
+      retention_policy = "30d"
+      vault_password = {
+        vault_address  = "https://vault.vault:8200"
+        secret_path    = "op/vaults/my-vault/items/pg-backup-s3"
+        access_key_field = "accessKey"
+        secret_key_field = "secretKey"
+      }
+    }
+  EOT
   type = object({
-    s3_endpoint = string
-    s3_bucket   = string
-    secret_name = string
+    s3_endpoint      = string
+    s3_bucket        = string
+    schedule         = string
+    retention_policy = string
+    vault_password = object({
+      vault_address          = string
+      secret_path            = string
+      vault_csi_ca_cert_path = optional(string, "/vault/tls/ca.crt")
+      access_key_field       = optional(string, "accessKey")
+      secret_key_field       = optional(string, "secretKey")
+    })
   })
   default = null
 }
-
 variable "certificate_issuer" {
   description = "The Cert Manager issuer to use for PostgreSQL certificates. This should be the name of an existing issuer in your Kubernetes cluster."
   type        = string

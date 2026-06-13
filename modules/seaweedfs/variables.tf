@@ -1,7 +1,7 @@
 variable "chart_version" {
   type        = string
   description = "Seaweedfs Chart Version"
-  default     = "4.23.0"
+  default     = "4.33.0"
 }
 
 variable "s3api_port" {

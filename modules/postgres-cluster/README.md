@@ -13,6 +13,7 @@ No requirements.
 |------|---------|
 | <a name="provider_helm"></a> [helm](#provider\_helm) | n/a |
 | <a name="provider_kubernetes"></a> [kubernetes](#provider\_kubernetes) | n/a |
+| <a name="provider_vault"></a> [vault](#provider\_vault) | n/a |
 
 ## Modules
 
@@ -23,16 +24,19 @@ No modules.
 | Name | Type |
 |------|------|
 | [helm_release.this](https://registry.terraform.io/providers/hashicorp/helm/latest/docs/resources/release) | resource |
+| [kubernetes_manifest.backup_secret_provider](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/manifest) | resource |
 | [kubernetes_manifest.certificate_server](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/manifest) | resource |
 | [kubernetes_namespace_v1.this](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/namespace_v1) | resource |
 | [kubernetes_secret_v1.credentials_in_app_namespace](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/secret_v1) | resource |
 | [kubernetes_secret_v1.credentials_in_pg_namespace](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/secret_v1) | resource |
+| [vault_kubernetes_auth_backend_role.backup](https://registry.terraform.io/providers/hashicorp/vault/latest/docs/resources/kubernetes_auth_backend_role) | resource |
+| [vault_policy.backup](https://registry.terraform.io/providers/hashicorp/vault/latest/docs/resources/policy) | resource |
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_backup"></a> [backup](#input\_backup) | Backup to S3 specifications | <pre>object({<br/>    s3_endpoint = string<br/>    s3_bucket   = string<br/>    secret_name = string<br/>  })</pre> | `null` | no |
+| <a name="input_backup"></a> [backup](#input\_backup) | Backup to S3 specifications via Vault CSI.<br/>Example:<br/>backup = {<br/>  s3\_endpoint  = "http://...:8333"<br/>  s3\_bucket    = "pg-backups"<br/>  schedule     = "0 0 0 * * *"<br/>  retention\_policy = "30d"<br/>  vault\_password = {<br/>    vault\_address  = "https://vault.vault:8200"<br/>    secret\_path    = "op/vaults/my-vault/items/pg-backup-s3"<br/>    access\_key\_field = "accessKey"<br/>    secret\_key\_field = "secretKey"<br/>  }<br/>} | <pre>object({<br/>    s3_endpoint      = string<br/>    s3_bucket        = string<br/>    schedule         = string<br/>    retention_policy = string<br/>    vault_password = object({<br/>      vault_address          = string<br/>      secret_path            = string<br/>      vault_csi_ca_cert_path = optional(string, "/vault/tls/ca.crt")<br/>      access_key_field       = optional(string, "accessKey")<br/>      secret_key_field       = optional(string, "secretKey")<br/>    })<br/>  })</pre> | `null` | no |
 | <a name="input_certificate_issuer"></a> [certificate\_issuer](#input\_certificate\_issuer) | The Cert Manager issuer to use for PostgreSQL certificates. This should be the name of an existing issuer in your Kubernetes cluster. | `string` | n/a | yes |
 | <a name="input_chart_version"></a> [chart\_version](#input\_chart\_version) | The version of the CloudNative PG chart to deploy. This should be a valid version string from the CNPG chart repository. | `string` | `"0.6.1"` | no |
 | <a name="input_cluster"></a> [cluster](#input\_cluster) | Clusters to be created. If you don't provide a url, the cluster will not have external access and will only be accessible within the Kubernetes cluster | <pre>object({<br/>    name          = string<br/>    storage_class = optional(string)<br/>    url           = optional(string)<br/>    size          = optional(string, "10Gi")<br/>    instances     = optional(number, 2)<br/>  })</pre> | n/a | yes |
