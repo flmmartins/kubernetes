@@ -142,13 +142,6 @@ resource "helm_release" "this" {
           memory: ${var.node_exporter_memory_limit}
     alertmanager:
       config:
-        # define 24hours mute
-        mute_time_intervals:
-          - name: always
-            time_intervals:
-              - times:
-                  - start_time: "00:00"
-                    end_time: "24:00"
         route:
           group_by: ['namespace', 'alertname']
           group_wait: 30s
@@ -157,11 +150,15 @@ resource "helm_release" "this" {
           receiver: default
           routes:
             - matchers:
+                - alertname = "InfoInhibitor" # As said on manual this should be sent to null
+              receiver: "null"
+            - matchers:
+                - alertname = "Watchdog" # This should always be firing so send to null
+              receiver: "null"
+            - matchers:
                 - alertname="CPUThrottlingHigh"
                 - namespace="prometheus-stack"
-              receiver: default
-              mute_time_intervals:
-                - always # apply mute, dont send to receiver
+              receiver: "null"
         global:
           resolve_timeout: 5m
         %{~if var.alertmanager_email != null~}
