@@ -32,49 +32,6 @@ resource "kubernetes_namespace_v1" "this" {
   }
 }
 
-# TODO: Test random password later
-ephemeral "random_password" "this" {
-  count = var.vault_password == null ? 1 : 0
-
-  length           = 16
-  special          = true
-  override_special = "!#$%&*()-_=+[]{}<>:?"
-}
-
-resource "kubernetes_secret_v1" "this" {
-  count = var.vault_password == null ? 1 : 0
-
-  metadata {
-    name      = "grafana"
-    namespace = kubernetes_namespace_v1.this.metadata[0].name
-    labels    = merge(local.labels, { component = "credentials" })
-  }
-
-  data_wo = {
-    "admin-password" = ephemeral.random_password.this[0].result
-    "admin-user"     = "admin"
-  }
-}
-
-resource "vault_policy" "this" {
-  count = var.vault_password != null ? 1 : 0
-
-  name   = local.name
-  policy = <<EOT
-path "${var.vault_password.secret_path}" { capabilities = ["read"] }
-EOT
-}
-
-resource "vault_kubernetes_auth_backend_role" "this" {
-  count = var.vault_password != null ? 1 : 0
-
-  role_name                        = local.name
-  bound_service_account_names      = ["prometheus-stack-kube-prom-operator"]
-  bound_service_account_namespaces = [kubernetes_namespace_v1.this.metadata[0].name]
-  token_max_ttl                    = 1440 #24H
-  token_policies                   = [vault_policy.this[0].name]
-}
-
 # This chart has subcharts
 resource "helm_release" "this" {
   name       = local.name
@@ -84,6 +41,13 @@ resource "helm_release" "this" {
   chart      = "kube-prometheus-stack"
   values = [
     <<-EOF
+    #I would have to provide talos IPs to this, instead it's better to monitor the pod itsef. Check below
+    kubeScheduler:
+      enabled: false 
+    kubeControllerManager:
+      enabled: false
+    kubeProxy:
+      enabled: false
     prometheus:
       prometheusSpec:
         retention: ${var.retention_days}
@@ -129,7 +93,72 @@ resource "helm_release" "this" {
           cpu: ${var.node_exporter_cpu_limit}
           memory: ${var.node_exporter_memory_limit}
     alertmanager:
+      config:
+        # define 24hours mute
+        mute_time_intervals:
+          - name: always
+            time_intervals:
+              - times:
+                  - start_time: "00:00"
+                    end_time: "24:00"
+        route:
+          group_by: ['namespace', 'alertname']
+          group_wait: 30s
+          group_interval: 5m
+          repeat_interval: 4h
+          receiver: default
+          routes:
+            - matchers:
+                - alertname="CPUThrottlingHigh"
+                - namespace="prometheus-stack"
+              receiver: default
+              mute_time_intervals:
+                - always # apply mute, dont send to receiver
+      %{~if var.alertmanager_email != null~}
+        receivers:
+          - name: default
+            email_configs:
+              - to: '${var.alertmanager_email.to}'
+                auth_username_file: /vault/secrets/smtp-username
+                auth_password_file: /vault/secrets/smtp-password
+        global:
+          resolve_timeout: 5m
+          smtp_smarthost: '${var.alertmanager_email.smarthost}'
+          smtp_from: '${var.alertmanager_email.from}'
+          smtp_require_tls: ${var.alertmanager_email.require_tls}
+        route:
+          group_by: ['namespace', 'alertname']
+          group_wait: 30s
+          group_interval: 5m
+          repeat_interval: 4h
+          receiver: default
+        receivers:
+          - name: default
+            email_configs:
+              - to: '${var.alertmanager_email.to}'
+                auth_username_file: /vault/secrets/smtp-username
+                auth_password_file: /vault/secrets/smtp-password
+      %{~endif~}
       alertmanagerSpec:
+        %{~if var.alertmanager_email != null~}
+        podMetadata:
+          annotations:
+            vault.hashicorp.com/agent-inject: "true"
+            vault.hashicorp.com/role: ${vault_kubernetes_auth_backend_role.alertmanager[0].role_name}
+            vault.hashicorp.com/agent-pre-populate-only: "true"
+            vault.hashicorp.com/agent-extra-secret: ${kubernetes_secret_v1.vault_ca[0].metadata[0].name}
+            vault.hashicorp.com/ca-cert: "/vault/custom/ca.crt"
+            vault.hashicorp.com/agent-inject-secret-smtp-username: "${var.alertmanager_email.vault_password.secret_path}"
+            vault.hashicorp.com/agent-inject-template-smtp-username: |
+              {{- with secret "${var.alertmanager_email.vault_password.secret_path}" -}}
+              {{ index .Data.data "${var.alertmanager_email.vault_password.username_field}" }}
+              {{- end }}
+            vault.hashicorp.com/agent-inject-secret-smtp-password: "${var.alertmanager_email.vault_password.secret_path}"
+            vault.hashicorp.com/agent-inject-template-smtp-password: |
+              {{- with secret "${var.alertmanager_email.vault_password.secret_path}" -}}
+              {{ index .Data.data "${var.alertmanager_email.vault_password.password_field}" }}
+              {{- end }}
+        %{~endif~}
         resources:
           requests:
             cpu: ${var.alertmanager_cpu_request}
@@ -160,10 +189,10 @@ resource "helm_release" "this" {
         dataproxy:
           max_concurrent_query_limit: 5
       admin:
-      %{~if var.vault_password != null~} 
+      %{~if var.grafana_vault_password != null~} 
         existingSecret: grafana
       %{~else~}
-        existingSecret: ${kubernetes_secret_v1.this[0].metadata[0].name}
+        existingSecret: ${kubernetes_secret_v1.grafana[0].metadata[0].name}
       %{~endif~}
       persistence:
         enabled: true
@@ -206,36 +235,36 @@ resource "helm_release" "this" {
         limits:
           cpu: ${var.operator_cpu_limit}
           memory: ${var.operator_memory_limit}
-    %{~if var.vault_password != null~} 
+    %{~if var.grafana_vault_password != null~} 
       extraVolumeMounts:
-      - name: csi-secret-driver
+      - name: grafana-csi-secret-driver
         mountPath: '/mnt/secrets-store'
         readOnly: true
       extraVolumes:
-      - name: csi-secret-driver
+      - name: grafana-csi-secret-driver
         csi:
           driver: 'secrets-store.csi.k8s.io'
           readOnly: true
           volumeAttributes:
-            secretProviderClass: ${local.name}
+            secretProviderClass: grafana
     extraManifests:
     - apiVersion: secrets-store.csi.x-k8s.io/v1
       kind: SecretProviderClass
       metadata:
-        name: ${local.name}
+        name: grafana
       spec:
         provider: vault
         parameters:
-          roleName: ${vault_kubernetes_auth_backend_role.this[0].role_name}
-          vaultAddress: ${var.vault_password.vault_address}
-          vaultCACertPath: ${var.vault_password.vault_csi_ca_cert_path}
+          roleName: ${vault_kubernetes_auth_backend_role.grafana[0].role_name}
+          vaultAddress: ${var.grafana_vault_password.vault_address}
+          vaultCACertPath: ${var.grafana_vault_password.vault_csi_ca_cert_path}
           objects: |
             - objectName: password
-              secretKey: ${var.vault_password.password_field}
-              secretPath: ${var.vault_password.secret_path}
+              secretKey: ${var.grafana_vault_password.password_field}
+              secretPath: ${var.grafana_vault_password.secret_path}
             - objectName: username
-              secretKey: ${var.vault_password.username_field}
-              secretPath: ${var.vault_password.secret_path}
+              secretKey: ${var.grafana_vault_password.username_field}
+              secretPath: ${var.grafana_vault_password.secret_path}
         secretObjects:
           - secretName: grafana
             type: Opaque
@@ -244,7 +273,37 @@ resource "helm_release" "this" {
               objectName: password
             - key: admin-user
               objectName: username
-      %{~endif~}
+    %{~endif~}
+    - apiVersion: monitoring.coreos.com/v1
+      kind: PrometheusRule
+      metadata:
+        name: alerts
+        namespace: ${kubernetes_namespace_v1.this.metadata[0].name}
+        labels:
+          release: prometheus-stack
+      spec:
+        groups:
+        - name: pod-state
+          interval: 1m
+          rules:
+          - alert: PodNotRunning
+            expr: |
+              kube_pod_status_phase{phase!~"Running|Succeeded"} == 1
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "Pod {{`{{`}} $labels.namespace {{`}}`}}/{{`{{`}} $labels.pod {{`}}`}} is not running"
+              description: "Pod has been in {{`{{`}} $labels.phase {{`}}`}} state for more than 5 minutes."
+          - alert: NodeNotReady
+            expr: |
+              kube_node_status_condition{condition="Ready",status="true"} == 0
+            for: 5m
+            labels:
+              severity: critical
+            annotations:
+              summary: "Node {{`{{`}} $labels.node {{`}}`}} is not ready"
+              description: "Node {{`{{`}} $labels.node {{`}}`}} has been in NotReady state for more than 5 minutes."
   EOF
   ]
 }

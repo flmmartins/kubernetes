@@ -21,9 +21,13 @@ No modules.
 |------|------|
 | [helm_release.this](https://registry.terraform.io/providers/hashicorp/helm/latest/docs/resources/release) | resource |
 | [kubernetes_namespace_v1.this](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/namespace_v1) | resource |
-| [kubernetes_secret_v1.this](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/secret_v1) | resource |
-| [vault_kubernetes_auth_backend_role.this](https://registry.terraform.io/providers/hashicorp/vault/latest/docs/resources/kubernetes_auth_backend_role) | resource |
-| [vault_policy.this](https://registry.terraform.io/providers/hashicorp/vault/latest/docs/resources/policy) | resource |
+| [kubernetes_secret_v1.grafana](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/secret_v1) | resource |
+| [kubernetes_secret_v1.vault_ca](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/secret_v1) | resource |
+| [vault_kubernetes_auth_backend_role.alertmanager](https://registry.terraform.io/providers/hashicorp/vault/latest/docs/resources/kubernetes_auth_backend_role) | resource |
+| [vault_kubernetes_auth_backend_role.grafana](https://registry.terraform.io/providers/hashicorp/vault/latest/docs/resources/kubernetes_auth_backend_role) | resource |
+| [vault_policy.alertmanager](https://registry.terraform.io/providers/hashicorp/vault/latest/docs/resources/policy) | resource |
+| [vault_policy.grafana](https://registry.terraform.io/providers/hashicorp/vault/latest/docs/resources/policy) | resource |
+| [kubernetes_config_map_v1.vault_ca](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/data-sources/config_map_v1) | data source |
 
 ## Inputs
 
@@ -31,6 +35,7 @@ No modules.
 |------|-------------|------|---------|:--------:|
 | <a name="input_alertmanager_cpu_limit"></a> [alertmanager\_cpu\_limit](#input\_alertmanager\_cpu\_limit) | Alert Manager CPU Limit | `string` | `"100m"` | no |
 | <a name="input_alertmanager_cpu_request"></a> [alertmanager\_cpu\_request](#input\_alertmanager\_cpu\_request) | Alert Manager CPU Request | `string` | `"25m"` | no |
+| <a name="input_alertmanager_email"></a> [alertmanager\_email](#input\_alertmanager\_email) | Email configuration for Alertmanager notifications.<br/>Example:<br/>alertmanager\_email = {<br/>  to        = "you@gmail.com"<br/>  from      = "you@gmail.com"<br/>  smarthost = "smtp.gmail.com:587"<br/>  require\_tls = true<br/>  vault\_password = {<br/>    secret\_path   = "op/vaults/<id>/items/alertmanager"<br/>    vault\_address = "https://vault.vault:8200"<br/>    vault\_ca\_configmap\_name      = "vault-ca"<br/>    vault\_ca\_configmap\_namespace = "vault"<br/>  }<br/>} | <pre>object({<br/>    to          = string<br/>    from        = string<br/>    smarthost   = string<br/>    require_tls = optional(bool, true)<br/>    vault_password = object({<br/>      secret_path                  = string<br/>      vault_address                = string<br/>      vault_csi_ca_cert_path       = optional(string, "/vault/tls/ca.crt")<br/>      username_field               = optional(string, "username")<br/>      password_field               = optional(string, "password")<br/>      vault_ca_configmap_name      = string<br/>      vault_ca_configmap_namespace = string<br/>    })<br/>  })</pre> | `null` | no |
 | <a name="input_alertmanager_memory_limit"></a> [alertmanager\_memory\_limit](#input\_alertmanager\_memory\_limit) | Alert Manager Memory Limit | `string` | `"128Mi"` | no |
 | <a name="input_alertmanager_memory_request"></a> [alertmanager\_memory\_request](#input\_alertmanager\_memory\_request) | Alert Manager Memory Request | `string` | `"64Mi"` | no |
 | <a name="input_alertmanager_storage_size"></a> [alertmanager\_storage\_size](#input\_alertmanager\_storage\_size) | Alert Manager Storage Size | `string` | `"10Gi"` | no |
@@ -45,6 +50,7 @@ No modules.
 | <a name="input_grafana_sidecar_memory_limit"></a> [grafana\_sidecar\_memory\_limit](#input\_grafana\_sidecar\_memory\_limit) | n/a | `string` | `"128Mi"` | no |
 | <a name="input_grafana_sidecar_memory_request"></a> [grafana\_sidecar\_memory\_request](#input\_grafana\_sidecar\_memory\_request) | n/a | `string` | `"32Mi"` | no |
 | <a name="input_grafana_url"></a> [grafana\_url](#input\_grafana\_url) | Grafana URL | `string` | n/a | yes |
+| <a name="input_grafana_vault_password"></a> [grafana\_vault\_password](#input\_grafana\_vault\_password) | Object containing vault data to read grafana password from vault. If not, provided a password will be generated | <pre>object({<br/>    secret_path            = optional(string)<br/>    vault_address          = optional(string)<br/>    vault_csi_ca_cert_path = optional(string, "/vault/tls/ca.crt")<br/>    # Fields in Secret Manager<br/>    username_field = optional(string, "username")<br/>    password_field = optional(string, "password")<br/>  })</pre> | `null` | no |
 | <a name="input_grana_storage_size"></a> [grana\_storage\_size](#input\_grana\_storage\_size) | Grafana Storage Size | `string` | `"10Gi"` | no |
 | <a name="input_kube_state_metrics_cpu_limit"></a> [kube\_state\_metrics\_cpu\_limit](#input\_kube\_state\_metrics\_cpu\_limit) | n/a | `string` | `"100m"` | no |
 | <a name="input_kube_state_metrics_cpu_request"></a> [kube\_state\_metrics\_cpu\_request](#input\_kube\_state\_metrics\_cpu\_request) | ----------------------------------------------------------------------------- Kube State metrics ----------------------------------------------------------------------------- | `string` | `"25m"` | no |
@@ -66,7 +72,6 @@ No modules.
 | <a name="input_prometheus_storage_size"></a> [prometheus\_storage\_size](#input\_prometheus\_storage\_size) | Prometheus Storage Size | `string` | `"50Gi"` | no |
 | <a name="input_retention_days"></a> [retention\_days](#input\_retention\_days) | Prometheus retention days | `string` | `"15d"` | no |
 | <a name="input_security_context"></a> [security\_context](#input\_security\_context) | Security context for the prometheus stack | <pre>object({<br/>    user_id  = optional(number)<br/>    group_id = optional(number)<br/>  })</pre> | `null` | no |
-| <a name="input_vault_password"></a> [vault\_password](#input\_vault\_password) | Object containing vault data to read grafana password from vault. If not, provided a password will be generated | <pre>object({<br/>    secret_path            = optional(string)<br/>    vault_address          = optional(string)<br/>    vault_csi_ca_cert_path = optional(string, "/vault/tls/ca.crt")<br/>    # Fields in Secret Manager<br/>    username_field = optional(string, "username")<br/>    password_field = optional(string, "password")<br/>  })</pre> | `null` | no |
 
 ## Outputs
 

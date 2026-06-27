@@ -65,7 +65,7 @@ module "velero" {
 module "kube_prometheus_stack" {
   source = "../modules/prometheus-stack"
 
-  vault_password = {
+  grafana_vault_password = {
     vault_address = var.vault_address_internal
     secret_path   = format("%s/grafana", var.onepassword_vault_path)
   }
@@ -78,6 +78,18 @@ module "kube_prometheus_stack" {
 
   grafana_url = local.grafana_url
   gateway     = var.gateway
+
+  alertmanager_email = {
+    to        = var.server_email
+    from      = var.server_email
+    smarthost = "smtp.gmail.com:587"
+    vault_password = {
+      vault_address                = var.vault_address_internal
+      secret_path                  = format("%s/ServerEmail", var.onepassword_vault_path)
+      vault_ca_configmap_name      = var.vault_ca_configmap.name
+      vault_ca_configmap_namespace = var.vault_ca_configmap.namespace
+    }
+  }
 }
 
 # PG Operator is different module due to the CRD manifest issue on plan

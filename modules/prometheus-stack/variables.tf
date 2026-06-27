@@ -23,7 +23,7 @@ variable "retention_days" {
   default     = "15d"
 }
 
-variable "vault_password" {
+variable "grafana_vault_password" {
   description = "Object containing vault data to read grafana password from vault. If not, provided a password will be generated"
   type = object({
     secret_path            = optional(string)
@@ -171,6 +171,42 @@ variable "kube_state_metrics_memory_limit" {
 # -----------------------------------------------------------------------------
 # Alert Manager
 # -----------------------------------------------------------------------------
+
+variable "alertmanager_email" {
+  description = <<-EOT
+    Email configuration for Alertmanager notifications.
+    Example:
+    alertmanager_email = {
+      to        = "you@gmail.com"
+      from      = "you@gmail.com"
+      smarthost = "smtp.gmail.com:587"
+      require_tls = true
+      vault_password = {
+        secret_path   = "op/vaults/<id>/items/alertmanager"
+        vault_address = "https://vault.vault:8200"
+        vault_ca_configmap_name      = "vault-ca"
+        vault_ca_configmap_namespace = "vault"
+      }
+    }
+  EOT
+  type = object({
+    to          = string
+    from        = string
+    smarthost   = string
+    require_tls = optional(bool, true)
+    vault_password = object({
+      secret_path                  = string
+      vault_address                = string
+      vault_csi_ca_cert_path       = optional(string, "/vault/tls/ca.crt")
+      username_field               = optional(string, "username")
+      password_field               = optional(string, "password")
+      vault_ca_configmap_name      = string
+      vault_ca_configmap_namespace = string
+    })
+  })
+  default = null
+}
+
 variable "alertmanager_cpu_request" {
   type        = string
   description = "Alert Manager CPU Request"

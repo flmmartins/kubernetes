@@ -88,3 +88,8 @@ variable "postgres_credentials" {
     group_id = number
   })
 }
+
+variable "server_email" {
+  description = "Server Email so emails can be sent in its name"
+  type        = string
+}
