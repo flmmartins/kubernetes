@@ -85,17 +85,6 @@ resource "helm_release" "this" {
                   severity: critical
                 annotations:
                   summary: Kubernetes API is down
-              - alert: KubernetesAPISlow
-                expr: |
-                  histogram_quantile(
-                    0.99,
-                    sum(rate(apiserver_request_duration_seconds_bucket[5m])) by (le)
-                  ) > 5
-                for: 15m
-                labels:
-                  severity: warning
-                annotations:
-                  summary: Kubernetes API is slow
     prometheus:
       prometheusSpec:
         retention: ${var.retention_days}
