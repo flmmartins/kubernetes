@@ -157,11 +157,13 @@ resource "helm_release" "this" {
           smtp_from: '${var.alertmanager_email.from}'
           smtp_require_tls: ${var.alertmanager_email.require_tls}
         receivers:
+          - name: "null"  # A receiver that does nothing
           - name: default
             email_configs:
               - to: '${var.alertmanager_email.to}'
         %{~else~}
         receivers:
+          - name: "null"  # A receiver that does nothing
           - name: default
         %{~endif~}
       alertmanagerSpec:
