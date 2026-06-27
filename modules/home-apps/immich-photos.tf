@@ -39,7 +39,6 @@ resource "kubernetes_persistent_volume_claim_v1" "immich_data" {
 
 resource "kubernetes_persistent_volume_claim_v1" "immich_config" {
   count = var.photos_nfs_share != null ? 1 : 0
-
   metadata {
     name      = "${local.immich_app_name}-config"
     namespace = kubernetes_namespace_v1.immich[0].metadata[0].name
@@ -49,16 +48,15 @@ resource "kubernetes_persistent_volume_claim_v1" "immich_config" {
   }
   spec {
     access_modes       = ["ReadWriteMany"]
-    storage_class_name = var.persistent_storage_class
+    storage_class_name = kubernetes_storage_class_v1.manual.metadata[0].name
+    volume_name        = kubernetes_persistent_volume_v1.immich_config[0].metadata[0].name
     resources {
       requests = {
-        storage = "10Gi"
+        storage = "50Gi"
       }
     }
   }
 }
-
-
 
 resource "helm_release" "immich" {
   count = var.photos_nfs_share != null ? 1 : 0
@@ -133,6 +131,13 @@ resource "helm_release" "immich" {
             drop:
               - ALL
           runAsNonRoot: true
+      persistence:
+        cache:
+          enabled: true
+          size: 1Gi
+          type: persistentVolumeClaim
+          accessMode: ReadWriteMany
+          storageClass: default
     machine-learning:
       controllers:
         main:
@@ -154,6 +159,13 @@ resource "helm_release" "immich" {
                   drop:
                     - ALL
                 runAsNonRoot: true
+      persistence:
+        cache:
+          enabled: true
+          size: 10Gi
+          type: persistentVolumeClaim
+          accessMode: ReadWriteMany
+          storageClass: default
     immich:
       metrics:
         enabled: true
