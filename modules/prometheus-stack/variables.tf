@@ -198,7 +198,6 @@ variable "alertmanager_email" {
       secret_path                  = string
       vault_address                = string
       vault_csi_ca_cert_path       = optional(string, "/vault/tls/ca.crt")
-      username_field               = optional(string, "username")
       password_field               = optional(string, "password")
       vault_ca_configmap_name      = string
       vault_ca_configmap_namespace = string

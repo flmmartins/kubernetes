@@ -80,7 +80,7 @@ module "kube_prometheus_stack" {
   gateway     = var.gateway
 
   alertmanager_email = {
-    to        = var.server_email
+    to        = var.admin_email
     from      = var.server_email
     smarthost = "smtp.gmail.com:587"
     vault_password = {

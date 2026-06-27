@@ -93,3 +93,8 @@ variable "server_email" {
   description = "Server Email so emails can be sent in its name"
   type        = string
 }
+
+variable "admin_email" {
+  description = "Email of admin notifications"
+  type        = string
+}

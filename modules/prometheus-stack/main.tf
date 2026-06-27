@@ -41,13 +41,61 @@ resource "helm_release" "this" {
   chart      = "kube-prometheus-stack"
   values = [
     <<-EOF
-    #I would have to provide talos IPs to this, instead it's better to monitor the pod itsef. Check below
+    # I would have to provide talos IPs to this, instead it's easier to monitor the pod itsef for now
     kubeScheduler:
       enabled: false 
     kubeControllerManager:
       enabled: false
     kubeProxy:
       enabled: false
+    defaultRules:
+      rules:
+        kubeApiserverBurnrate: false #replace by below
+    additionalPrometheusRulesMap:
+      custom-alerts:
+        groups:
+          - name: pods
+            rules:
+            - alert: PodNotRunning
+              expr: |
+                kube_pod_status_phase{phase!~"Running|Succeeded"} == 1
+              for: 5m
+              labels:
+                severity: warning
+              annotations:
+                summary: "Pod {{`{{`}} $labels.namespace {{`}}`}}/{{`{{`}} $labels.pod {{`}}`}} is not running"
+                description: "Pod has been in {{`{{`}} $labels.phase {{`}}`}} state for more than 5 minutes."
+          - name: nodes
+            rules:
+            - alert: NodeNotReady
+              expr: |
+                kube_node_status_condition{condition="Ready",status="true"} == 0
+              for: 5m
+              labels:
+                severity: critical
+              annotations:
+                summary: "Node {{`{{`}} $labels.node {{`}}`}} is not ready"
+                description: "Node {{`{{`}} $labels.node {{`}}`}} has been in NotReady state for more than 5 minutes."
+          - name: apiserver
+            rules:
+              - alert: KubernetesAPIDown
+                expr: up{job="apiserver"} == 0
+                for: 5m
+                labels:
+                  severity: critical
+                annotations:
+                  summary: Kubernetes API is down
+              - alert: KubernetesAPISlow
+                expr: |
+                  histogram_quantile(
+                    0.99,
+                    sum(rate(apiserver_request_duration_seconds_bucket[5m])) by (le)
+                  ) > 5
+                for: 15m
+                labels:
+                  severity: warning
+                annotations:
+                  summary: Kubernetes API is slow
     prometheus:
       prometheusSpec:
         retention: ${var.retention_days}
@@ -114,31 +162,22 @@ resource "helm_release" "this" {
               receiver: default
               mute_time_intervals:
                 - always # apply mute, dont send to receiver
-      %{~if var.alertmanager_email != null~}
-        receivers:
-          - name: default
-            email_configs:
-              - to: '${var.alertmanager_email.to}'
-                auth_username_file: /vault/secrets/smtp-username
-                auth_password_file: /vault/secrets/smtp-password
         global:
           resolve_timeout: 5m
+        %{~if var.alertmanager_email != null~}
+          smtp_auth_username: '${var.alertmanager_email.from}'
+          smtp_auth_password_file: /vault/secrets/smtp-password
           smtp_smarthost: '${var.alertmanager_email.smarthost}'
           smtp_from: '${var.alertmanager_email.from}'
           smtp_require_tls: ${var.alertmanager_email.require_tls}
-        route:
-          group_by: ['namespace', 'alertname']
-          group_wait: 30s
-          group_interval: 5m
-          repeat_interval: 4h
-          receiver: default
         receivers:
           - name: default
             email_configs:
               - to: '${var.alertmanager_email.to}'
-                auth_username_file: /vault/secrets/smtp-username
-                auth_password_file: /vault/secrets/smtp-password
-      %{~endif~}
+        %{~else~}
+        receivers:
+          - name: default
+        %{~endif~}
       alertmanagerSpec:
         %{~if var.alertmanager_email != null~}
         podMetadata:
@@ -148,15 +187,10 @@ resource "helm_release" "this" {
             vault.hashicorp.com/agent-pre-populate-only: "true"
             vault.hashicorp.com/agent-extra-secret: ${kubernetes_secret_v1.vault_ca[0].metadata[0].name}
             vault.hashicorp.com/ca-cert: "/vault/custom/ca.crt"
-            vault.hashicorp.com/agent-inject-secret-smtp-username: "${var.alertmanager_email.vault_password.secret_path}"
-            vault.hashicorp.com/agent-inject-template-smtp-username: |
-              {{- with secret "${var.alertmanager_email.vault_password.secret_path}" -}}
-              {{ index .Data.data "${var.alertmanager_email.vault_password.username_field}" }}
-              {{- end }}
             vault.hashicorp.com/agent-inject-secret-smtp-password: "${var.alertmanager_email.vault_password.secret_path}"
             vault.hashicorp.com/agent-inject-template-smtp-password: |
               {{- with secret "${var.alertmanager_email.vault_password.secret_path}" -}}
-              {{ index .Data.data "${var.alertmanager_email.vault_password.password_field}" }}
+              {{ index .Data "${var.alertmanager_email.vault_password.password_field}" }}
               {{- end }}
         %{~endif~}
         resources:
@@ -274,36 +308,6 @@ resource "helm_release" "this" {
             - key: admin-user
               objectName: username
     %{~endif~}
-    - apiVersion: monitoring.coreos.com/v1
-      kind: PrometheusRule
-      metadata:
-        name: alerts
-        namespace: ${kubernetes_namespace_v1.this.metadata[0].name}
-        labels:
-          release: prometheus-stack
-      spec:
-        groups:
-        - name: pod-state
-          interval: 1m
-          rules:
-          - alert: PodNotRunning
-            expr: |
-              kube_pod_status_phase{phase!~"Running|Succeeded"} == 1
-            for: 5m
-            labels:
-              severity: warning
-            annotations:
-              summary: "Pod {{`{{`}} $labels.namespace {{`}}`}}/{{`{{`}} $labels.pod {{`}}`}} is not running"
-              description: "Pod has been in {{`{{`}} $labels.phase {{`}}`}} state for more than 5 minutes."
-          - alert: NodeNotReady
-            expr: |
-              kube_node_status_condition{condition="Ready",status="true"} == 0
-            for: 5m
-            labels:
-              severity: critical
-            annotations:
-              summary: "Node {{`{{`}} $labels.node {{`}}`}} is not ready"
-              description: "Node {{`{{`}} $labels.node {{`}}`}} has been in NotReady state for more than 5 minutes."
   EOF
   ]
 }
