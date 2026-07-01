@@ -9,8 +9,8 @@ locals {
     app       = local.komga_app_name
     component = "app"
   })
-  memory_in_mi      = 1024
-  java_memory_in_mi = floor(local.memory_in_mi * 75 / 100)
+  memory_in_mi      = 2048
+  java_memory_in_mi = floor(local.memory_in_mi * 60 / 100)
 
 }
 
@@ -122,6 +122,11 @@ resource "kubernetes_deployment_v1" "komga" {
           }
 
           env {
+            name  = "KOMGA_TASKING_THUMBNAILS-THREADS"
+            value = "1"
+          }
+
+          env {
             name  = "KOMGA_TASKING_SCAN-THREADS"
             value = "1"
           }
@@ -142,7 +147,7 @@ resource "kubernetes_deployment_v1" "komga" {
             }
             limits = {
               memory = "${local.memory_in_mi}Mi"
-              cpu    = "900m"
+              cpu    = "1500m"
             }
           }
 
