@@ -9,8 +9,8 @@ locals {
     app       = local.komga_app_name
     component = "app"
   })
-  memory_in_mi      = 2048
-  java_memory_in_mi = floor(local.memory_in_mi * 60 / 100)
+  memory_in_mi      = 1500
+  java_memory_in_mi = floor(local.memory_in_mi * 75 / 100)
 
 }
 
@@ -142,7 +142,7 @@ resource "kubernetes_deployment_v1" "komga" {
 
           resources {
             requests = {
-              memory = "${local.memory_in_mi}Mi"
+              memory = "${local.java_memory_in_mi}Mi"
               cpu    = "200m"
             }
             limits = {
