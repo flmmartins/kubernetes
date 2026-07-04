@@ -3,6 +3,13 @@ variable "chart_version" {
   description = "Prometheus Stack Chart Version"
   default     = "1.5.6"
 }
+
+variable "priority_class" {
+  description = "Describe the priority class the CSI secrets store pods should be in"
+  type        = string
+  default     = null
+}
+
 # =============================================================================
 # Resource Variables
 # =============================================================================

@@ -48,6 +48,9 @@ resource "helm_release" "metallb" {
         limits:
           memory: ${var.controller_memory_limit}
           cpu: ${var.controller_cpu_limit}
+      %{~if var.priority_class != null~}
+      priorityClassName: ${var.priority_class}
+      %{~endif~}
     speaker:
       tolerations: []   # remove the control-plane toleration
       affinity:
@@ -64,6 +67,9 @@ resource "helm_release" "metallb" {
         limits:
           memory: ${var.speaker_memory_limit}
           cpu: ${var.speaker_cpu_limit}
+      %{~if var.priority_class != null~}
+      priorityClassName: ${var.priority_class}
+      %{~endif~}
     EOF
   ]
 }
@@ -97,6 +103,9 @@ resource "helm_release" "istiod" {
     autoscaleMin: 2
     autoscaleMax: 4
     podLabels: ${jsonencode(merge(local.labels, { "component" = "istiod" }))}
+    %{~if var.priority_class != null~}
+    priorityClassName: ${var.priority_class}
+    %{~endif~}
     resources:
       requests:
         cpu: ${var.istiod_resources_requests_cpu}
@@ -212,6 +221,9 @@ resource "kubernetes_config_map_v1" "gateway" {
       spec:
         template:
           spec:
+            %{~if var.priority_class != null~}
+            priorityClassName: ${var.priority_class}
+            %{~endif~}
             securityContext:
               seccompProfile:
                 type: RuntimeDefault
@@ -320,6 +332,27 @@ resource "kubernetes_manifest" "gateway" {
           }
         ]
       )
+    }
+  }
+}
+
+
+resource "kubernetes_pod_disruption_budget_v1" "gateway" {
+  depends_on = [kubernetes_manifest.gateway]
+
+  metadata {
+    name      = "gateway"
+    namespace = kubernetes_namespace_v1.gateway.metadata[0].name
+    labels    = local.labels
+  }
+
+  spec {
+    min_available = 1
+
+    selector {
+      match_labels = {
+        "gateway.networking.k8s.io/gateway-name" = "gateway"
+      }
     }
   }
 }

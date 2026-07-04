@@ -1,14 +1,20 @@
+variable "priority_class" {
+  description = "Describe the priority class pods should be in"
+  type        = string
+  default     = null
+}
+
 # -----------------------------------------------------------------------------
 # Istio Gateway
 # -----------------------------------------------------------------------------
 variable "istio_chart_version" {
   description = "Istio Chart Version"
-  default     = "1.29.2"
+  default     = "1.30.2"
 }
 
 variable "gateway_crds_version" {
   description = "Gateway API CRDs Version"
-  default     = "v1.5.1"
+  default     = "v1.6.0"
 }
 
 variable "istio_ip" {
@@ -84,7 +90,7 @@ variable "gateway_resources_limits_memory" {
 
 variable "metallb_chart_version" {
   description = "Metal LB Chart Version"
-  default     = "0.15.3"
+  default     = "0.16.1"
 }
 
 variable "uses_metallb" {

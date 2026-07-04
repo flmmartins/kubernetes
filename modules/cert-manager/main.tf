@@ -33,6 +33,10 @@ resource "helm_release" "this" {
   chart      = "cert-manager"
   values = [
     <<-EOF
+    global:
+      %{~if var.priority_class != null~}
+      priorityClassName: ${var.priority_class}
+      %{~endif~}
     crds:
       enabled: true
     replicaCount: 1

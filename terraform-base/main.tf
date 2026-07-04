@@ -3,8 +3,28 @@ locals {
   csi_driver_nfs_labels = {
     part-of = "truenas"
   }
+
+  priority_classes = {
+    critical = { value = 1000000000, description = "Cluster Wide Required Pods" }
+    high     = { value = 900000000, description = "Pods that are a dependency to other pods but not so critical" }
+    medium   = { value = 500000000, description = "High priority workloads" }
+  }
 }
 
+# In case a critical pod gets pending, cluster will evict pods with default priority
+# It will also kick in on node pressure, 
+resource "kubernetes_priority_class_v1" "this" {
+  for_each = local.priority_classes
+
+  metadata {
+    name = each.key
+  }
+  value          = each.value.value
+  global_default = false
+  description    = each.value.description
+}
+
+# Prio system critical by default
 module "csi-driver-nfs" {
   count = var.enable_csi_nfs == true ? 1 : 0
 
@@ -15,6 +35,7 @@ module "csi-driver-nfs" {
   folder = var.nfs_folder
 }
 
+# Prio system critical by default
 module "kubelet-cert-approver" {
   source = "../modules/kubelet-cert-approver"
 }
@@ -23,6 +44,7 @@ module "cert-manager" {
   source = "../modules/cert-manager"
 
   default_cert_issuer = "letsencrypt-issuer"
+  priority_class      = kubernetes_priority_class_v1.this["critical"].metadata[0].name
 
   letsencrypt_issuer = {
     issuer_name = "letsencrypt-issuer"
@@ -42,16 +64,7 @@ module "cert-manager" {
   }
 }
 
-resource "kubernetes_priority_class_v1" "priority_class_critical" {
-  metadata {
-    name = var.priority_class
-  }
-
-  value          = 900000000
-  global_default = false
-  description    = "Critical infrastructure pods"
-}
-
+# Prio system critical by default
 module "metrics-server" {
   source = "../modules/metrics-server"
 }
@@ -61,10 +74,12 @@ module "onepassword" {
 
   source                  = "../modules/1password-connect"
   credentials_json_base64 = var.onepassword_credentials_json_base64
+  priority_class          = kubernetes_priority_class_v1.this["critical"].metadata[0].name
 }
 
 module "csi-secret-store" {
-  source = "../modules/csi-secret-store"
+  source         = "../modules/csi-secret-store"
+  priority_class = kubernetes_priority_class_v1.this["critical"].metadata[0].name
 }
 
 module "vault-install" {
@@ -87,7 +102,7 @@ module "vault-install" {
   }
 
   persistent_storage_class_name = module.csi-driver-nfs[0].persistent_storage_class
-  priority_class                = var.priority_class
+  priority_class                = kubernetes_priority_class_v1.this["critical"].metadata[0].name
 }
 
 module "vault" {
@@ -114,9 +129,10 @@ module "vault" {
 }
 
 module "gateway-api" {
-  source       = "../modules/gateway-api"
-  uses_metallb = true
-  istio_ip     = var.istio_ip
+  source         = "../modules/gateway-api"
+  uses_metallb   = true
+  istio_ip       = var.istio_ip
+  priority_class = kubernetes_priority_class_v1.this["critical"].metadata[0].name
   gateway_certificates = [
     {
       hostname       = "*.${var.private_domain}"

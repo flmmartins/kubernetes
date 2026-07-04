@@ -1,11 +1,17 @@
 variable "chart_version" {
   description = "Cert Manager Version"
-  default     = "v1.20.2"
+  default     = "v1.20.3"
 }
 
 variable "default_cert_issuer" {
   description = "Default cluster issuer name. If this is changed make sure it has a matching issuer block"
   default     = "uploaded-ca-issuer"
+}
+
+variable "priority_class" {
+  description = "Describe the priority class cert-manager should be in"
+  type        = string
+  default     = null
 }
 
 variable "letsencrypt_issuer" {

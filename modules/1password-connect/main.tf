@@ -15,6 +15,7 @@ resource "terraform_data" "this" {
       --namespace ${local.name} \
       --create-namespace \
       --set connect.credentials_base64=${var.credentials_json_base64} \
+      --set connect.priorityClassName=${var.priority_class} \
       -f ${path.module}/1password-connect.yaml \
       ${local.name} 1password/connect
     EOT

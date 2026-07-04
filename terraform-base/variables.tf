@@ -87,12 +87,6 @@ variable "cloudflare_email" {
   default     = null
 }
 
-variable "priority_class" {
-  description = "Name of the critical priority class"
-  type        = string
-  default     = "critical"
-}
-
 variable "enable_csi_nfs" {
   description = "Whether to enable the NFS CSI driver"
   type        = bool

@@ -36,6 +36,7 @@ No modules.
 | <a name="input_csi_registrar_limit_memory"></a> [csi\_registrar\_limit\_memory](#input\_csi\_registrar\_limit\_memory) | Memory limit for the CSI registrar container | `string` | `"64Mi"` | no |
 | <a name="input_csi_registrar_request_cpu"></a> [csi\_registrar\_request\_cpu](#input\_csi\_registrar\_request\_cpu) | CPU request for the CSI registrar container | `string` | `"5m"` | no |
 | <a name="input_csi_registrar_request_memory"></a> [csi\_registrar\_request\_memory](#input\_csi\_registrar\_request\_memory) | Memory request for the CSI registrar container | `string` | `"32Mi"` | no |
+| <a name="input_priority_class"></a> [priority\_class](#input\_priority\_class) | Describe the priority class the CSI secrets store pods should be in | `string` | `null` | no |
 
 ## Outputs
 

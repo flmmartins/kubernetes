@@ -23,8 +23,9 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_chart_version"></a> [chart\_version](#input\_chart\_version) | 1password Connect Chart Version | `string` | `"2.2.1"` | no |
+| <a name="input_chart_version"></a> [chart\_version](#input\_chart\_version) | 1password Connect Chart Version | `string` | `"2.4.1"` | no |
 | <a name="input_credentials_json_base64"></a> [credentials\_json\_base64](#input\_credentials\_json\_base64) | 1password Credentials File json encoded in base64 | `string` | n/a | yes |
+| <a name="input_priority_class"></a> [priority\_class](#input\_priority\_class) | Describe the priority class the cluster pods should be in | `string` | `""` | no |
 
 ## Outputs
 

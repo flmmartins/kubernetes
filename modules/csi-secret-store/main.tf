@@ -19,6 +19,9 @@ resource "helm_release" "this" {
     enableSecretRotation: true
     rotationPollInterval: "2m"
     linux:
+      %{~if var.priority_class != null~}
+      priorityClassName: ${var.priority_class}
+      %{~endif~}
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
