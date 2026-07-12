@@ -1,7 +1,13 @@
-variable "chart_version" {
+variable "operator_chart_version" {
   type        = string
-  description = "Seaweedfs Chart Version"
-  default     = "4.33.0"
+  description = "Seaweedfs Chart Operator Version"
+  default     = "0.1.33"
+}
+
+variable "application_image_version" {
+  type        = string
+  description = "Seaweedfs Docker Image Version"
+  default     = "4.38"
 }
 
 variable "s3api_port" {
@@ -32,27 +38,11 @@ variable "admin_ui_url" {
   description = "Admin URL"
 }
 
-variable "buckets" {
-  description = "List of buckets to add to seadweedfs"
-  type = list(object({
-    name          = string
-    ttl           = string
-    anonymousRead = optional(bool, false)
-    objectLock    = optional(bool, false)
-    versioning    = optional(string, "Enabled")
-  }))
-  default = [{
-    name       = "terraform"
-    objectLock = true
-    ttl        = "90d"
-  }]
-}
-
 variable "vault_password" {
   description = <<-EOT
     Vault configuration to read SeaweedFS credentials from.
     Supports reading admin credentials and S3 config JSON from a Vault secret.
-    If this is not provided, secrets will be auto generated for s3 and seadweedfs admin secret will be empty
+    If this is not provided, secrets will be auto generated for s3 and seaweedfs admin secret will be empty
 
     Example:
     vault_password = {
@@ -252,4 +242,31 @@ variable "admin_memory_limit" {
   description = "Memory limit for SeaweedFS admin UI pods"
   type        = string
   default     = "100Mi"
+}
+
+# -----------------------------------------------------------------------------
+# Operator Controller Manager
+# -----------------------------------------------------------------------------
+variable "operator_cpu_request" {
+  description = "CPU request for the SeaweedFS operator controller manager"
+  type        = string
+  default     = "50m"
+}
+
+variable "operator_memory_request" {
+  description = "Memory request for the SeaweedFS operator controller manager"
+  type        = string
+  default     = "64Mi"
+}
+
+variable "operator_cpu_limit" {
+  description = "CPU limit for the SeaweedFS operator controller manager"
+  type        = string
+  default     = "100m"
+}
+
+variable "operator_memory_limit" {
+  description = "Memory limit for the SeaweedFS operator controller manager"
+  type        = string
+  default     = "128Mi"
 }

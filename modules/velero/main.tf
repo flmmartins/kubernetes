@@ -18,15 +18,16 @@ locals {
     part-of = "backup"
   }
   velero_service_account_name = local.name
+  velero_s3_credentials       = var.seaweedfs != null ? module.velero_bucket[0].s3_secret_name : local.name
 }
 
 resource "terraform_data" "validate_credentials" {
   lifecycle {
     precondition {
       condition = (
-        (var.vault_password != null) != (var.s3_credentials != null)
+        (var.vault_password != null) != (var.s3_credentials != null) != (var.seaweedfs.cluster_name != null)
       )
-      error_message = "Exactly one of vault_password or s3_credentials must be defined, not both and not neither."
+      error_message = "Exactly one of vault_password or s3_credentials or seaweedfs.cluster_name must be defined, not all and not neither."
     }
   }
 }
@@ -40,7 +41,7 @@ resource "kubernetes_namespace_v1" "this" {
 
 # TODO: Test later
 resource "kubernetes_secret_v1" "this" {
-  count = var.vault_password == null ? 1 : 0
+  count = var.vault_password == null && var.seaweedfs == null ? 1 : 0
 
   metadata {
     name      = local.name
@@ -76,6 +77,17 @@ resource "vault_kubernetes_auth_backend_role" "this" {
   token_policies                   = [vault_policy.this[0].name]
 }
 
+module "velero_bucket" {
+  count = var.seaweedfs != null ? 1 : 0
+
+  source    = "../seadweed-s3-bucket"
+  seaweedfs = var.seaweedfs
+  application = {
+    name      = local.name
+    namespace = kubernetes_namespace_v1.this.metadata[0].name
+  }
+}
+
 resource "helm_release" "this" {
   name       = local.name
   namespace  = kubernetes_namespace_v1.this.metadata[0].name
@@ -93,16 +105,53 @@ resource "helm_release" "this" {
     backupsEnabled: true
     snapshotsEnabled: ${var.snapshots_enabled}
     credentials:
+    %{~if var.seaweedfs == null~}
       useSecret: true
-      existingSecret: ${local.name}
+      existingSecret: ${local.velero_s3_credentials}
+    %{~else~}
+      useSecret: false
+    %{~endif~}
     initContainers:
     - name: velero-plugin-for-aws
       image: velero/velero-plugin-for-aws:${var.aws_plugin_version}
       volumeMounts:
       - mountPath: /target
         name: plugins
+    %{~if var.seaweedfs != null~}
+    - name: velero-plugin-credential-formatter
+      image: alpine:latest
+      command:
+        - /bin/sh
+        - -c
+        - printf '[default]\naws_access_key_id=%s\naws_secret_access_key=%s\n' "$AWS_KEY" "$AWS_SECRET" > /credentials/cloud
+      env:
+      - name: AWS_KEY
+        valueFrom:
+          secretKeyRef:
+            name: ${local.velero_s3_credentials}
+            key: accessKey
+      - name: AWS_SECRET
+        valueFrom:
+          secretKeyRef:
+            name: ${local.velero_s3_credentials}
+            key: secretKey
+      volumeMounts:
+      - name: credentials
+        mountPath: /credentials
+    extraVolumes:
+    - name: credentials
+      emptyDir: {}
+    extraVolumeMounts:
+    - name: credentials
+      mountPath: /credentials
+    %{~endif~}
     configuration:
-      backupStorageLocation: ${jsonencode(var.backup_storage_locations)}
+      backupStorageLocation: ${jsonencode([var.backup_storage_location])}
+      %{~if var.seaweedfs != null~}
+      extraEnvVars:
+      - name: AWS_SHARED_CREDENTIALS_FILE
+        value: /credentials/cloud
+      %{~endif~}
     serviceAccount:
       server:
         create: true
@@ -153,6 +202,3 @@ resource "helm_release" "this" {
     EOF
   ]
 }
-
-# TODO: For now velero buckets and etc will be created by seaweedfs helm because aws_s3 provider can't:
-# create users, keys or lifecycle policies

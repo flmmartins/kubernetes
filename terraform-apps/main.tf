@@ -7,23 +7,6 @@ locals {
 module "seaweedfs" {
   source = "../modules/seaweedfs"
 
-  buckets = [
-    {
-      name       = "terraform"
-      objectLock = true
-      ttl        = "90d"
-    },
-    {
-      name = "velero"
-      ttl  = "30d"
-    },
-    {
-      name       = "pg-cluster"
-      versioning = false
-      ttl        = "365d"
-    }
-  ]
-
   vault_password = {
     vault_address = var.vault_address_internal
     secret_path   = format("%s/seaweedfs", var.onepassword_vault_path)
@@ -45,20 +28,14 @@ module "velero" {
   source = "../modules/velero"
 
   snapshots_enabled = false
-  backup_storage_locations = [
-    {
-      name   = "talos-truenas"
-      bucket = "velero"
-      config = {
-        region = "seaweedfs"
-        s3Url  = module.seaweedfs.s3_kubernetes_svc
-      }
+  seaweedfs = {
+    cluster_name = module.seaweedfs.cluster_name
+    namespace    = module.seaweedfs.namespace
+  }
+  backup_storage_location = {
+    config = {
+      s3Url = module.seaweedfs.s3_kubernetes_svc
     }
-  ]
-
-  vault_password = {
-    vault_address = var.vault_address_internal
-    secret_path   = format("%s/velero", var.onepassword_vault_path)
   }
 }
 

@@ -1,12 +1,12 @@
 variable "chart_version" {
   type        = string
   description = "Prometheus Stack Chart Version"
-  default     = "12.0.0"
+  default     = "12.1.0"
 }
 
 variable "aws_plugin_version" {
   description = "AWS Plugin for Velero Version. It has to be compatible with velero. Check: https://github.com/vmware-tanzu/velero-plugin-for-aws?tab=readme-ov-file#compatibility"
-  default     = "v1.13.2"
+  default     = "v1.14.2"
 }
 
 variable "backup_schedule" {
@@ -14,19 +14,28 @@ variable "backup_schedule" {
   default     = "0 0 * * *"
 }
 
-variable "backup_storage_locations" {
-  type = list(object({
-    name        = string
+variable "backup_storage_location" {
+  type = object({
+    name        = optional(string, "seaweedfs")
     provider    = optional(string, "aws")
-    bucket      = optional(string)
+    bucket      = optional(string, "velero")
     default     = optional(bool, true)
     access_mode = optional(string, "ReadWrite")
     config = object({
-      region           = string
+      region           = optional(string, "seaweedfs")
       s3ForcePathStyle = optional(string, "true")
       s3Url            = string
     })
-  }))
+  })
+}
+
+variable "seaweedfs" {
+  description = "Name of seaweedfs cluster and namespace. If provided, bucket and credentials will be created"
+  type = object({
+    cluster_name = string
+    namespace    = string
+  })
+  default = null
 }
 
 variable "snapshots_enabled" {
