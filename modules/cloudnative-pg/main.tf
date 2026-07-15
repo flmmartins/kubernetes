@@ -18,6 +18,7 @@ resource "helm_release" "postgres_operator" {
   repository       = "https://cloudnative-pg.github.io/charts"
   version          = var.chart_version
   chart            = "cloudnative-pg"
+  max_history      = 10
   values = [
     <<-EOF
     serviceAccount:

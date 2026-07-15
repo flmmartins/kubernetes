@@ -158,8 +158,9 @@ resource "helm_release" "operator" {
   namespace        = kubernetes_namespace_v1.this.metadata[0].name
   create_namespace = true
   repository       = "https://seaweedfs.github.io/seaweedfs-operator/"
-  chart            = "seaweedfs-operator"
   version          = var.operator_chart_version
+  chart            = "seaweedfs-operator"
+  max_history      = 10
 
   values = [<<-EOF
     commonLabels: ${jsonencode(merge(local.labels, { "component" = "plex" }))}

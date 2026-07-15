@@ -10,4 +10,5 @@ resource "helm_release" "this" {
   create_namespace = true
   version          = var.chart_version
   chart            = "metrics-server"
+  max_history      = 10
 }

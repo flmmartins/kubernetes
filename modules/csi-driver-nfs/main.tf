@@ -17,11 +17,12 @@ locals {
 }
 
 resource "helm_release" "this" {
-  name       = "csi-driver-nfs"
-  namespace  = "kube-system"
-  repository = "https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/master/charts"
-  version    = var.chart_version
-  chart      = "csi-driver-nfs"
+  name        = "csi-driver-nfs"
+  namespace   = "kube-system"
+  repository  = "https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/master/charts"
+  version     = var.chart_version
+  chart       = "csi-driver-nfs"
+  max_history = 10
   values = [
     <<-EOF
     driver:

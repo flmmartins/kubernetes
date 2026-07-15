@@ -32,11 +32,12 @@ resource "kubernetes_namespace_v1" "metallb" {
 resource "helm_release" "metallb" {
   count = var.uses_metallb == true ? 1 : 0
 
-  name       = "metallb"
-  namespace  = kubernetes_namespace_v1.metallb[0].metadata[0].name
-  repository = "https://metallb.github.io/metallb"
-  version    = var.metallb_chart_version
-  chart      = "metallb"
+  name        = "metallb"
+  namespace   = kubernetes_namespace_v1.metallb[0].metadata[0].name
+  repository  = "https://metallb.github.io/metallb"
+  version     = var.metallb_chart_version
+  chart       = "metallb"
+  max_history = 10
   values = [
     <<-EOF
     controller:
@@ -82,20 +83,22 @@ resource "kubernetes_namespace_v1" "istio" {
 }
 
 resource "helm_release" "istio-base" {
-  name       = "istio-base"
-  namespace  = kubernetes_namespace_v1.istio.metadata[0].name
-  repository = "https://istio-release.storage.googleapis.com/charts"
-  version    = var.istio_chart_version
-  chart      = "base"
+  name        = "istio-base"
+  namespace   = kubernetes_namespace_v1.istio.metadata[0].name
+  repository  = "https://istio-release.storage.googleapis.com/charts"
+  version     = var.istio_chart_version
+  chart       = "base"
+  max_history = 10
 }
 
 resource "helm_release" "istiod" {
-  depends_on = [helm_release.istio-base]
-  name       = "istiod"
-  namespace  = kubernetes_namespace_v1.istio.metadata[0].name
-  repository = "https://istio-release.storage.googleapis.com/charts"
-  version    = var.istio_chart_version
-  chart      = "istiod"
+  depends_on  = [helm_release.istio-base]
+  name        = "istiod"
+  namespace   = kubernetes_namespace_v1.istio.metadata[0].name
+  repository  = "https://istio-release.storage.googleapis.com/charts"
+  version     = var.istio_chart_version
+  chart       = "istiod"
+  max_history = 10
   values = [<<-EOT
     ###############################
     # ISTIO D

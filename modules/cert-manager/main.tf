@@ -26,11 +26,12 @@ resource "kubernetes_namespace_v1" "this" {
 }
 
 resource "helm_release" "this" {
-  name       = local.name
-  namespace  = kubernetes_namespace_v1.this.metadata[0].name
-  repository = "https://charts.jetstack.io"
-  version    = var.chart_version
-  chart      = "cert-manager"
+  name        = local.name
+  namespace   = kubernetes_namespace_v1.this.metadata[0].name
+  repository  = "https://charts.jetstack.io"
+  version     = var.chart_version
+  chart       = "cert-manager"
+  max_history = 10
   values = [
     <<-EOF
     global:

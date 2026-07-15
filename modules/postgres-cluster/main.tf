@@ -168,6 +168,7 @@ resource "helm_release" "this" {
   repository       = "https://cloudnative-pg.github.io/charts"
   version          = var.chart_version
   chart            = "cluster"
+  max_history      = 10
   values = [
     <<-EOF
     databases:

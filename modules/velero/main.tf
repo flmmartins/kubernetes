@@ -89,11 +89,12 @@ module "velero_bucket" {
 }
 
 resource "helm_release" "this" {
-  name       = local.name
-  namespace  = kubernetes_namespace_v1.this.metadata[0].name
-  repository = "https://vmware-tanzu.github.io/helm-charts"
-  version    = var.chart_version
-  chart      = "velero"
+  name        = local.name
+  namespace   = kubernetes_namespace_v1.this.metadata[0].name
+  repository  = "https://vmware-tanzu.github.io/helm-charts"
+  version     = var.chart_version
+  chart       = "velero"
+  max_history = 10
   values = [
     <<-EOF
     schedules:

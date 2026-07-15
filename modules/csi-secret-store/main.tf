@@ -7,11 +7,12 @@ terraform {
 }
 
 resource "helm_release" "this" {
-  name       = "csi-secrets-store"
-  namespace  = "kube-system"
-  repository = "https://kubernetes-sigs.github.io/secrets-store-csi-driver/charts"
-  version    = var.chart_version
-  chart      = "secrets-store-csi-driver"
+  name        = "csi-secrets-store"
+  namespace   = "kube-system"
+  repository  = "https://kubernetes-sigs.github.io/secrets-store-csi-driver/charts"
+  version     = var.chart_version
+  chart       = "secrets-store-csi-driver"
+  max_history = 10
   values = [
     <<-EOF
     syncSecret:

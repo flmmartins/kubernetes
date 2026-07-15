@@ -61,11 +61,12 @@ resource "kubernetes_persistent_volume_claim_v1" "immich_config" {
 resource "helm_release" "immich" {
   count = var.photos_nfs_share != null ? 1 : 0
 
-  name       = local.immich_app_name
-  namespace  = kubernetes_namespace_v1.immich[0].metadata[0].name
-  repository = "oci://ghcr.io/immich-app/immich-charts"
-  chart      = "immich"
-  version    = var.immich_chart_version
+  name        = local.immich_app_name
+  namespace   = kubernetes_namespace_v1.immich[0].metadata[0].name
+  repository  = "oci://ghcr.io/immich-app/immich-charts"
+  chart       = "immich"
+  version     = var.immich_chart_version
+  max_history = 10
   values = [
     <<-EOF
     defaultPodOptions:
