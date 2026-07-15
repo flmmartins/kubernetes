@@ -18,8 +18,3 @@ variable "application" {
     namespace = string
   })
 }
-
-variable "bucket_ttl" {
-  description = "TTL for objects to be excluded"
-  default     = "30d"
-}

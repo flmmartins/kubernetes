@@ -97,9 +97,6 @@ resource "kubernetes_manifest" "bucket" {
       clusterRef    = { name = var.seaweedfs.cluster_name }
       reclaimPolicy = "Retain" # Do not delete bucket when CRD is deleted
       owner         = kubernetes_manifest.s3_identity.manifest.metadata.name
-      placement = {
-        ttl = var.bucket_ttl
-      }
     }
   }
 }
