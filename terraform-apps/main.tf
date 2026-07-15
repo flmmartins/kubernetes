@@ -103,16 +103,15 @@ module "main-pg-cluster" {
     extensions = ["cube", "earthdistance", "vector"]
   }]
 
-  #backup = {
-  #  s3_endpoint      = module.seaweedfs.s3_kubernetes_svc
-  #  s3_bucket        = "pg-cluster"
-  #  schedule         = "0 0 0 * * *"
-  #  retention_policy = "180d"
-  #  vault_password = {
-  #    vault_address = var.vault_address_internal
-  #    secret_path   = format("%s/pg-cluster", var.onepassword_vault_path)
-  #  }
-  #}
+  backup = {
+    s3_endpoint = module.seaweedfs.s3_kubernetes_svc
+    schedule    = "0 23 * * *"
+  }
+
+  create_backup_from_seaweedfs = {
+    cluster_name = module.seaweedfs.cluster_name
+    namespace    = module.seaweedfs.namespace
+  }
 }
 
 module "home-apps" {

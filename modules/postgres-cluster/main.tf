@@ -17,9 +17,18 @@ locals {
     for role in var.roles : role.name => role
     if role.create_secret_in_namespace != null
   }
-  backup_secret_name      = "${var.cluster.name}-backup"
   certificate_server_name = "${var.cluster.name}-server"
+}
 
+resource "terraform_data" "validate_backup_credentials" {
+  lifecycle {
+    precondition {
+      condition = var.backup == null || (
+        (var.s3_credentials != null) != (var.create_backup_from_seaweedfs != null)
+      )
+      error_message = "When 'backup' is set, exactly one of 's3_credentials' or 'create_backup_from_seaweedfs' must be specified (not both, not neither)."
+    }
+  }
 }
 
 resource "kubernetes_namespace_v1" "this" {
@@ -123,66 +132,30 @@ resource "kubernetes_secret_v1" "credentials_in_app_namespace" {
   data_wo_revision = 1
 }
 
-resource "vault_policy" "backup" {
-  count = var.backup != null ? 1 : 0
+#TODO: test
+resource "kubernetes_secret_v1" "backup" {
+  count = var.backup != null && var.s3_credentials != null ? 1 : 0
 
-  name   = "${var.cluster.name}-backup"
-  policy = <<-EOT
-    path "${var.backup.vault_password.secret_path}" { capabilities = ["read"] }
-  EOT
+  metadata {
+    name      = "${var.cluster.name}-backup"
+    namespace = kubernetes_namespace_v1.this.metadata[0].name
+    labels    = merge(local.labels, { component = "credentials" })
+  }
+
+  data_wo = {
+    accessKey = var.s3_credentials.access_key_id
+    secretKey = var.s3_credentials.secret_access_key
+  }
 }
 
-resource "vault_kubernetes_auth_backend_role" "backup" {
-  count = var.backup != null ? 1 : 0
+module "backup_storage" {
+  count = var.backup != null && var.create_backup_from_seaweedfs != null ? 1 : 0
 
-  role_name                        = "${var.cluster.name}-backup"
-  bound_service_account_names      = ["${var.cluster.name}"] # CNPG uses cluster name as SA
-  bound_service_account_namespaces = [kubernetes_namespace_v1.this.metadata[0].name]
-  token_max_ttl                    = 1440
-  token_policies                   = [vault_policy.backup[0].name]
-}
-
-resource "kubernetes_manifest" "backup_secret_provider" {
-  count = var.backup != null ? 1 : 0
-
-  manifest = {
-    apiVersion = "secrets-store.csi.x-k8s.io/v1"
-    kind       = "SecretProviderClass"
-    metadata = {
-      name      = local.backup_secret_name
-      namespace = kubernetes_namespace_v1.this.metadata[0].name
-      labels    = local.labels
-    }
-    spec = {
-      provider = "vault"
-      parameters = {
-        roleName        = vault_kubernetes_auth_backend_role.backup[0].role_name
-        vaultAddress    = var.backup.vault_password.vault_address
-        vaultCACertPath = var.backup.vault_password.vault_csi_ca_cert_path
-        objects         = <<-EOT
-          - objectName: s3-access-key
-            secretPath: ${var.backup.vault_password.secret_path}
-            secretKey: ${var.backup.vault_password.access_key_field}
-          - objectName: s3-secret-key
-            secretPath: ${var.backup.vault_password.secret_path}
-            secretKey: ${var.backup.vault_password.secret_key_field}
-        EOT
-      }
-      secretObjects = [{
-        secretName = local.backup_secret_name
-        type       = "Opaque"
-        data = [
-          {
-            objectName = "s3-access-key"
-            key        = "accessKey"
-          },
-          {
-            objectName = "s3-secret-key"
-            key        = "secretKey"
-          }
-        ]
-      }]
-    }
+  source    = "../seadweed-s3-bucket"
+  seaweedfs = var.create_backup_from_seaweedfs
+  application = {
+    name      = var.cluster.name
+    namespace = kubernetes_namespace_v1.this.metadata[0].name
   }
 }
 
@@ -245,17 +218,10 @@ resource "helm_release" "this" {
           memory: ${var.cluster_resources_limits_memory}
           cpu: ${var.cluster_resources_limits_cpu}
     %{~if var.backup != null~}
-      projectedVolumeTemplate:
-        sources:
-        - csi:
-            driver: secrets-store.csi.k8s.io
-            readOnly: true
-            volumeAttributes:
-              secretProviderClass: ${kubernetes_manifest.backup_secret_provider[0].manifest.metadata.name}
     backups:
       enabled: true
       endpointURL: ${var.backup.s3_endpoint}
-      destinationPath: s3://${var.backup.s3_bucket}/
+      destinationPath: s3://${var.create_backup_from_seaweedfs != null ? module.backup_storage[0].s3_bucket : var.backup.s3_bucket}/
       endpointCA:
         create: false
         name: ${kubernetes_manifest.certificate_server.manifest.metadata.name}
@@ -263,11 +229,11 @@ resource "helm_release" "this" {
       provider: s3
       s3:
         region: ""
-        bucket: ${var.backup.s3_bucket}
+        bucket: ${var.create_backup_from_seaweedfs != null ? module.backup_storage[0].s3_bucket : var.backup.s3_bucket}
         path: /
       secret:
         create: false
-        name: ${local.backup_secret_name}
+        name: ${var.create_backup_from_seaweedfs != null ? module.backup_storage[0].s3_secret_name : kubernetes_secret_v1.backup[0].metadata[0].name}
       wal:
         compression: gzip
         encryption: ""

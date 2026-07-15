@@ -58,32 +58,38 @@ variable "backup" {
     Example:
     backup = {
       s3_endpoint  = "http://...:8333"
-      s3_bucket    = "pg-backups"
+      s3_bucket    = "A BUCKET - If created with seaweed there's  no need to define"
       schedule     = "0 0 0 * * *"
       retention_policy = "30d"
-      vault_password = {
-        vault_address  = "https://vault.vault:8200"
-        secret_path    = "op/vaults/my-vault/items/pg-backup-s3"
-        access_key_field = "accessKey"
-        secret_key_field = "secretKey"
-      }
-    }
   EOT
   type = object({
     s3_endpoint      = string
-    s3_bucket        = string
+    s3_bucket        = optional(string)
     schedule         = string
-    retention_policy = string
-    vault_password = object({
-      vault_address          = string
-      secret_path            = string
-      vault_csi_ca_cert_path = optional(string, "/vault/tls/ca.crt")
-      access_key_field       = optional(string, "accessKey")
-      secret_key_field       = optional(string, "secretKey")
-    })
+    retention_policy = optional(string, "90d")
   })
   default = null
 }
+
+variable "create_backup_from_seaweedfs" {
+  description = "Name of seaweedfs cluster and namespace. If provided, bucket and credentials will be created"
+  type = object({
+    cluster_name = string
+    namespace    = string
+  })
+  default = null
+}
+
+variable "s3_credentials" {
+  description = "Object containing access_key_id and secret_access_key for s3"
+  type = object({
+    access_key_id     = string
+    secret_access_key = string
+  })
+  default   = null
+  sensitive = true
+}
+
 variable "certificate_issuer" {
   description = "The Cert Manager issuer to use for PostgreSQL certificates. This should be the name of an existing issuer in your Kubernetes cluster."
   type        = string
