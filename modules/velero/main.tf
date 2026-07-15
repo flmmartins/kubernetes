@@ -18,14 +18,14 @@ locals {
     part-of = "backup"
   }
   velero_service_account_name = local.name
-  velero_s3_credentials       = var.seaweedfs != null ? module.velero_bucket[0].s3_secret_name : local.name
+  velero_s3_credentials       = var.create_backup_from_seaweedfs != null ? module.velero_bucket[0].s3_secret_name : local.name
 }
 
 resource "terraform_data" "validate_credentials" {
   lifecycle {
     precondition {
       condition = (
-        (var.vault_password != null) != (var.s3_credentials != null) != (var.seaweedfs.cluster_name != null)
+        (var.vault_password != null) != (var.s3_credentials != null) != (var.create_backup_from_seaweedfs.cluster_name != null)
       )
       error_message = "Exactly one of vault_password or s3_credentials or seaweedfs.cluster_name must be defined, not all and not neither."
     }
@@ -41,7 +41,7 @@ resource "kubernetes_namespace_v1" "this" {
 
 # TODO: Test later
 resource "kubernetes_secret_v1" "this" {
-  count = var.vault_password == null && var.seaweedfs == null ? 1 : 0
+  count = var.vault_password == null && var.create_backup_from_seaweedfs == null ? 1 : 0
 
   metadata {
     name      = local.name
@@ -78,10 +78,10 @@ resource "vault_kubernetes_auth_backend_role" "this" {
 }
 
 module "velero_bucket" {
-  count = var.seaweedfs != null ? 1 : 0
+  count = var.create_backup_from_seaweedfs != null ? 1 : 0
 
   source    = "../seadweed-s3-bucket"
-  seaweedfs = var.seaweedfs
+  seaweedfs = var.create_backup_from_seaweedfs
   application = {
     name      = local.name
     namespace = kubernetes_namespace_v1.this.metadata[0].name
@@ -105,7 +105,7 @@ resource "helm_release" "this" {
     backupsEnabled: true
     snapshotsEnabled: ${var.snapshots_enabled}
     credentials:
-    %{~if var.seaweedfs == null~}
+    %{~if var.create_backup_from_seaweedfs == null~}
       useSecret: true
       existingSecret: ${local.velero_s3_credentials}
     %{~else~}
@@ -117,7 +117,7 @@ resource "helm_release" "this" {
       volumeMounts:
       - mountPath: /target
         name: plugins
-    %{~if var.seaweedfs != null~}
+    %{~if var.create_backup_from_seaweedfs != null~}
     - name: velero-plugin-credential-formatter
       image: alpine:latest
       command:
@@ -147,7 +147,7 @@ resource "helm_release" "this" {
     %{~endif~}
     configuration:
       backupStorageLocation: ${jsonencode([var.backup_storage_location])}
-      %{~if var.seaweedfs != null~}
+      %{~if var.create_backup_from_seaweedfs != null~}
       extraEnvVars:
       - name: AWS_SHARED_CREDENTIALS_FILE
         value: /credentials/cloud

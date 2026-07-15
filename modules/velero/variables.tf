@@ -11,9 +11,9 @@ variable "aws_plugin_version" {
 
 variable "backup_schedule" {
   description = "When to run velero"
-  default     = "0 0 * * *"
 }
 
+# Use default TTL of 30d
 variable "backup_storage_location" {
   type = object({
     name        = optional(string, "seaweedfs")
@@ -29,7 +29,7 @@ variable "backup_storage_location" {
   })
 }
 
-variable "seaweedfs" {
+variable "create_backup_from_seaweedfs" {
   description = "Name of seaweedfs cluster and namespace. If provided, bucket and credentials will be created"
   type = object({
     cluster_name = string

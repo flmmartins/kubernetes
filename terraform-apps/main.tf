@@ -28,7 +28,8 @@ module "velero" {
   source = "../modules/velero"
 
   snapshots_enabled = false
-  seaweedfs = {
+  backup_schedule   = "0 0 * * *"
+  create_backup_from_seaweedfs = {
     cluster_name = module.seaweedfs.cluster_name
     namespace    = module.seaweedfs.namespace
   }
