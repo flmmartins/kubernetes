@@ -89,6 +89,10 @@ resource "helm_release" "this" {
     prometheus:
       prometheusSpec:
         retention: ${var.retention_days}
+        podMonitorSelectorNilUsesHelmValues: false
+        podMonitorNamespaceSelector: {}
+        serviceMonitorSelectorNilUsesHelmValues: false
+        serviceMonitorNamespaceSelector: {}
         resources:
           requests:
             cpu: ${var.prometheus_cpu_request}
