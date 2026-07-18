@@ -45,24 +45,3 @@ resource "helm_release" "postgres_operator" {
     EOF
   ]
 }
-
-# Enable backups
-resource "helm_release" "this" {
-  name       = "plugin-barman-cloud"
-  namespace  = helm_release.postgres_operator.namespace
-  repository = "https://cloudnative-pg.github.io/charts"
-  version    = var.barman_chart_version
-  chart      = "plugin-barman-cloud"
-
-  values = [
-    <<-EOF
-    resources:
-      requests:
-        cpu: ${var.barman_requests_cpu}
-        memory: ${var.barman_requests_memory}
-      limits:
-        cpu: ${var.barman_limits_cpu}
-        memory: ${var.barman_limits_memory}
-    EOF
-  ]
-}
