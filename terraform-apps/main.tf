@@ -73,7 +73,7 @@ module "kube_prometheus_stack" {
 # PG Operator is different module due to the CRD manifest issue on plan
 # Where it can't find CRD, so you have to apply with target
 module "pg-operator" {
-  source = "../modules/cloudnative-pg"
+  source = "../modules/postgres-operator"
 
   security_context = {
     user_id  = var.postgres_credentials.user_id
