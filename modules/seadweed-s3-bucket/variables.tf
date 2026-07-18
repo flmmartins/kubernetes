@@ -18,3 +18,13 @@ variable "application" {
     namespace = string
   })
 }
+
+variable "access_key_field" {
+  description = "The secret field that should contain the access key id"
+  default     = "accessKey"
+}
+
+variable "secret_key_field" {
+  description = "The secret field that should contain the secret key"
+  default     = "secretKey"
+}

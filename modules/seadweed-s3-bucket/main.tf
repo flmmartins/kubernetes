@@ -18,8 +18,7 @@ resource "kubernetes_manifest" "s3_identity" {
       labels    = local.labels
     }
     spec = {
-      seaweedRef    = { name = var.seaweedfs.cluster_name }
-      reclaimPolicy = "Retain"
+      seaweedRef = { name = var.seaweedfs.cluster_name }
     }
   }
 }
@@ -76,10 +75,11 @@ resource "kubernetes_manifest" "s3_credentials" {
       seaweedRef  = { name = var.seaweedfs.cluster_name }
       identityRef = { name = kubernetes_manifest.s3_identity.manifest.metadata.name }
       secretRef = {
-        name      = kubernetes_secret_v1.s3_credentials_placeholder.metadata[0].name
-        namespace = kubernetes_secret_v1.s3_credentials_placeholder.metadata[0].namespace
+        name           = kubernetes_secret_v1.s3_credentials_placeholder.metadata[0].name
+        namespace      = kubernetes_secret_v1.s3_credentials_placeholder.metadata[0].namespace
+        accessKeyField = var.access_key_field
+        secretKeyField = var.secret_key_field
       }
-      reclaimPolicy = "Retain"
     }
   }
 }

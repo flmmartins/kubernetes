@@ -83,7 +83,7 @@ No modules.
 | <a name="input_persistent_storage_class_name"></a> [persistent\_storage\_class\_name](#input\_persistent\_storage\_class\_name) | Storage class name for PVC | `string` | n/a | yes |
 | <a name="input_s3_cpu_limit"></a> [s3\_cpu\_limit](#input\_s3\_cpu\_limit) | CPU limit for SeaweedFS S3 gateway pods | `string` | `"250m"` | no |
 | <a name="input_s3_cpu_request"></a> [s3\_cpu\_request](#input\_s3\_cpu\_request) | CPU request for SeaweedFS S3 gateway pods | `string` | `"50m"` | no |
-| <a name="input_s3_memory_limit"></a> [s3\_memory\_limit](#input\_s3\_memory\_limit) | Memory limit for SeaweedFS S3 gateway pods | `string` | `"200Mi"` | no |
+| <a name="input_s3_memory_limit"></a> [s3\_memory\_limit](#input\_s3\_memory\_limit) | Memory limit for SeaweedFS S3 gateway pods | `string` | `"400Mi"` | no |
 | <a name="input_s3_memory_request"></a> [s3\_memory\_request](#input\_s3\_memory\_request) | Memory request for SeaweedFS S3 gateway pods | `string` | `"70Mi"` | no |
 | <a name="input_s3api_port"></a> [s3api\_port](#input\_s3api\_port) | S3 api port | `number` | `8333` | no |
 | <a name="input_s3api_url"></a> [s3api\_url](#input\_s3api\_url) | S3 api URL | `string` | n/a | yes |

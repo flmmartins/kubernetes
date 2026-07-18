@@ -29,14 +29,17 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_access_key_field"></a> [access\_key\_field](#input\_access\_key\_field) | The secret field that should contain the access key id | `string` | `"accessKey"` | no |
 | <a name="input_application"></a> [application](#input\_application) | Name and namespace of the application allowed to interact with bucket | <pre>object({<br/>    name      = string<br/>    namespace = string<br/>  })</pre> | n/a | yes |
 | <a name="input_provider_api"></a> [provider\_api](#input\_provider\_api) | S3 Provider url | `string` | `"seaweed.seaweedfs.com/v1"` | no |
 | <a name="input_seaweedfs"></a> [seaweedfs](#input\_seaweedfs) | Name of seaweedfs cluster and namespace | <pre>object({<br/>    cluster_name = string<br/>    namespace    = string<br/>  })</pre> | n/a | yes |
+| <a name="input_secret_key_field"></a> [secret\_key\_field](#input\_secret\_key\_field) | The secret field that should contain the secret key | `string` | `"secretKey"` | no |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| <a name="output_s3_bucket"></a> [s3\_bucket](#output\_s3\_bucket) | Name of the created bucket |
-| <a name="output_s3_secret_name"></a> [s3\_secret\_name](#output\_s3\_secret\_name) | Name of the secret in kubernetes containing s3 credentials |
+| <a name="output_bucket"></a> [bucket](#output\_bucket) | Name of the created bucket |
+| <a name="output_secret_fields"></a> [secret\_fields](#output\_secret\_fields) | Name of the keys inside kubernetes secret |
+| <a name="output_secret_name"></a> [secret\_name](#output\_secret\_name) | Name of the secret in kubernetes containing s3 credentials |
 <!-- END_TF_DOCS -->

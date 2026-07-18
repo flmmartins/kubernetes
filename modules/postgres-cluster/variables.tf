@@ -1,7 +1,7 @@
 variable "chart_version" {
   description = "The version of the CloudNative PG chart to deploy. This should be a valid version string from the CNPG chart repository."
   type        = string
-  default     = "0.6.1"
+  default     = "0.8.0"
 }
 
 variable "postgres_version" {
@@ -54,7 +54,7 @@ EOT
 
 variable "backup" {
   description = <<-EOT
-    Backup to S3 specifications via Vault CSI.
+    Backup to S3 specifications. Requires barman to be installed.
     Example:
     backup = {
       s3_endpoint  = "http://...:8333"

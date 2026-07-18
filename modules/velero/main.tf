@@ -18,7 +18,6 @@ locals {
     part-of = "backup"
   }
   velero_service_account_name = local.name
-  velero_s3_credentials       = var.create_backup_from_seaweedfs != null ? module.velero_bucket[0].s3_secret_name : local.name
 }
 
 resource "terraform_data" "validate_credentials" {
@@ -108,7 +107,7 @@ resource "helm_release" "this" {
     credentials:
     %{~if var.create_backup_from_seaweedfs == null~}
       useSecret: true
-      existingSecret: ${local.velero_s3_credentials}
+      existingSecret: ${local.name}
     %{~else~}
       useSecret: false
     %{~endif~}
@@ -129,13 +128,13 @@ resource "helm_release" "this" {
       - name: AWS_KEY
         valueFrom:
           secretKeyRef:
-            name: ${local.velero_s3_credentials}
-            key: accessKey
+            name: ${module.velero_bucket[0].secret_name}
+            key: ${module.velero_bucket[0].secret_fields.access}
       - name: AWS_SECRET
         valueFrom:
           secretKeyRef:
-            name: ${local.velero_s3_credentials}
-            key: secretKey
+            name: ${module.velero_bucket[0].secret_name}
+            key: ${module.velero_bucket[0].secret_fields.secret}
       volumeMounts:
       - name: credentials
         mountPath: /credentials

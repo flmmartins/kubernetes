@@ -214,7 +214,7 @@ variable "s3_cpu_limit" {
 variable "s3_memory_limit" {
   description = "Memory limit for SeaweedFS S3 gateway pods"
   type        = string
-  default     = "200Mi"
+  default     = "400Mi"
 }
 
 # -----------------------------------------------------------------------------

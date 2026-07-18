@@ -18,6 +18,8 @@ locals {
     if role.create_secret_in_namespace != null
   }
   certificate_server_name = "${var.cluster.name}-server"
+  backup_secret_name      = var.create_backup_from_seaweedfs != null ? module.backup_storage[0].secret_name : kubernetes_secret_v1.backup[0].metadata[0].name
+  backup_bucket_name      = var.create_backup_from_seaweedfs != null ? module.backup_storage[0].bucket : var.backup.s3_bucket
 }
 
 resource "terraform_data" "validate_backup_credentials" {
@@ -95,9 +97,7 @@ resource "kubernetes_secret_v1" "credentials_in_pg_namespace" {
   metadata {
     name      = "${each.key}-pg-role"
     namespace = kubernetes_namespace_v1.this.metadata[0].name
-    labels = {
-      "cnpg.io/reload" = "true"
-    }
+    labels    = merge(local.labels, { component = "credentials" }, { "cnpg.io/reload" = "true" })
   }
 
   type = "kubernetes.io/basic-auth"
@@ -107,7 +107,7 @@ resource "kubernetes_secret_v1" "credentials_in_pg_namespace" {
     password = ephemeral.random_password.pg_roles[each.key].result
   }
 
-  data_wo_revision = 1
+  data_wo_revision = 2
 }
 
 # Immich does not accept secrets outside it's namespace
@@ -117,9 +117,7 @@ resource "kubernetes_secret_v1" "credentials_in_app_namespace" {
   metadata {
     name      = "${each.key}-credentials"
     namespace = each.value.create_secret_in_namespace
-    labels = {
-      "cnpg.io/reload" = "true"
-    }
+    labels    = merge(local.labels, { component = "credentials" }, { "cnpg.io/reload" = "true" })
   }
 
   type = "kubernetes.io/basic-auth"
@@ -129,7 +127,7 @@ resource "kubernetes_secret_v1" "credentials_in_app_namespace" {
     password = ephemeral.random_password.pg_roles[each.key].result
   }
 
-  data_wo_revision = 1
+  data_wo_revision = 2
 }
 
 #TODO: test
@@ -143,8 +141,8 @@ resource "kubernetes_secret_v1" "backup" {
   }
 
   data_wo = {
-    accessKey = var.s3_credentials.access_key_id
-    secretKey = var.s3_credentials.secret_access_key
+    ACCESS_KEY_ID     = var.s3_credentials.access_key_id
+    ACCESS_SECRET_KEY = var.s3_credentials.secret_access_key
   }
 }
 
@@ -157,6 +155,8 @@ module "backup_storage" {
     name      = var.cluster.name
     namespace = kubernetes_namespace_v1.this.metadata[0].name
   }
+  access_key_field = "ACCESS_KEY_ID"
+  secret_key_field = "ACCESS_SECRET_KEY"
 }
 
 resource "helm_release" "this" {
@@ -221,8 +221,9 @@ resource "helm_release" "this" {
     %{~if var.backup != null~}
     backups:
       enabled: true
+      retentionPolicy: "${var.backup.retention_policy}"
       endpointURL: ${var.backup.s3_endpoint}
-      destinationPath: s3://${var.create_backup_from_seaweedfs != null ? module.backup_storage[0].s3_bucket : var.backup.s3_bucket}/
+      destinationPath: s3://${local.backup_bucket_name}/
       endpointCA:
         create: false
         name: ${kubernetes_manifest.certificate_server.manifest.metadata.name}
@@ -230,11 +231,11 @@ resource "helm_release" "this" {
       provider: s3
       s3:
         region: ""
-        bucket: ${var.create_backup_from_seaweedfs != null ? module.backup_storage[0].s3_bucket : var.backup.s3_bucket}
+        bucket: ${local.backup_bucket_name}
         path: /
       secret:
         create: false
-        name: ${var.create_backup_from_seaweedfs != null ? module.backup_storage[0].s3_secret_name : kubernetes_secret_v1.backup[0].metadata[0].name}
+        name: ${local.backup_secret_name}
       wal:
         compression: gzip
         encryption: ""
@@ -247,8 +248,6 @@ resource "helm_release" "this" {
       - name: daily-backup
         schedule: "${var.backup.schedule}"
         backupOwnerReference: self
-        method: barmanObjectStore
-        retentionPolicy: "${var.backup.retention_policy}"
     %{~endif~}
     EOF
   ]
