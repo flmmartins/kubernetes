@@ -197,6 +197,10 @@ resource "helm_release" "this" {
           name: ${role.name}-pg-role
         %{~endif~}
       %{~endfor~}
+    %{~if var.enable_metrics~}
+      monitoring:
+        enabled: true
+    %{~endif~}
       storage:
         size: ${var.cluster.size}
         storageClass: ${var.cluster.storage_class}

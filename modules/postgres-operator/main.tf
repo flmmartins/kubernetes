@@ -42,6 +42,12 @@ resource "helm_release" "postgres_operator" {
       limits:
         cpu: ${var.operator_resources_limits_cpu}
         memory: ${var.operator_resources_limits_memory}
+    %{~if var.enable_metrics~}
+    monitoring:
+      podMonitorEnabled: true
+      grafanaDashboard:
+        create: true
+    %{~endif~}
     EOF
   ]
 }

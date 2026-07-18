@@ -12,6 +12,11 @@ variable "security_context" {
   default = null
 }
 
+variable "enable_metrics" {
+  description = "Whether to enable Prometheus metrics"
+  type        = bool
+  default     = true
+}
 
 # =============================================================================
 # Resource Variables

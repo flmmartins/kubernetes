@@ -95,6 +95,16 @@ variable "certificate_issuer" {
   type        = string
 }
 
+variable "enable_metrics" {
+  description = "Whether to enable Prometheus metrics"
+  type        = bool
+  default     = true
+}
+
+# =============================================================================
+# Resource Variables
+# =============================================================================
+
 variable "cluster_resources_requests_cpu" {
   description = "The CPU request for the CloudNative PG operator. This defines the minimum CPU resources the operator will request."
   type        = string
