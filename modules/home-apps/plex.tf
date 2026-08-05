@@ -12,6 +12,10 @@ locals {
     } : k => v
     if v != null
   }
+  plex_token_secret = {
+    name = "plex-token"
+    key  = "token"
+  }
 }
 
 resource "kubernetes_namespace_v1" "plex" {
@@ -79,12 +83,57 @@ resource "helm_release" "plex" {
       persistentVolumeClaim:
         claimName: ${kubernetes_persistent_volume_claim_v1.plex[name].metadata[0].name}
     %{~endfor~}
+    %{~if var.plex_vault_token != null && var.enable_metrics~} 
+    - name: csi-secret-driver-for-plex-token
+      csi:
+        driver: 'secrets-store.csi.k8s.io'
+        readOnly: true
+        volumeAttributes:
+          secretProviderClass: ${kubernetes_manifest.plex_token[0].manifest.metadata.name}
+    %{~endif~}
     extraVolumeMounts:
     %{~for name, _ in local.plex_shares~}
     - name: ${name}
       mountPath: /${name}
       readOnly: true
     %{~endfor~}
+    %{~if var.plex_vault_token != null && var.enable_metrics~} 
+    - name: csi-secret-driver-for-plex-token
+      mountPath: '/mnt/secrets-store'
+      readOnly: true
+    %{~endif~}
+    %{~if var.enable_metrics~}
+    extraContainers:
+    - name: plex-exporter
+      image: ghcr.io/cplieger/plex-exporter:${var.plex_exporter_version}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        capabilities:
+          drop:
+            - ALL
+      env:
+      - name: PLEX_SERVER
+        value: "http://localhost:32400"
+      - name: PLEX_TOKEN
+        valueFrom:
+          secretKeyRef:
+            name: ${local.plex_token_secret.name}
+            key: ${local.plex_token_secret.key}
+      ports:
+      - containerPort: 9594
+        name: metrics
+      resources:
+        requests:
+          cpu: 10m
+          memory: 32Mi
+        limits:
+          cpu: 100m
+          memory: 64Mi
+    %{~endif~}
     httpRoute:
       enabled: true
       parentRefs:
@@ -106,6 +155,7 @@ resource "kubernetes_manifest" "tcproute_plex" {
     metadata = {
       name      = local.plex_app_name
       namespace = kubernetes_namespace_v1.plex[0].metadata[0].name
+      labels    = merge(local.plex_common_labels, { "component" = "tcproute" })
     }
     spec = {
       parentRefs = [

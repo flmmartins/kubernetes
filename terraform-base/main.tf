@@ -45,6 +45,7 @@ module "cert-manager" {
 
   default_cert_issuer = "letsencrypt-issuer"
   priority_class      = kubernetes_priority_class_v1.this["critical"].metadata[0].name
+  enable_metrics      = true
 
   letsencrypt_issuer = {
     issuer_name = "letsencrypt-issuer"
@@ -80,6 +81,7 @@ module "onepassword" {
 module "csi-secret-store" {
   source         = "../modules/csi-secret-store"
   priority_class = kubernetes_priority_class_v1.this["critical"].metadata[0].name
+  enable_metrics = true
 }
 
 module "vault-install" {
@@ -103,6 +105,7 @@ module "vault-install" {
 
   persistent_storage_class_name = module.csi-driver-nfs[0].persistent_storage_class
   priority_class                = kubernetes_priority_class_v1.this["critical"].metadata[0].name
+  enable_metrics                = true
 }
 
 module "vault" {
@@ -133,6 +136,7 @@ module "gateway-api" {
   uses_metallb   = true
   istio_ip       = var.istio_ip
   priority_class = kubernetes_priority_class_v1.this["critical"].metadata[0].name
+  enable_metrics = true
   gateway_certificates = [
     {
       hostname       = "*.${var.private_domain}"

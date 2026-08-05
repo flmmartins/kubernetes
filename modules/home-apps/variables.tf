@@ -11,6 +11,12 @@ variable "gateway" {
   })
 }
 
+variable "enable_metrics" {
+  description = "Whether to enable metrics"
+  type        = bool
+  default     = false
+}
+
 variable "domain" {
   type        = string
   description = "Domain to use on apps"
@@ -18,7 +24,12 @@ variable "domain" {
 
 variable "plex_chart_version" {
   description = "Plex Version"
-  default     = "1.5.0"
+  default     = "1.6.0"
+}
+
+variable "plex_exporter_version" {
+  description = "Plex Version"
+  default     = "v2.2.11"
 }
 
 variable "plex_gateway_tcp_listener" {
@@ -29,6 +40,33 @@ variable "plex_gateway_tcp_listener" {
 variable "plex_ip" {
   description = "Plex needs load balancer IP to ADVERTISE_IP configuration. This can be a load balancer IP."
   type        = string
+}
+
+variable "plex_vault_token" {
+  description = <<-EOT
+    Vault configuration to read the Plex API token from, used by the plex-exporter
+    sidecar for monitoring. If null, you need to manually create the secret for monitoring
+
+    Example:
+    plex_vault_token = {
+      secret_path   = "secret/plex"
+      vault_address = "https://vault.vault:8200"
+
+      # Optional overrides (these are the defaults):
+      vault_csi_ca_cert_path = "/vault/tls/ca.crt"
+      token_field            = "password"
+    }
+
+    To obtain the token itself, see /config/Library/Application Support/Plex Media Server/Preferences.xml
+    (PlexOnlineToken attribute) inside the running Plex pod
+  EOT
+  type = object({
+    secret_path            = string
+    vault_address          = string
+    vault_csi_ca_cert_path = optional(string, "/vault/tls/ca.crt")
+    token_field            = optional(string, "password")
+  })
+  default = null
 }
 
 variable "immich_chart_version" {

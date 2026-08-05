@@ -6,8 +6,15 @@ terraform {
   }
 }
 
+locals {
+  name = "secrets-store-csi-driver"
+  labels = {
+    part-of = "secrets"
+  }
+}
+
 resource "helm_release" "this" {
-  name        = "csi-secrets-store"
+  name        = local.name
   namespace   = "kube-system"
   repository  = "https://kubernetes-sigs.github.io/secrets-store-csi-driver/charts"
   version     = var.chart_version
@@ -19,6 +26,7 @@ resource "helm_release" "this" {
       enabled: true
     enableSecretRotation: true
     rotationPollInterval: "2m"
+    commonLabels: ${jsonencode(merge(local.labels, { "component" = "csi" }))}
     linux:
       %{~if var.priority_class != null~}
       priorityClassName: ${var.priority_class}

@@ -52,6 +52,12 @@ variable "certificate_issuer" {
   default     = null
 }
 
+variable "enable_metrics" {
+  description = "Whether to enable metrics"
+  type        = bool
+  default     = false
+}
+
 # =============================================================================
 # Resource Variables
 # =============================================================================

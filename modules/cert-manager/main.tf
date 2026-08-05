@@ -96,6 +96,13 @@ resource "helm_release" "this" {
           volumeAttributes:
             secretProviderClass: ${kubernetes_manifest.dns_provider[0].manifest.metadata.name}
   %{~endif~}
+  %{~if var.enable_metrics~}
+    prometheus:
+      enabled: ${var.enable_metrics}
+      servicemonitor:
+        enabled: ${var.enable_metrics}
+        labels: ${jsonencode(merge(local.labels, { "component" = "observability" }))}
+  %{~endif~}
   EOF
   ]
 }

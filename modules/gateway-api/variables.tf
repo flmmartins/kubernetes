@@ -4,6 +4,12 @@ variable "priority_class" {
   default     = null
 }
 
+variable "enable_metrics" {
+  description = "Whether to enable metrics"
+  type        = bool
+  default     = false
+}
+
 # -----------------------------------------------------------------------------
 # Istio Gateway
 # -----------------------------------------------------------------------------
@@ -96,6 +102,18 @@ variable "metallb_chart_version" {
 variable "uses_metallb" {
   description = "Uses metallb to provide IPs to the controller"
   default     = false
+}
+
+variable "prometheus_service_account" {
+  description = "Service account used by Prometheus, required for MetalLB's rbacPrometheus scrape RBAC"
+  type        = string
+  default     = "prometheus-stack-kube-prom-prometheus"
+}
+
+variable "prometheus_namespace" {
+  description = "Namespace Prometheus runs in, required for MetalLB's rbacPrometheus scrape RBAC"
+  type        = string
+  default     = "prometheus-stack"
 }
 
 # =============================================================================

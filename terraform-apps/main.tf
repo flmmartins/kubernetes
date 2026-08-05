@@ -2,6 +2,8 @@ locals {
   seaweedfs_s3api_url = "s3api.${var.private_domain}"
   seaweedfs_admin_url = "seaweedfs.${var.private_domain}"
   grafana_url         = "grafana.${var.public_domain}"
+  prometheus_url      = "prometheus.${var.private_domain}"
+  alertmanager_url    = "alerts.${var.private_domain}"
 }
 
 module "seaweedfs" {
@@ -54,8 +56,11 @@ module "kube_prometheus_stack" {
     group_id = var.monitoring_credentials.group_id
   }
 
-  grafana_url = local.grafana_url
-  gateway     = var.gateway
+  grafana_url      = local.grafana_url
+  prometheus_url   = local.prometheus_url
+  alertmanager_url = local.alertmanager_url
+
+  gateway = var.gateway
 
   alertmanager_email = {
     to        = var.admin_email
@@ -75,6 +80,7 @@ module "kube_prometheus_stack" {
 module "pg-operator" {
   source = "../modules/postgres-operator"
 
+  enable_metrics = true
   security_context = {
     user_id  = var.postgres_credentials.user_id
     group_id = var.postgres_credentials.group_id
@@ -90,6 +96,7 @@ module "main-pg-cluster" {
   }
 
   certificate_issuer = var.vault_pki_issuer
+  enable_metrics     = true
 
   # When adding a role, it will create the password in the namespace
   roles = [{
@@ -115,13 +122,20 @@ module "main-pg-cluster" {
 }
 
 module "home-apps" {
-  depends_on                = [module.main-pg-cluster]
-  source                    = "../modules/home-apps"
-  domain                    = var.public_domain
-  persistent_storage_class  = var.persistent_storage_class
+  depends_on               = [module.main-pg-cluster]
+  source                   = "../modules/home-apps"
+  domain                   = var.public_domain
+  persistent_storage_class = var.persistent_storage_class
+  enable_metrics           = true
+  gateway                  = var.gateway
+
   plex_ip                   = var.istio_ip
   plex_gateway_tcp_listener = "plex-tcp"
-  gateway                   = var.gateway
+  plex_vault_token = {
+    vault_address = var.vault_address_internal
+    secret_path   = format("%s/plex", var.onepassword_vault_path)
+  }
+
   immich_database = {
     server                  = module.main-pg-cluster.rw_svc
     database_name           = "immich"
@@ -133,7 +147,6 @@ module "home-apps" {
     vault_ca_configmap_namespace = var.vault_ca_configmap.namespace
     secret_path                  = format("%s/immich", var.onepassword_vault_path)
   }
-
   movies_nfs_share         = var.existing_nfs_share["movies"]
   music_nfs_share          = var.existing_nfs_share["music"]
   tvshows_nfs_share        = var.existing_nfs_share["tv-shows"]

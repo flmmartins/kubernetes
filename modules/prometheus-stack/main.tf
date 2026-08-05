@@ -87,6 +87,16 @@ resource "helm_release" "this" {
                 annotations:
                   summary: Kubernetes API is down
     prometheus:
+      %{~if var.prometheus_url != null~}
+      route:
+        main:
+          enabled: true
+          labels: ${jsonencode(merge(local.labels, { "component" = "prometheus" }))}
+          hostnames: [${var.prometheus_url}]
+          parentRefs:
+          - name: ${var.gateway.name}
+            namespace: ${var.gateway.namespace}
+      %{~endif~}
       prometheusSpec:
         retention: ${var.retention_days}
         podMonitorSelectorNilUsesHelmValues: false
@@ -126,6 +136,83 @@ resource "helm_release" "this" {
         limits:
           cpu: ${var.kube_state_metrics_cpu_limit}
           memory: ${var.kube_state_metrics_memory_limit}
+      rbac:
+        extraRules:
+        - apiGroups: ["apiextensions.k8s.io"]
+          resources: ["customresourcedefinitions"]
+          verbs: ["list", "watch"]
+        - apiGroups: ["gateway.networking.k8s.io"]
+          resources: ["gateways", "httproutes", "gatewayclasses"]
+          verbs: ["list", "watch"]
+      customResourceState:
+        enabled: true
+        config:
+          kind: CustomResourceStateMetrics
+          spec:
+            resources:
+              - groupVersionKind:
+                  group: gateway.networking.k8s.io
+                  kind: "Gateway"
+                  version: "v1beta1"
+                metricNamePrefix: gatewayapi_gateway
+                labelsFromPath:
+                  name: [metadata, name]
+                  namespace: [metadata, namespace]
+                metrics:
+                  - name: "status"
+                    help: "status condition"
+                    each:
+                      type: Gauge
+                      gauge:
+                        path: [status, conditions]
+                        labelsFromPath:
+                          type: ["type"]
+                        valueFrom: ["status"]
+                  - name: "status_listener_attached_routes"
+                    help: "Number of attached routes for a listener"
+                    each:
+                      type: Gauge
+                      gauge:
+                        path: [status, listeners]
+                        labelsFromPath:
+                          listener_name: ["name"]
+                        valueFrom: ["attachedRoutes"]
+              - groupVersionKind:
+                  group: gateway.networking.k8s.io
+                  kind: "GatewayClass"
+                  version: "v1beta1"
+                metricNamePrefix: gatewayapi_gatewayclass
+                labelsFromPath:
+                  name: [metadata, name]
+                metrics:
+                  - name: "status"
+                    help: "status condition"
+                    each:
+                      type: Gauge
+                      gauge:
+                        path: [status, conditions]
+                        labelsFromPath:
+                          type: ["type"]
+                        valueFrom: ["status"]
+              - groupVersionKind:
+                  group: gateway.networking.k8s.io
+                  kind: "HTTPRoute"
+                  version: "v1beta1"
+                metricNamePrefix: gatewayapi_httproute
+                labelsFromPath:
+                  name: [metadata, name]
+                  namespace: [metadata, namespace]
+                metrics:
+                  - name: "status_parent_info"
+                    help: "Parent references that the httproute is attached to"
+                    each:
+                      type: Info
+                      info:
+                        path: [status, parents]
+                        labelsFromPath:
+                          controller_name: ["controllerName"]
+                          parent_name: ["parentRef", "name"]
+                          parent_namespace: ["parentRef", "namespace"]
     prometheus-node-exporter:
       resources:
         requests:
@@ -171,6 +258,16 @@ resource "helm_release" "this" {
           - name: "null"  # A receiver that does nothing
           - name: default
         %{~endif~}
+      %{~if var.alertmanager_url != null~}
+      route:
+        main:
+          enabled: true
+          labels: ${jsonencode(merge(local.labels, { "component" = "alertmanager" }))}
+          hostnames: [${var.alertmanager_url}]
+          parentRefs:
+          - name: ${var.gateway.name}
+            namespace: ${var.gateway.namespace}
+      %{~endif~}
       alertmanagerSpec:
         %{~if var.alertmanager_email != null~}
         podMetadata:

@@ -9,6 +9,18 @@ variable "grafana_url" {
   description = "Grafana URL"
 }
 
+variable "prometheus_url" {
+  type        = string
+  description = "Prometheus URL"
+  default     = null
+}
+
+variable "alertmanager_url" {
+  type        = string
+  description = "Alertmanager URL"
+  default     = null
+}
+
 variable "gateway" {
   description = "Gateway to use for the app"
   type = object({

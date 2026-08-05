@@ -89,6 +89,10 @@ resource "helm_release" "this" {
     global:
       enabled: true #Install all vault default components
       tlsDisable: false
+      %{~if var.enable_metrics~}
+      serverTelemetry:
+        prometheusOperator: true
+      %{~endif~}
     injector: # Secret injector
       enabled: true
     %{~if var.security_context != null~}
@@ -151,6 +155,11 @@ resource "helm_release" "this" {
     server:
     %{~if var.priority_class != null~}
       priorityClassName: ${var.priority_class}
+    %{~endif~}
+    %{~if var.enable_metrics~}
+      serverTelemetry:
+        serviceMonitor:
+          enabled: true
     %{~endif~}
     %{~if var.install_onepassword_plugin == true~}
       # Plugin needs to be installed on every pod
@@ -239,12 +248,23 @@ resource "helm_release" "this" {
               tls_cert_file = "/vault/userconfig/vault-ha-tls/tls.crt"
               tls_key_file  = "/vault/userconfig/vault-ha-tls/tls.key"
               tls_client_ca_file = "/vault/userconfig/vault-ha-tls/ca.crt"
+              %{~if var.enable_metrics~}
+              telemetry {
+                unauthenticated_metrics_access = "true"
+              }
+              %{~endif~}
             }
             storage "raft" {
               path = "/vault/data"
             }
             disable_mlock = true
             service_registration "kubernetes" {}
+            %{~if var.enable_metrics~}
+            telemetry {
+              prometheus_retention_time = "30s"
+              disable_hostname = true
+            }
+            %{~endif~}
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:

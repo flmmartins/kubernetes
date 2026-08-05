@@ -13,9 +13,9 @@ variable "security_context" {
 }
 
 variable "enable_metrics" {
-  description = "Whether to enable Prometheus metrics"
+  description = "Whether to enable metrics"
   type        = bool
-  default     = true
+  default     = false
 }
 
 # =============================================================================

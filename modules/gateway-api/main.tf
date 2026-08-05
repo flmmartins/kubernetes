@@ -14,125 +14,109 @@ locals {
     part-of = "loadbalancer"
   }
   gateway_certificates = { for idx, cert in var.gateway_certificates : idx => cert }
+  gateway_api_dashboard = {
+    title = "Gateway API"
+    uid   = "gateway-api-custom"
+    panels = [
+      {
+        title       = "Gateways Programmed"
+        type        = "stat"
+        query       = "count(gatewayapi_gateway_status{type=\"Programmed\"} == 1)"
+        keep_fields = null
+      },
+      {
+        title       = "Gateway Status Conditions"
+        type        = "table"
+        query       = "gatewayapi_gateway_status"
+        keep_fields = ["name", "namespace", "type", "Value"]
+      },
+      {
+        title       = "GatewayClass Status"
+        type        = "table"
+        query       = "gatewayapi_gatewayclass_status"
+        keep_fields = ["name", "type", "Value"]
+      },
+      {
+        title       = "HTTPRoute Attachments"
+        type        = "table"
+        query       = "gatewayapi_httproute_status_parent_info"
+        keep_fields = ["name", "namespace", "controller_name", "parent_name", "parent_namespace"]
+      },
+      {
+        title       = "Attached Routes per Listener"
+        type        = "table"
+        query       = "gatewayapi_gateway_status_listener_attached_routes"
+        keep_fields = ["name", "namespace", "listener_name", "Value"]
+      }
+    ]
+  }
 
-}
-
-resource "kubernetes_namespace_v1" "metallb" {
-  count = var.uses_metallb == true ? 1 : 0
-  metadata {
-    name = "metallb"
-    labels = {
-      "kubernetes.io/enforce"            = "privileged"
-      "pod-security.kubernetes.io/audit" = "privileged"
-      "pod-security.kubernetes.io/warn"  = "privileged"
+  gateway_api_dashboard_json = {
+    title         = local.gateway_api_dashboard.title
+    uid           = local.gateway_api_dashboard.uid
+    timezone      = "browser"
+    schemaVersion = 39
+    version       = 1
+    refresh       = "30s"
+    time = {
+      from = "now-6h"
+      to   = "now"
     }
+    panels = [
+      for idx, p in local.gateway_api_dashboard.panels : merge(
+        {
+          id    = idx + 1
+          title = p.title
+          type  = p.type
+          gridPos = {
+            h = 8
+            w = 12
+            x = (idx % 2) * 12
+            y = floor(idx / 2) * 8
+          }
+          datasource = {
+            type = "prometheus"
+            uid  = "Prometheus"
+          }
+          targets = [
+            {
+              expr    = p.query
+              format  = p.type == "table" ? "table" : "time_series"
+              instant = p.type == "table" ? true : false
+              refId   = "A"
+            }
+          ]
+          fieldConfig = {
+            defaults  = {}
+            overrides = []
+          }
+        },
+        p.keep_fields != null ? {
+          transformations = [
+            {
+              id = "organize"
+              options = {
+                excludeByName = {
+                  Time      = true
+                  __name__  = true
+                  container = true
+                  endpoint  = true
+                  instance  = true
+                  job       = true
+                  pod       = true
+                  service   = true
+                  namespace = contains(p.keep_fields, "namespace") ? false : true
+                }
+                includeByName = {
+                  for f in p.keep_fields : f => true
+                }
+              }
+            }
+          ]
+        } : {}
+      )
+    ]
   }
-}
-
-resource "helm_release" "metallb" {
-  count = var.uses_metallb == true ? 1 : 0
-
-  name        = "metallb"
-  namespace   = kubernetes_namespace_v1.metallb[0].metadata[0].name
-  repository  = "https://metallb.github.io/metallb"
-  version     = var.metallb_chart_version
-  chart       = "metallb"
-  max_history = 10
-  values = [
-    <<-EOF
-    controller:
-      additionalLabels: ${jsonencode(merge(local.labels, { "component" = "loadbalancer" }))}
-      resources:
-        requests:
-          memory: ${var.controller_memory_request}
-          cpu: ${var.controller_cpu_request}
-        limits:
-          memory: ${var.controller_memory_limit}
-          cpu: ${var.controller_cpu_limit}
-      %{~if var.priority_class != null~}
-      priorityClassName: ${var.priority_class}
-      %{~endif~}
-    speaker:
-      tolerations: []   # remove the control-plane toleration
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: node-role.kubernetes.io/control-plane
-                    operator: DoesNotExist
-      resources:
-        requests:
-          memory: ${var.speaker_memory_request}
-          cpu: ${var.speaker_cpu_request}
-        limits:
-          memory: ${var.speaker_memory_limit}
-          cpu: ${var.speaker_cpu_limit}
-      %{~if var.priority_class != null~}
-      priorityClassName: ${var.priority_class}
-      %{~endif~}
-    EOF
-  ]
-}
-
-resource "kubernetes_namespace_v1" "istio" {
-  metadata {
-    name   = "istio-system"
-    labels = local.labels
-  }
-}
-
-resource "helm_release" "istio-base" {
-  name        = "istio-base"
-  namespace   = kubernetes_namespace_v1.istio.metadata[0].name
-  repository  = "https://istio-release.storage.googleapis.com/charts"
-  version     = var.istio_chart_version
-  chart       = "base"
-  max_history = 10
-}
-
-resource "helm_release" "istiod" {
-  depends_on  = [helm_release.istio-base]
-  name        = "istiod"
-  namespace   = kubernetes_namespace_v1.istio.metadata[0].name
-  repository  = "https://istio-release.storage.googleapis.com/charts"
-  version     = var.istio_chart_version
-  chart       = "istiod"
-  max_history = 10
-  values = [<<-EOT
-    ###############################
-    # ISTIO D
-    ###############################
-    autoscaleMin: 2
-    autoscaleMax: 4
-    podLabels: ${jsonencode(merge(local.labels, { "component" = "istiod" }))}
-    %{~if var.priority_class != null~}
-    priorityClassName: ${var.priority_class}
-    %{~endif~}
-    resources:
-      requests:
-        cpu: ${var.istiod_resources_requests_cpu}
-        memory: ${var.istiod_resources_requests_memory}
-      limits:
-        cpu: ${var.istiod_resources_limits_cpu}
-        memory: ${var.istiod_resources_limits_memory}
-    affinity:
-      podAntiAffinity:
-        preferredDuringSchedulingIgnoredDuringExecution:
-        - weight: 100
-          podAffinityTerm:
-            labelSelector:
-              matchExpressions:
-              - key: component
-                operator: In
-                values:
-                - istiod
-            topologyKey: kubernetes.io/hostname
-    env:
-      PILOT_ENABLE_ALPHA_GATEWAY_API: "true" # Enable TCP Route
-      PILOT_ENABLE_GATEWAY_API_GAMMA_API: "true" # Enable TCP Route
-  EOT
-  ]
 }
 
 resource "terraform_data" "gateway_crds" {
@@ -143,41 +127,6 @@ resource "terraform_data" "gateway_crds" {
     command = <<EOT
       kubectl kustomize "github.com/kubernetes-sigs/gateway-api/config/crd/experimental?ref=${var.gateway_crds_version}" | kubectl apply --server-side -f -
     EOT
-  }
-}
-
-resource "kubernetes_manifest" "istio_ip_address_pool" {
-  count = var.uses_metallb == true ? 1 : 0
-
-  manifest = {
-    apiVersion = "metallb.io/v1beta1"
-    kind       = "IPAddressPool"
-    metadata = {
-      name      = "istio"
-      namespace = kubernetes_namespace_v1.metallb[0].metadata[0].name
-      labels    = local.labels
-    }
-    spec = {
-      addresses  = ["${var.istio_ip}/32"]
-      autoAssign = true
-    }
-  }
-}
-
-resource "kubernetes_manifest" "istio_l2_advertisement" {
-  count = var.uses_metallb == true ? 1 : 0
-
-  manifest = {
-    apiVersion = "metallb.io/v1beta1"
-    kind       = "L2Advertisement"
-    metadata = {
-      name      = "istio"
-      namespace = kubernetes_namespace_v1.metallb[0].metadata[0].name
-      labels    = local.labels
-    }
-    spec = {
-      ipAddressPools = [kubernetes_manifest.istio_ip_address_pool[0].manifest.metadata.name]
-    }
   }
 }
 
@@ -199,6 +148,7 @@ resource "kubernetes_manifest" "gateway_certificates" {
     metadata = {
       name      = replace(replace(each.value.hostname, "*", "start"), ".", "-")
       namespace = kubernetes_namespace_v1.gateway.metadata[0].name
+      labels    = merge(local.labels, { component = "certificates" })
     }
     spec = {
       commonName = each.value.hostname
@@ -217,6 +167,7 @@ resource "kubernetes_config_map_v1" "gateway" {
   metadata {
     name      = "gateway"
     namespace = kubernetes_namespace_v1.gateway.metadata[0].name
+    labels    = merge(local.labels, { component = "gateway" })
   }
 
   data = {
@@ -276,10 +227,7 @@ resource "kubernetes_manifest" "gateway" {
     metadata = {
       name      = "gateway"
       namespace = kubernetes_namespace_v1.gateway.metadata[0].name
-      labels = {
-        component = "gateway"
-        part-of   = "istio"
-      }
+      labels    = merge(local.labels, { component = "gateway" })
       annotations = {
         "metallb.universe.tf/address-pool" = kubernetes_manifest.istio_ip_address_pool[0].manifest.metadata.name
       }
@@ -339,14 +287,13 @@ resource "kubernetes_manifest" "gateway" {
   }
 }
 
-
 resource "kubernetes_pod_disruption_budget_v1" "gateway" {
   depends_on = [kubernetes_manifest.gateway]
 
   metadata {
     name      = "gateway"
     namespace = kubernetes_namespace_v1.gateway.metadata[0].name
-    labels    = local.labels
+    labels    = merge(local.labels, { component = "gateway" })
   }
 
   spec {
@@ -357,5 +304,20 @@ resource "kubernetes_pod_disruption_budget_v1" "gateway" {
         "gateway.networking.k8s.io/gateway-name" = "gateway"
       }
     }
+  }
+}
+
+resource "kubernetes_config_map_v1" "gateway_api_grafana_dashboard" {
+  metadata {
+    name      = "gateway-api-grafana-dashboard"
+    namespace = kubernetes_namespace_v1.gateway.metadata[0].name
+    labels = merge(local.labels, {
+      component         = "observability"
+      grafana_dashboard = "1"
+    })
+  }
+
+  data = {
+    "gateway-api.json" = jsonencode(local.gateway_api_dashboard_json)
   }
 }
