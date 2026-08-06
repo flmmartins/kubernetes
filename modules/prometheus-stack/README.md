@@ -42,7 +42,7 @@ No modules.
 | <a name="input_alertmanager_url"></a> [alertmanager\_url](#input\_alertmanager\_url) | Alertmanager URL | `string` | `null` | no |
 | <a name="input_chart_version"></a> [chart\_version](#input\_chart\_version) | Prometheus Stack Chart Version | `string` | `"84.5.0"` | no |
 | <a name="input_gateway"></a> [gateway](#input\_gateway) | Gateway to use for the app | <pre>object({<br/>    name      = string<br/>    namespace = string<br/>  })</pre> | n/a | yes |
-| <a name="input_grafana_cpu_limit"></a> [grafana\_cpu\_limit](#input\_grafana\_cpu\_limit) | n/a | `string` | `"200m"` | no |
+| <a name="input_grafana_cpu_limit"></a> [grafana\_cpu\_limit](#input\_grafana\_cpu\_limit) | n/a | `string` | `"400m"` | no |
 | <a name="input_grafana_cpu_request"></a> [grafana\_cpu\_request](#input\_grafana\_cpu\_request) | ----------------------------------------------------------------------------- Grafana ----------------------------------------------------------------------------- | `string` | `"200m"` | no |
 | <a name="input_grafana_memory_limit"></a> [grafana\_memory\_limit](#input\_grafana\_memory\_limit) | n/a | `string` | `"768Mi"` | no |
 | <a name="input_grafana_memory_request"></a> [grafana\_memory\_request](#input\_grafana\_memory\_request) | n/a | `string` | `"256Mi"` | no |
@@ -57,7 +57,7 @@ No modules.
 | <a name="input_kube_state_metrics_cpu_request"></a> [kube\_state\_metrics\_cpu\_request](#input\_kube\_state\_metrics\_cpu\_request) | ----------------------------------------------------------------------------- Kube State metrics ----------------------------------------------------------------------------- | `string` | `"25m"` | no |
 | <a name="input_kube_state_metrics_memory_limit"></a> [kube\_state\_metrics\_memory\_limit](#input\_kube\_state\_metrics\_memory\_limit) | n/a | `string` | `"256Mi"` | no |
 | <a name="input_kube_state_metrics_memory_request"></a> [kube\_state\_metrics\_memory\_request](#input\_kube\_state\_metrics\_memory\_request) | n/a | `string` | `"64Mi"` | no |
-| <a name="input_node_exporter_cpu_limit"></a> [node\_exporter\_cpu\_limit](#input\_node\_exporter\_cpu\_limit) | n/a | `string` | `"200m"` | no |
+| <a name="input_node_exporter_cpu_limit"></a> [node\_exporter\_cpu\_limit](#input\_node\_exporter\_cpu\_limit) | n/a | `string` | `"300m"` | no |
 | <a name="input_node_exporter_cpu_request"></a> [node\_exporter\_cpu\_request](#input\_node\_exporter\_cpu\_request) | ----------------------------------------------------------------------------- Node Exporter ----------------------------------------------------------------------------- | `string` | `"50m"` | no |
 | <a name="input_node_exporter_memory_limit"></a> [node\_exporter\_memory\_limit](#input\_node\_exporter\_memory\_limit) | n/a | `string` | `"128Mi"` | no |
 | <a name="input_node_exporter_memory_request"></a> [node\_exporter\_memory\_request](#input\_node\_exporter\_memory\_request) | n/a | `string` | `"64Mi"` | no |

@@ -101,6 +101,12 @@ variable "enable_metrics" {
   default     = false
 }
 
+variable "disabled_alerts" {
+  description = "Cluster comes with some alerts by default. This allows you to disable alerts by adding the alert name to the array"
+  type        = list(string)
+  default     = []
+}
+
 # =============================================================================
 # Resource Variables
 # =============================================================================

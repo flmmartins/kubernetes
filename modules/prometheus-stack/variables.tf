@@ -124,7 +124,7 @@ variable "grafana_cpu_request" {
 
 variable "grafana_cpu_limit" {
   type    = string
-  default = "200m"
+  default = "400m"
 }
 
 variable "grafana_memory_request" {
@@ -144,7 +144,7 @@ variable "grafana_sidecar_cpu_request" {
 
 variable "grafana_sidecar_cpu_limit" {
   type    = string
-  default = "50m"
+  default = "100m"
 }
 
 variable "grafana_sidecar_memory_request" {
@@ -278,7 +278,7 @@ variable "node_exporter_cpu_request" {
 }
 variable "node_exporter_cpu_limit" {
   type    = string
-  default = "200m"
+  default = "300m"
 }
 variable "node_exporter_memory_request" {
   type    = string

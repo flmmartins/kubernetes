@@ -98,6 +98,7 @@ module "main-pg-cluster" {
 
   certificate_issuer = var.vault_pki_issuer
   enable_metrics     = true
+  disabled_alerts    = ["CNPGClusterHAWarning"] # This alert takes into 2 replicas and I only have 1
 
   # When adding a role, it will create the password in the namespace
   roles = [{

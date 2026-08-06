@@ -229,18 +229,15 @@ resource "helm_release" "this" {
           group_by: ['namespace', 'alertname']
           group_wait: 30s
           group_interval: 5m
-          repeat_interval: 4h
+          repeat_interval: 12h
           receiver: default
+          # It was recommeded by alert manager to set InfoInhibitor and Watchdog to null
           routes:
             - matchers:
-                - alertname = "InfoInhibitor" # As said on manual this should be sent to null
+                - alertname = "InfoInhibitor"
               receiver: "null"
             - matchers:
-                - alertname = "Watchdog" # This should always be firing so send to null
-              receiver: "null"
-            - matchers:
-                - alertname="CPUThrottlingHigh"
-                - namespace="prometheus-stack"
+                - alertname = "Watchdog"
               receiver: "null"
         global:
           resolve_timeout: 5m
@@ -251,13 +248,18 @@ resource "helm_release" "this" {
           smtp_from: '${var.alertmanager_email.from}'
           smtp_require_tls: ${var.alertmanager_email.require_tls}
         receivers:
-          - name: "null"  # A receiver that does nothing
+          - name: "null"
           - name: default
             email_configs:
               - to: '${var.alertmanager_email.to}'
+                headers:
+                  Subject: >-
+                    [{{ .Status | toUpper }}:{{ .Alerts.Firing | len }}]
+                    {{ .CommonLabels.alertname }}
+                    {{ .CommonAnnotations.summary }}
         %{~else~}
         receivers:
-          - name: "null"  # A receiver that does nothing
+          - name: "null"
           - name: default
         %{~endif~}
       %{~if var.alertmanager_url != null~}

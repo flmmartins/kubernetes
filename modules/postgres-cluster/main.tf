@@ -200,6 +200,10 @@ resource "helm_release" "this" {
     %{~if var.enable_metrics~}
       monitoring:
         enabled: true
+        labels: ${jsonencode(merge(local.labels, { "component" = "observability" }))}
+        prometheusRule:
+          additionalLabels: ${jsonencode(merge(local.labels, { "component" = "observability" }))}
+          excludeRules: ${jsonencode(var.disabled_alerts)}
     %{~endif~}
       storage:
         size: ${var.cluster.size}

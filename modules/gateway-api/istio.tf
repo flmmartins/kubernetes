@@ -122,7 +122,7 @@ resource "kubernetes_manifest" "istio_proxy_podmonitor" {
       namespaceSelector = { any = true }
       podMetricsEndpoints = [
         {
-          targetPort = 15090
+          portNumber = 15090
           path       = "/stats/prometheus"
           interval   = "30s"
           relabelings = [
