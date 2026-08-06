@@ -256,6 +256,7 @@ No requirements.
 | Name | Version |
 |------|---------|
 | <a name="provider_helm"></a> [helm](#provider\_helm) | n/a |
+| <a name="provider_http"></a> [http](#provider\_http) | n/a |
 | <a name="provider_kubernetes"></a> [kubernetes](#provider\_kubernetes) | n/a |
 
 ## Modules
@@ -267,11 +268,13 @@ No modules.
 | Name | Type |
 |------|------|
 | [helm_release.this](https://registry.terraform.io/providers/hashicorp/helm/latest/docs/resources/release) | resource |
+| [kubernetes_config_map_v1.grafana_dashboard](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/config_map_v1) | resource |
 | [kubernetes_config_map_v1.vault_internal_ca](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/config_map_v1) | resource |
 | [kubernetes_manifest.backendtlspolicy_vault](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/manifest) | resource |
 | [kubernetes_manifest.certmanager_vault_tls](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/manifest) | resource |
 | [kubernetes_manifest.httproute_vault](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/manifest) | resource |
 | [kubernetes_namespace_v1.this](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/namespace_v1) | resource |
+| [http_http.grafana_dashboard](https://registry.terraform.io/providers/hashicorp/http/latest/docs/data-sources/http) | data source |
 
 ## Inputs
 
@@ -283,6 +286,7 @@ No modules.
 | <a name="input_csi_limits_memory"></a> [csi\_limits\_memory](#input\_csi\_limits\_memory) | Memory limit for the csi container (e.g. '600Mi', '1Gi'). | `string` | `"500Mi"` | no |
 | <a name="input_csi_requests_cpu"></a> [csi\_requests\_cpu](#input\_csi\_requests\_cpu) | CPU request for the csi container (e.g. '50m', '1'). | `string` | `"50m"` | no |
 | <a name="input_csi_requests_memory"></a> [csi\_requests\_memory](#input\_csi\_requests\_memory) | Memory request for the csi container (e.g. '390Mi', '1Gi'). | `string` | `"100Mi"` | no |
+| <a name="input_enable_metrics"></a> [enable\_metrics](#input\_enable\_metrics) | Whether to enable metrics | `bool` | `false` | no |
 | <a name="input_gateway"></a> [gateway](#input\_gateway) | Gateway to use for the app | <pre>object({<br/>    name                    = string<br/>    namespace               = string<br/>    internal_ca_certificate = string<br/>  })</pre> | n/a | yes |
 | <a name="input_injector_limits_cpu"></a> [injector\_limits\_cpu](#input\_injector\_limits\_cpu) | CPU limit for the injector container (e.g. '100m', '1'). | `string` | `"100m"` | no |
 | <a name="input_injector_limits_memory"></a> [injector\_limits\_memory](#input\_injector\_limits\_memory) | Memory limit for the injector container (e.g. '100Mi', '1Gi'). | `string` | `"200Mi"` | no |

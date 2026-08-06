@@ -202,7 +202,7 @@ resource "kubernetes_manifest" "plex_token" {
 }
 
 resource "kubernetes_manifest" "plex_podmonitor" {
-  count = var.plex_vault_token != null ? 1 : 0
+  count = var.enable_metrics != null && length(local.plex_shares) != null ? 1 : 0
 
   manifest = {
     apiVersion = "monitoring.coreos.com/v1"
@@ -228,7 +228,7 @@ resource "kubernetes_manifest" "plex_podmonitor" {
 }
 
 resource "kubernetes_config_map_v1" "plex_grafana_dashboard" {
-  count = var.plex_vault_token != null ? 1 : 0
+  count = var.enable_metrics != null && length(local.plex_shares) != null ? 1 : 0
 
   metadata {
     name      = "${local.plex_app_name}-grafana-dashboard"

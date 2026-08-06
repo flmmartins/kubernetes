@@ -28,7 +28,7 @@ No modules.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_chart_version"></a> [chart\_version](#input\_chart\_version) | The version of the CloudNative PG chart to deploy. This should be a valid version string from the CNPG chart repository. | `string` | `"v0.29.0"` | no |
-| <a name="input_enable_metrics"></a> [enable\_metrics](#input\_enable\_metrics) | Whether to enable Prometheus metrics | `bool` | `true` | no |
+| <a name="input_enable_metrics"></a> [enable\_metrics](#input\_enable\_metrics) | Whether to enable metrics | `bool` | `false` | no |
 | <a name="input_operator_resources_limits_cpu"></a> [operator\_resources\_limits\_cpu](#input\_operator\_resources\_limits\_cpu) | The CPU limit for the CloudNative PG operator.This defines the maximum CPU resources the operator can use. | `string` | `"100m"` | no |
 | <a name="input_operator_resources_limits_memory"></a> [operator\_resources\_limits\_memory](#input\_operator\_resources\_limits\_memory) | The memory limit for the CloudNative PG operator. This defines the maximum memory resources the operator can use. | `string` | `"200Mi"` | no |
 | <a name="input_operator_resources_requests_cpu"></a> [operator\_resources\_requests\_cpu](#input\_operator\_resources\_requests\_cpu) | The CPU request for the CloudNative PG operator. This defines the minimum CPU resources the operator will request. | `string` | `"50m"` | no |

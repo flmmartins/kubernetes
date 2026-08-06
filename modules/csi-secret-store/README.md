@@ -8,6 +8,7 @@ No requirements.
 | Name | Version |
 |------|---------|
 | <a name="provider_helm"></a> [helm](#provider\_helm) | n/a |
+| <a name="provider_kubernetes"></a> [kubernetes](#provider\_kubernetes) | n/a |
 
 ## Modules
 
@@ -18,12 +19,14 @@ No modules.
 | Name | Type |
 |------|------|
 | [helm_release.this](https://registry.terraform.io/providers/hashicorp/helm/latest/docs/resources/release) | resource |
+| [kubernetes_config_map_v1.grafana_dashboard](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/config_map_v1) | resource |
+| [kubernetes_manifest.secrets_store_csi_podmonitor](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/manifest) | resource |
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_chart_version"></a> [chart\_version](#input\_chart\_version) | Prometheus Stack Chart Version | `string` | `"1.5.6"` | no |
+| <a name="input_chart_version"></a> [chart\_version](#input\_chart\_version) | Prometheus Stack Chart Version | `string` | `"1.6.0"` | no |
 | <a name="input_csi_driver_limit_cpu"></a> [csi\_driver\_limit\_cpu](#input\_csi\_driver\_limit\_cpu) | CPU limit for the CSI driver container | `string` | `"150m"` | no |
 | <a name="input_csi_driver_limit_memory"></a> [csi\_driver\_limit\_memory](#input\_csi\_driver\_limit\_memory) | Memory limit for the CSI driver container | `string` | `"128Mi"` | no |
 | <a name="input_csi_driver_request_cpu"></a> [csi\_driver\_request\_cpu](#input\_csi\_driver\_request\_cpu) | CPU request for the CSI driver container | `string` | `"25m"` | no |
@@ -36,6 +39,7 @@ No modules.
 | <a name="input_csi_registrar_limit_memory"></a> [csi\_registrar\_limit\_memory](#input\_csi\_registrar\_limit\_memory) | Memory limit for the CSI registrar container | `string` | `"64Mi"` | no |
 | <a name="input_csi_registrar_request_cpu"></a> [csi\_registrar\_request\_cpu](#input\_csi\_registrar\_request\_cpu) | CPU request for the CSI registrar container | `string` | `"5m"` | no |
 | <a name="input_csi_registrar_request_memory"></a> [csi\_registrar\_request\_memory](#input\_csi\_registrar\_request\_memory) | Memory request for the CSI registrar container | `string` | `"32Mi"` | no |
+| <a name="input_enable_metrics"></a> [enable\_metrics](#input\_enable\_metrics) | Whether to enable metrics | `bool` | `false` | no |
 | <a name="input_priority_class"></a> [priority\_class](#input\_priority\_class) | Describe the priority class the CSI secrets store pods should be in | `string` | `null` | no |
 
 ## Outputs

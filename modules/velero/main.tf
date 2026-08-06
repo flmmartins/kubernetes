@@ -111,6 +111,41 @@ resource "helm_release" "this" {
     %{~else~}
       useSecret: false
     %{~endif~}
+    %{~if var.enable_metrics~}
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+        additionalLabels: ${jsonencode(merge(local.labels, { "component" = "observability" }))}
+      prometheusRule:
+        enabled: true
+        additionalLabels: ${jsonencode(merge(local.labels, { "component" = "observability" }))}
+        spec:
+        - alert: VeleroBackupFailed
+          expr: velero_backup_last_status == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Velero backup {{ $labels.schedule }} failed"
+            description: "The most recent run of backup schedule {{ $labels.schedule }} failed. Check `velero backup logs` for details."
+        - alert: VeleroBackupStale
+          expr: (time() - velero_backup_last_successful_timestamp) / 3600 > 25
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Velero backup {{ $labels.schedule }} hasn't succeeded in over 25 hours"
+            description: "Given your daily schedule ({{ $labels.schedule }}), this suggests backups have silently stopped running, not just failed once."
+        - alert: VeleroBackupLocationUnavailable
+          expr: velero_backup_location_status_gauge == 0
+          for: 10m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Velero backup storage location is unavailable"
+            description: "Velero cannot reach its backup storage location"
+    %{~endif~}
     initContainers:
     - name: velero-plugin-for-aws
       image: velero/velero-plugin-for-aws:${var.aws_plugin_version}

@@ -39,6 +39,7 @@ No modules.
 | <a name="input_alertmanager_memory_limit"></a> [alertmanager\_memory\_limit](#input\_alertmanager\_memory\_limit) | Alert Manager Memory Limit | `string` | `"128Mi"` | no |
 | <a name="input_alertmanager_memory_request"></a> [alertmanager\_memory\_request](#input\_alertmanager\_memory\_request) | Alert Manager Memory Request | `string` | `"64Mi"` | no |
 | <a name="input_alertmanager_storage_size"></a> [alertmanager\_storage\_size](#input\_alertmanager\_storage\_size) | Alert Manager Storage Size | `string` | `"10Gi"` | no |
+| <a name="input_alertmanager_url"></a> [alertmanager\_url](#input\_alertmanager\_url) | Alertmanager URL | `string` | `null` | no |
 | <a name="input_chart_version"></a> [chart\_version](#input\_chart\_version) | Prometheus Stack Chart Version | `string` | `"84.5.0"` | no |
 | <a name="input_gateway"></a> [gateway](#input\_gateway) | Gateway to use for the app | <pre>object({<br/>    name      = string<br/>    namespace = string<br/>  })</pre> | n/a | yes |
 | <a name="input_grafana_cpu_limit"></a> [grafana\_cpu\_limit](#input\_grafana\_cpu\_limit) | n/a | `string` | `"200m"` | no |
@@ -70,6 +71,7 @@ No modules.
 | <a name="input_prometheus_memory_limit"></a> [prometheus\_memory\_limit](#input\_prometheus\_memory\_limit) | Prometheus Memory Limit | `string` | `"1Gi"` | no |
 | <a name="input_prometheus_memory_request"></a> [prometheus\_memory\_request](#input\_prometheus\_memory\_request) | Prometheus Memory Request | `string` | `"1Gi"` | no |
 | <a name="input_prometheus_storage_size"></a> [prometheus\_storage\_size](#input\_prometheus\_storage\_size) | Prometheus Storage Size | `string` | `"50Gi"` | no |
+| <a name="input_prometheus_url"></a> [prometheus\_url](#input\_prometheus\_url) | Prometheus URL | `string` | `null` | no |
 | <a name="input_retention_days"></a> [retention\_days](#input\_retention\_days) | Prometheus retention days | `string` | `"15d"` | no |
 | <a name="input_security_context"></a> [security\_context](#input\_security\_context) | Security context for the prometheus stack | <pre>object({<br/>    user_id  = optional(number)<br/>    group_id = optional(number)<br/>  })</pre> | `null` | no |
 

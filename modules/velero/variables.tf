@@ -13,6 +13,12 @@ variable "backup_schedule" {
   description = "When to run velero"
 }
 
+variable "enable_metrics" {
+  description = "Whether to enable Prometheus metrics and ServiceMonitor for Velero"
+  type        = bool
+  default     = false
+}
+
 # Use default TTL of 30d
 variable "backup_storage_location" {
   type = object({

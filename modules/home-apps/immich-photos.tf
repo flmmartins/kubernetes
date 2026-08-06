@@ -169,7 +169,7 @@ resource "helm_release" "immich" {
           storageClass: default
     immich:
       metrics:
-        enabled: true
+        enabled: ${var.enable_metrics}
       persistence:
         library:
           existingClaim: ${kubernetes_persistent_volume_claim_v1.immich_config[0].metadata[0].name}

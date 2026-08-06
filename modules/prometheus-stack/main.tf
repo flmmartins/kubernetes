@@ -103,6 +103,8 @@ resource "helm_release" "this" {
         podMonitorNamespaceSelector: {}
         serviceMonitorSelectorNilUsesHelmValues: false
         serviceMonitorNamespaceSelector: {}
+        ruleSelectorNilUsesHelmValues: false
+        ruleNamespaceSelector: {}
         resources:
           requests:
             cpu: ${var.prometheus_cpu_request}

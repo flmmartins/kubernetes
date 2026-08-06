@@ -21,10 +21,14 @@ No modules.
 |------|------|
 | [helm_release.immich](https://registry.terraform.io/providers/hashicorp/helm/latest/docs/resources/release) | resource |
 | [helm_release.plex](https://registry.terraform.io/providers/hashicorp/helm/latest/docs/resources/release) | resource |
+| [kubernetes_config_map_v1.immich_grafana_dashboard](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/config_map_v1) | resource |
+| [kubernetes_config_map_v1.plex_grafana_dashboard](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/config_map_v1) | resource |
 | [kubernetes_cron_job_v1.immich_album_creator](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/cron_job_v1) | resource |
 | [kubernetes_deployment_v1.komga](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/deployment_v1) | resource |
 | [kubernetes_manifest.httproute_immich](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/manifest) | resource |
 | [kubernetes_manifest.httproute_komga](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/manifest) | resource |
+| [kubernetes_manifest.plex_podmonitor](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/manifest) | resource |
+| [kubernetes_manifest.plex_token](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/manifest) | resource |
 | [kubernetes_manifest.tcproute_plex](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/manifest) | resource |
 | [kubernetes_namespace_v1.immich](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/namespace_v1) | resource |
 | [kubernetes_namespace_v1.komga](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/namespace_v1) | resource |
@@ -40,7 +44,9 @@ No modules.
 | [kubernetes_service_v1.komga](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/service_v1) | resource |
 | [kubernetes_storage_class_v1.manual](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/storage_class_v1) | resource |
 | [vault_kubernetes_auth_backend_role.immich](https://registry.terraform.io/providers/hashicorp/vault/latest/docs/resources/kubernetes_auth_backend_role) | resource |
+| [vault_kubernetes_auth_backend_role.plex](https://registry.terraform.io/providers/hashicorp/vault/latest/docs/resources/kubernetes_auth_backend_role) | resource |
 | [vault_policy.immich](https://registry.terraform.io/providers/hashicorp/vault/latest/docs/resources/policy) | resource |
+| [vault_policy.plex](https://registry.terraform.io/providers/hashicorp/vault/latest/docs/resources/policy) | resource |
 | [kubernetes_config_map_v1.vault_ca](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/data-sources/config_map_v1) | data source |
 
 ## Inputs
@@ -50,6 +56,7 @@ No modules.
 | <a name="input_domain"></a> [domain](#input\_domain) | Domain to use on apps | `string` | n/a | yes |
 | <a name="input_ebooks_comics_nfs_share"></a> [ebooks\_comics\_nfs\_share](#input\_ebooks\_comics\_nfs\_share) | NFS share to use for ebooks and comics storage | <pre>object({<br/>    size        = string<br/>    user_id     = number<br/>    group_id    = number<br/>    access_mode = string<br/>    path        = string<br/>    server      = string<br/>  })</pre> | `null` | no |
 | <a name="input_emulatorsrooms_nfs_share"></a> [emulatorsrooms\_nfs\_share](#input\_emulatorsrooms\_nfs\_share) | NFS share to use for old games emulators storage | <pre>object({<br/>    size        = string<br/>    user_id     = number<br/>    group_id    = number<br/>    access_mode = string<br/>    path        = string<br/>    server      = string<br/>  })</pre> | `null` | no |
+| <a name="input_enable_metrics"></a> [enable\_metrics](#input\_enable\_metrics) | Whether to enable metrics | `bool` | `false` | no |
 | <a name="input_gateway"></a> [gateway](#input\_gateway) | Gateway to use for the app | <pre>object({<br/>    name      = string<br/>    namespace = string<br/>  })</pre> | n/a | yes |
 | <a name="input_immich_album_creator_schedule"></a> [immich\_album\_creator\_schedule](#input\_immich\_album\_creator\_schedule) | Cron schedule for the album creator job | `string` | `"0 4 * * *"` | no |
 | <a name="input_immich_album_creator_version"></a> [immich\_album\_creator\_version](#input\_immich\_album\_creator\_version) | Version of the immich-folder-album-creator image. According to github it has to be latest | `string` | `"latest"` | no |
@@ -61,9 +68,11 @@ No modules.
 | <a name="input_music_nfs_share"></a> [music\_nfs\_share](#input\_music\_nfs\_share) | NFS share to use for music storage | <pre>object({<br/>    size        = string<br/>    user_id     = number<br/>    group_id    = number<br/>    access_mode = string<br/>    path        = string<br/>    server      = string<br/>  })</pre> | `null` | no |
 | <a name="input_persistent_storage_class"></a> [persistent\_storage\_class](#input\_persistent\_storage\_class) | Name of the storage class which persist data | `string` | n/a | yes |
 | <a name="input_photos_nfs_share"></a> [photos\_nfs\_share](#input\_photos\_nfs\_share) | NFS share to use for photos storage | <pre>object({<br/>    size        = string<br/>    user_id     = number<br/>    group_id    = number<br/>    access_mode = string<br/>    path        = string<br/>    server      = string<br/>  })</pre> | `null` | no |
-| <a name="input_plex_chart_version"></a> [plex\_chart\_version](#input\_plex\_chart\_version) | Plex Version | `string` | `"1.5.0"` | no |
+| <a name="input_plex_chart_version"></a> [plex\_chart\_version](#input\_plex\_chart\_version) | Plex Version | `string` | `"1.6.0"` | no |
+| <a name="input_plex_exporter_version"></a> [plex\_exporter\_version](#input\_plex\_exporter\_version) | Plex Version | `string` | `"v2.2.11"` | no |
 | <a name="input_plex_gateway_tcp_listener"></a> [plex\_gateway\_tcp\_listener](#input\_plex\_gateway\_tcp\_listener) | Name of the listener that will be used by plex to connect via IP | `string` | n/a | yes |
 | <a name="input_plex_ip"></a> [plex\_ip](#input\_plex\_ip) | Plex needs load balancer IP to ADVERTISE\_IP configuration. This can be a load balancer IP. | `string` | n/a | yes |
+| <a name="input_plex_vault_token"></a> [plex\_vault\_token](#input\_plex\_vault\_token) | Vault configuration to read the Plex API token from, used by the plex-exporter<br/>sidecar for monitoring. If null, you need to manually create the secret for monitoring<br/><br/>Example:<br/>plex\_vault\_token = {<br/>  secret\_path   = "secret/plex"<br/>  vault\_address = "https://vault.vault:8200"<br/><br/>  # Optional overrides (these are the defaults):<br/>  vault\_csi\_ca\_cert\_path = "/vault/tls/ca.crt"<br/>  token\_field            = "password"<br/>}<br/><br/>To obtain the token itself, see /config/Library/Application Support/Plex Media Server/Preferences.xml<br/>(PlexOnlineToken attribute) inside the running Plex pod | <pre>object({<br/>    secret_path            = string<br/>    vault_address          = string<br/>    vault_csi_ca_cert_path = optional(string, "/vault/tls/ca.crt")<br/>    token_field            = optional(string, "password")<br/>  })</pre> | `null` | no |
 | <a name="input_tvshows_nfs_share"></a> [tvshows\_nfs\_share](#input\_tvshows\_nfs\_share) | NFS share to use for TV shows storage | <pre>object({<br/>    size        = string<br/>    user_id     = number<br/>    group_id    = number<br/>    access_mode = string<br/>    path        = string<br/>    server      = string<br/>  })</pre> | `null` | no |
 
 ## Outputs

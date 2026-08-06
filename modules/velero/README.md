@@ -31,6 +31,7 @@ No requirements.
 | Name | Type |
 |------|------|
 | [helm_release.this](https://registry.terraform.io/providers/hashicorp/helm/latest/docs/resources/release) | resource |
+| [kubernetes_config_map_v1.velero_grafana_dashboard](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/config_map_v1) | resource |
 | [kubernetes_namespace_v1.this](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/namespace_v1) | resource |
 | [kubernetes_secret_v1.this](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/secret_v1) | resource |
 | [terraform_data.validate_credentials](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data) | resource |
@@ -46,6 +47,7 @@ No requirements.
 | <a name="input_backup_storage_location"></a> [backup\_storage\_location](#input\_backup\_storage\_location) | Use default TTL of 30d | <pre>object({<br/>    name        = optional(string, "seaweedfs")<br/>    provider    = optional(string, "aws")<br/>    bucket      = optional(string, "velero")<br/>    default     = optional(bool, true)<br/>    access_mode = optional(string, "ReadWrite")<br/>    config = object({<br/>      region           = optional(string, "seaweedfs")<br/>      s3ForcePathStyle = optional(string, "true")<br/>      s3Url            = string<br/>    })<br/>  })</pre> | n/a | yes |
 | <a name="input_chart_version"></a> [chart\_version](#input\_chart\_version) | Prometheus Stack Chart Version | `string` | `"12.1.0"` | no |
 | <a name="input_create_backup_from_seaweedfs"></a> [create\_backup\_from\_seaweedfs](#input\_create\_backup\_from\_seaweedfs) | Name of seaweedfs cluster and namespace. If provided, bucket and credentials will be created | <pre>object({<br/>    cluster_name = string<br/>    namespace    = string<br/>  })</pre> | `null` | no |
+| <a name="input_enable_metrics"></a> [enable\_metrics](#input\_enable\_metrics) | Whether to enable Prometheus metrics and ServiceMonitor for Velero | `bool` | `false` | no |
 | <a name="input_limits_cpu"></a> [limits\_cpu](#input\_limits\_cpu) | CPU limit for the pod (e.g. '250m', '1'). | `string` | `"250m"` | no |
 | <a name="input_limits_memory"></a> [limits\_memory](#input\_limits\_memory) | Memory limit for the pod (e.g. '256Mi', '1Gi'). | `string` | `"256Mi"` | no |
 | <a name="input_requests_cpu"></a> [requests\_cpu](#input\_requests\_cpu) | CPU request for the pod (e.g. '50m', '1'). | `string` | `"50m"` | no |
