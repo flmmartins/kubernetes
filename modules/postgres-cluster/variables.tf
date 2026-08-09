@@ -16,7 +16,7 @@ variable "cluster" {
     name          = string
     storage_class = optional(string)
     url           = optional(string)
-    size          = optional(string, "10Gi")
+    size          = optional(string, "30Gi")
     instances     = optional(number, 2)
   })
 }
@@ -66,7 +66,7 @@ variable "backup" {
     s3_endpoint      = string
     s3_bucket        = optional(string)
     schedule         = string
-    retention_policy = optional(string, "90d")
+    retention_policy = optional(string, "30d")
   })
   default = null
 }

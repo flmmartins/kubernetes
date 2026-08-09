@@ -1,9 +1,7 @@
 locals {
-  seaweedfs_s3api_url = "s3api.${var.private_domain}"
-  seaweedfs_admin_url = "seaweedfs.${var.private_domain}"
+  seaweedfs_s3api_url = "s3api.${var.public_domain}"
+  seaweedfs_admin_url = "seaweedfs.${var.public_domain}"
   grafana_url         = "grafana.${var.public_domain}"
-  prometheus_url      = "prometheus.${var.private_domain}"
-  alertmanager_url    = "alerts.${var.private_domain}"
 }
 
 module "seaweedfs" {
@@ -57,9 +55,7 @@ module "kube_prometheus_stack" {
     group_id = var.monitoring_credentials.group_id
   }
 
-  grafana_url      = local.grafana_url
-  prometheus_url   = local.prometheus_url
-  alertmanager_url = local.alertmanager_url
+  grafana_url = local.grafana_url
 
   gateway = var.gateway
 

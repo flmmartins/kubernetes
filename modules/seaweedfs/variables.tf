@@ -1,7 +1,7 @@
 variable "operator_chart_version" {
   type        = string
   description = "Seaweedfs Chart Operator Version"
-  default     = "0.1.33"
+  default     = "0.1.37"
 }
 
 variable "application_image_version" {
@@ -85,7 +85,7 @@ variable "persistent_storage_class_name" {
 variable "volume_storage_size" {
   description = "PVC size for SeaweedFS volume servers — where object data is stored"
   type        = string
-  default     = "10Gi"
+  default     = "30Gi"
 }
 
 variable "filer_storage_size" {

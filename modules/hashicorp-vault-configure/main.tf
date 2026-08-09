@@ -144,6 +144,8 @@ resource "vault_pki_secret_backend_role" "pki" {
   allow_any_name              = true
   allow_glob_domains          = true
   allow_wildcard_certificates = true
+  require_cn                  = false
+  # Some helm chart automations dont add CN
 }
 
 resource "vault_policy" "pki" {

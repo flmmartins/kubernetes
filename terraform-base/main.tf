@@ -1,5 +1,5 @@
 locals {
-  vault_url = "vault.${var.private_domain}"
+  vault_url = "vault.${var.public_domain}"
   csi_driver_nfs_labels = {
     part-of = "truenas"
   }
@@ -138,10 +138,6 @@ module "gateway-api" {
   priority_class = kubernetes_priority_class_v1.this["critical"].metadata[0].name
   enable_metrics = true
   gateway_certificates = [
-    {
-      hostname       = "*.${var.private_domain}"
-      cluster_issuer = module.vault.vault_pki_issuer
-    },
     {
       hostname       = "*.${var.public_domain}"
       cluster_issuer = module.cert-manager.letsencrypt_issuer

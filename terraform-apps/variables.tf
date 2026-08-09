@@ -21,11 +21,6 @@ variable "vault_pki_issuer" {
   default     = "vault-issuer"
 }
 
-variable "private_domain" {
-  type        = string
-  description = "Apps private domain name"
-}
-
 variable "public_domain" {
   type        = string
   description = "Apps public domain name"

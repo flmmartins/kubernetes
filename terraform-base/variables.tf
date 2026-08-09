@@ -72,11 +72,6 @@ variable "internal_ca_key" {
   default     = null
 }
 
-variable "private_domain" {
-  description = "Private domain name"
-  default     = ""
-}
-
 variable "public_domain" {
   description = "Public domain name"
   default     = ""
