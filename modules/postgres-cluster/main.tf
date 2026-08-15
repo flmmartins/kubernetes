@@ -260,3 +260,52 @@ resource "helm_release" "this" {
     EOF
   ]
 }
+
+resource "kubernetes_manifest" "prometheus_rule_backup" {
+  count = var.enable_metrics == true && var.backup != null ? 1 : 0
+
+  manifest = {
+    apiVersion = "monitoring.coreos.com/v1"
+    kind       = "PrometheusRule"
+    metadata = {
+      name      = "${var.cluster.name}-backup-alerts"
+      namespace = kubernetes_namespace_v1.this.metadata[0].name
+      labels    = merge(local.labels, { component = "backup-alerts" })
+    }
+    spec = {
+      groups = [
+        {
+          name = "cnpg-backup-custom"
+          rules = [
+            {
+              alert = "CNPGBackupMissing"
+              # Guard: only alert once a first successful backup exists (metric > 0),
+              # otherwise "time() - 0" would fire immediately on a freshly configured cluster.
+              expr = "cnpg_collector_last_available_backup_timestamp{namespace=\"${kubernetes_namespace_v1.this.metadata[0].name}\"} > 0 and (time() - cnpg_collector_last_available_backup_timestamp{namespace=\"${kubernetes_namespace_v1.this.metadata[0].name}\"}) > ${tonumber(regex("[0-9]+", var.backup.alert_thresholds)) * 3600}"
+              for  = "10m"
+              labels = {
+                severity = "critical"
+              }
+              annotations = {
+                summary     = "No successful CNPG backup within expected window"
+                description = "Cluster {{ $labels.namespace }} has not completed a backup in the expected window."
+              }
+            },
+            {
+              alert = "CNPGBackupFailed"
+              expr  = "(cnpg_collector_last_failed_backup_timestamp{namespace=\"${kubernetes_namespace_v1.this.metadata[0].name}\"} - cnpg_collector_last_available_backup_timestamp{namespace=\"${kubernetes_namespace_v1.this.metadata[0].name}\"}) > 1"
+              for   = "5m"
+              labels = {
+                severity = "warning"
+              }
+              annotations = {
+                summary     = "CNPG backup failure detected"
+                description = "The most recent backup attempt for {{ $labels.namespace }} failed after the last successful one."
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

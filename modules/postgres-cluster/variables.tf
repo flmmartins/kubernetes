@@ -66,6 +66,7 @@ variable "backup" {
     s3_endpoint      = string
     s3_bucket        = optional(string)
     schedule         = string
+    alert_thresholds = optional(string, "26h")
     retention_policy = optional(string, "30d")
   })
   default = null
