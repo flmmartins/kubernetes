@@ -164,6 +164,25 @@ resource "helm_release" "operator" {
 
   values = [<<-EOF
     commonLabels: ${jsonencode(merge(local.labels, { "component" = "plex" }))}
+    %{~if var.enable_metrics~}
+    serviceMonitor:
+      enabled: true
+      additionalLabels: ${jsonencode(merge(local.labels, { "component" = "observability" }))}
+    grafanaDashboard:
+      enabled: true
+    %{~else~}
+    # Somehow this is true by default
+    grafanaDashboard:
+      enabled: ${var.enable_metrics}
+    %{~endif~}
+    %{~if var.certificate_issuer != null~}
+    webhook:
+      certManager:
+        enabled: true
+        issuerRef:
+          name: ${var.certificate_issuer}
+          kind: ClusterIssuer
+    %{~endif~}
     resources:
       requests:
         cpu: ${var.operator_cpu_request}
@@ -442,6 +461,14 @@ resource "kubernetes_manifest" "seaweed" {
           }
         ]
       }
+      tls = var.certificate_issuer != null ? {
+        enabled = true
+        issuerRef = {
+          name  = var.certificate_issuer
+          kind  = "ClusterIssuer"
+          group = "cert-manager.io"
+        }
+      } : null
     }
   }
 }

@@ -22,6 +22,8 @@ module "seaweedfs" {
   gateway      = var.gateway
 
   persistent_storage_class_name = var.persistent_storage_class
+  enable_metrics                = true
+  certificate_issuer            = var.vault_pki_issuer
 }
 
 module "velero" {

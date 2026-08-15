@@ -1,3 +1,45 @@
+# PKI
+
+## First installation
+You need to import the root CA for the PKI and you can do it with:
+
+(cat cert.key; echo; cat cert.crt; echo; cat root_ca_if_any.crt; echo)
+
+
+## Rotation
+I used the UI, imported new Root and later set it as defaut with:
+
+```
+vault write pki/apps/root/root/replace default=UID
+```
+
+Terraform wanted to re-create the mount because certificate changed so I did a terraform state rm and just let it apply again. There were no conflict
+
+
+## Extensions
+PS: When considering doing MTLS with certificates make sure the ROOT CA and any intermediate have this as extension: serverAuth,clientAuth
+
+There were cases where MTLS was not working because it was missing clientAuth in all certificates of the chain and that was a workful to fix because I had to reissue the entire chain.
+
+ROOT:
+
+```
+[req]
+distinguished_name = req
+[v3_ca]
+basicConstraints = critical,CA:TRUE
+keyUsage = critical,keyCertSign,cRLSign
+extendedKeyUsage = serverAuth,clientAuth
+```
+
+Intermediates:
+
+```
+basicConstraints = critical,CA:TRUE
+keyUsage = critical,keyCertSign,cRLSign
+extendedKeyUsage = serverAuth,clientAuth
+```
+
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
 

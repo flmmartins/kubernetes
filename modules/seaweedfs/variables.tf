@@ -38,6 +38,12 @@ variable "admin_ui_url" {
   description = "Admin URL"
 }
 
+variable "certificate_issuer" {
+  type        = string
+  description = "Cert Manager ClusterIssuer used to issue certificates to seadweed. If null, self signed certs will be generated"
+  default     = null
+}
+
 variable "vault_password" {
   description = <<-EOT
     Vault configuration to read SeaweedFS credentials from.
@@ -101,6 +107,12 @@ variable "security_context" {
     group_id = optional(number)
   })
   default = null
+}
+
+variable "enable_metrics" {
+  description = "Whether to enable Prometheus metrics and monitors for operator and cluster"
+  type        = bool
+  default     = false
 }
 
 # =============================================================================
