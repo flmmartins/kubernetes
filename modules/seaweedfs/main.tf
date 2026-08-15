@@ -22,6 +22,7 @@ locals {
   }
   s3_admin_secret_name  = "admin-s3-secret"
   admin_k8s_secret_name = "seaweedfs-admin"
+  metrics_port          = 9327
 }
 
 resource "kubernetes_namespace_v1" "this" {
@@ -212,6 +213,7 @@ resource "kubernetes_manifest" "seaweed" {
       master = {
         replicas          = 1
         volumeSizeLimitMB = 1024
+        metricsPort       = var.enable_metrics ? local.metrics_port : null
         requests = {
           cpu    = var.master_cpu_request
           memory = var.master_memory_request
@@ -263,6 +265,7 @@ resource "kubernetes_manifest" "seaweed" {
       volume = {
         replicas         = 2
         storageClassName = var.persistent_storage_class_name
+        metricsPort      = var.enable_metrics ? local.metrics_port : null
         requests = {
           cpu     = var.volume_cpu_request
           memory  = var.volume_memory_request
@@ -313,7 +316,8 @@ resource "kubernetes_manifest" "seaweed" {
       }
 
       filer = {
-        replicas = 2
+        replicas    = 2
+        metricsPort = var.enable_metrics ? local.metrics_port : null
         requests = {
           cpu    = var.filer_cpu_request
           memory = var.filer_memory_request
@@ -378,9 +382,10 @@ resource "kubernetes_manifest" "seaweed" {
       }
 
       s3 = {
-        replicas = 1
-        port     = var.s3api_port
-        iam      = true
+        replicas    = 1
+        metricsPort = var.enable_metrics ? local.metrics_port : null
+        port        = var.s3api_port
+        iam         = true
         requests = {
           cpu    = var.s3_cpu_request
           memory = var.s3_memory_request
