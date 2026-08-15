@@ -93,9 +93,8 @@ module "vault-install" {
 
   url = local.vault_url
   gateway = {
-    name                    = var.gateway.name
-    namespace               = var.gateway.namespace
-    internal_ca_certificate = var.internal_ca_certificate
+    name      = var.gateway.name
+    namespace = var.gateway.namespace
   }
 
   security_context = {
@@ -122,7 +121,7 @@ module "vault" {
     root_ca           = var.vault_apps_cert_pembundle
     path              = "pki/apps/root"
     role_name         = "apps-tamrieltower-local"
-    vault_internal_ca = base64encode(var.internal_ca_certificate)
+    vault_internal_ca = base64encode(module.vault-install.vault_ca_certificate)
     certmanager_sa = {
       namespace = module.cert-manager.namespace
       name      = module.cert-manager.service_account_name

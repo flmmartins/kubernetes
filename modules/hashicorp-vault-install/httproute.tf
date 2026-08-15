@@ -11,7 +11,7 @@ resource "kubernetes_config_map_v1" "vault_internal_ca" {
   }
 
   data = {
-    "ca.crt" = var.gateway.internal_ca_certificate
+    "ca.crt" = data.external.vault_ha_tls_ca.result.ca
   }
 
 }

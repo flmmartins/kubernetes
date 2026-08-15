@@ -16,9 +16,8 @@ variable "url" {
 variable "gateway" {
   description = "Gateway to use for the app"
   type = object({
-    name                    = string
-    namespace               = string
-    internal_ca_certificate = string
+    name      = string
+    namespace = string
   })
 }
 

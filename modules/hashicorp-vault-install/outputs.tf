@@ -12,3 +12,8 @@ output "csi_ca_path" {
   description = "Vault CA path inside CSI pod"
   value       = "${local.csi_cert_mounth_path}/ca.crt"
 }
+
+output "vault_ca_certificate" {
+  description = "Vault CA certificate"
+  value       = data.external.vault_ha_tls_ca.result.ca
+}

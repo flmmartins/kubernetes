@@ -46,7 +46,7 @@ No modules.
 | <a name="input_grafana_cpu_request"></a> [grafana\_cpu\_request](#input\_grafana\_cpu\_request) | ----------------------------------------------------------------------------- Grafana ----------------------------------------------------------------------------- | `string` | `"200m"` | no |
 | <a name="input_grafana_memory_limit"></a> [grafana\_memory\_limit](#input\_grafana\_memory\_limit) | n/a | `string` | `"768Mi"` | no |
 | <a name="input_grafana_memory_request"></a> [grafana\_memory\_request](#input\_grafana\_memory\_request) | n/a | `string` | `"256Mi"` | no |
-| <a name="input_grafana_sidecar_cpu_limit"></a> [grafana\_sidecar\_cpu\_limit](#input\_grafana\_sidecar\_cpu\_limit) | n/a | `string` | `"50m"` | no |
+| <a name="input_grafana_sidecar_cpu_limit"></a> [grafana\_sidecar\_cpu\_limit](#input\_grafana\_sidecar\_cpu\_limit) | n/a | `string` | `"100m"` | no |
 | <a name="input_grafana_sidecar_cpu_request"></a> [grafana\_sidecar\_cpu\_request](#input\_grafana\_sidecar\_cpu\_request) | n/a | `string` | `"10m"` | no |
 | <a name="input_grafana_sidecar_memory_limit"></a> [grafana\_sidecar\_memory\_limit](#input\_grafana\_sidecar\_memory\_limit) | n/a | `string` | `"128Mi"` | no |
 | <a name="input_grafana_sidecar_memory_request"></a> [grafana\_sidecar\_memory\_request](#input\_grafana\_sidecar\_memory\_request) | n/a | `string` | `"32Mi"` | no |

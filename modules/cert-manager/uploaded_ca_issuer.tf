@@ -16,7 +16,7 @@ resource "kubernetes_secret_v1" "uploaded_ca" {
     "tls.key" = var.uploaded_ca_issuer.certificate_key
   }
 
-  data_wo_revision = 1
+  data_wo_revision = 2
 }
 
 resource "kubernetes_manifest" "uploaded_ca_issuer" {

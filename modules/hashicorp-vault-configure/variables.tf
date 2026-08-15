@@ -24,10 +24,13 @@ variable "pki" {
 Configuration for PKI (Public Key Infrastructure) setup. This variable contains information needed to create a PKI backend and associated issuer in Vault.
 Attributes:
   root_ca: Path to the PKI Root Certificate Authority (CA) certificate
-  path: Path prefix for PKI storage
-  role_name: Name of the PKI role that signs certificates
+  path: Path prefix for PKI storage, default to pki
+  role_name: Name of the PKI role that signs certificates, defaults to pki
   vault_internal_ca: Internal Vault CA certificate for Kubernetes cluster. This is required for to allow communication from cert manager to Vault internal svc.
   certmanager_sa: Service account configuration for Cert Manager integration
+
+  root_ca can be generated with: (cat cert.key; echo; cat cert.crt; echo; cat root_ca.crt; echo)
+  The whole content should be passed to this variable"
 EOT
   type = object({
     root_ca           = string

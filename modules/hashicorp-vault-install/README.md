@@ -228,24 +228,6 @@ roleName: "pihole"
 vaultCACertPath: "/run/secrets/kubernetes.io/serviceaccount/ca.crt"
 ```
 
-# PKI
-
-We will import root CA
-```
-cat talos-apps-tamrieltower-local.key > talos-apps-tamrieltower-local.pem
-cat talos-apps-tamrieltower-local.crt >> talos-apps-tamrieltower-local.pem
-```
-
-Run 
-
-```
-kubectl port-forward service/vault -n vault 8200:8200
-export VAULT_ADDR=https://127.0.0.1:8200
-export VAULT_TOKEN=$VAULT_TOKEN
-export VAULT_CACERT=PATH_TO_VAULT_CA
-./create-pki.sh
-```
-
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
 
@@ -255,6 +237,7 @@ No requirements.
 
 | Name | Version |
 |------|---------|
+| <a name="provider_external"></a> [external](#provider\_external) | n/a |
 | <a name="provider_helm"></a> [helm](#provider\_helm) | n/a |
 | <a name="provider_http"></a> [http](#provider\_http) | n/a |
 | <a name="provider_kubernetes"></a> [kubernetes](#provider\_kubernetes) | n/a |
@@ -274,6 +257,8 @@ No modules.
 | [kubernetes_manifest.certmanager_vault_tls](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/manifest) | resource |
 | [kubernetes_manifest.httproute_vault](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/manifest) | resource |
 | [kubernetes_namespace_v1.this](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/namespace_v1) | resource |
+| [external_external.vault_ha_tls_ca](https://registry.terraform.io/providers/hashicorp/external/latest/docs/data-sources/external) | data source |
+| [external_external.vault_tls_secret_version](https://registry.terraform.io/providers/hashicorp/external/latest/docs/data-sources/external) | data source |
 | [http_http.grafana_dashboard](https://registry.terraform.io/providers/hashicorp/http/latest/docs/data-sources/http) | data source |
 
 ## Inputs
@@ -287,7 +272,7 @@ No modules.
 | <a name="input_csi_requests_cpu"></a> [csi\_requests\_cpu](#input\_csi\_requests\_cpu) | CPU request for the csi container (e.g. '50m', '1'). | `string` | `"50m"` | no |
 | <a name="input_csi_requests_memory"></a> [csi\_requests\_memory](#input\_csi\_requests\_memory) | Memory request for the csi container (e.g. '390Mi', '1Gi'). | `string` | `"100Mi"` | no |
 | <a name="input_enable_metrics"></a> [enable\_metrics](#input\_enable\_metrics) | Whether to enable metrics | `bool` | `false` | no |
-| <a name="input_gateway"></a> [gateway](#input\_gateway) | Gateway to use for the app | <pre>object({<br/>    name                    = string<br/>    namespace               = string<br/>    internal_ca_certificate = string<br/>  })</pre> | n/a | yes |
+| <a name="input_gateway"></a> [gateway](#input\_gateway) | Gateway to use for the app | <pre>object({<br/>    name      = string<br/>    namespace = string<br/>  })</pre> | n/a | yes |
 | <a name="input_injector_limits_cpu"></a> [injector\_limits\_cpu](#input\_injector\_limits\_cpu) | CPU limit for the injector container (e.g. '100m', '1'). | `string` | `"100m"` | no |
 | <a name="input_injector_limits_memory"></a> [injector\_limits\_memory](#input\_injector\_limits\_memory) | Memory limit for the injector container (e.g. '100Mi', '1Gi'). | `string` | `"200Mi"` | no |
 | <a name="input_injector_requests_cpu"></a> [injector\_requests\_cpu](#input\_injector\_requests\_cpu) | CPU request for the injector container (e.g. '20m', '1'). | `string` | `"20m"` | no |
@@ -310,4 +295,5 @@ No modules.
 | <a name="output_csi_ca_path"></a> [csi\_ca\_path](#output\_csi\_ca\_path) | Vault CA path inside CSI pod |
 | <a name="output_kubernetes_svc"></a> [kubernetes\_svc](#output\_kubernetes\_svc) | Kubernetes service for vault |
 | <a name="output_url"></a> [url](#output\_url) | Vault Admin UI |
+| <a name="output_vault_ca_certificate"></a> [vault\_ca\_certificate](#output\_vault\_ca\_certificate) | Vault CA certificate |
 <!-- END_TF_DOCS -->

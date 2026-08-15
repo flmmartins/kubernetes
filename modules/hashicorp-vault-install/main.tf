@@ -76,8 +76,63 @@ resource "kubernetes_manifest" "certmanager_vault_tls" {
   }
 }
 
+# Secret to get vault secret version - if it changes update the other resources
+data "external" "vault_tls_secret_version" {
+  depends_on = [kubernetes_manifest.certmanager_vault_tls]
+
+  program = ["bash", "-c", <<-EOT
+    set -euo pipefail
+
+    namespace="${kubernetes_namespace_v1.this.metadata[0].name}"
+    secret="${local.vault_tls_secret}"
+
+    for i in $(seq 1 60); do
+      if resource_version=$(kubectl get secret "$secret" \
+          -n "$namespace" \
+          -o jsonpath='{.metadata.resourceVersion}' 2>/dev/null); then
+
+        if [ -n "$resource_version" ]; then
+          jq -cn --arg version "$resource_version" \
+            '{resource_version: $version}'
+          exit 0
+        fi
+      fi
+
+      echo "Waiting for Secret $secret... ($i/60)" >&2
+      sleep 2
+    done
+
+    echo "Timed out waiting for Secret $secret" >&2
+    exit 1
+  EOT
+  ]
+}
+
+data "external" "vault_ha_tls_ca" {
+  depends_on = [data.external.vault_tls_secret_version]
+
+  query = {
+    resource_version = data.external.vault_tls_secret_version.result.resource_version
+  }
+
+  program = ["bash", "-c", <<-EOT
+    set -euo pipefail
+
+    namespace="${kubernetes_namespace_v1.this.metadata[0].name}"
+    secret="${local.vault_tls_secret}"
+
+    ca=$(kubectl get secret "$secret" \
+      -n "$namespace" \
+      -o jsonpath='{.data.ca\.crt}' \
+      | base64 --decode)
+
+    jq -cn --arg ca "$ca" '{ca: $ca}'
+  EOT
+  ]
+}
+
 resource "helm_release" "this" {
-  depends_on  = [kubernetes_manifest.certmanager_vault_tls]
+  depends_on  = [kubernetes_manifest.certmanager_vault_tls, data.external.vault_tls_secret_version]
   name        = "vault"
   namespace   = kubernetes_namespace_v1.this.metadata[0].name
   repository  = "https://helm.releases.hashicorp.com"
