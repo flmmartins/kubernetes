@@ -59,13 +59,13 @@ variable "backup" {
     backup = {
       s3_endpoint  = "http://...:8333"
       s3_bucket    = "A BUCKET - If created with seaweed there's  no need to define"
-      schedule     = "0 0 0 * * *"
+      schedule     = "0 0 0 * * *". This expression expects 6 digits.
       retention_policy = "30d"
   EOT
   type = object({
     s3_endpoint      = string
     s3_bucket        = optional(string)
-    schedule         = string
+    schedule         = optional(string, "0 0 23 * * *")
     alert_thresholds = optional(string, "26h")
     retention_policy = optional(string, "30d")
   })

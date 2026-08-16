@@ -1,9 +1,9 @@
-## Backup manually
+## Backup manually (retry a failed backup)
 
 ```
 velero backup create --from-schedule velero-daily-backup
-velero backup get
-velero backup describe <name>
+velero backup describe <backup-name> --details
+velero backup logs <backup-name>
 ```
 
 <!-- BEGIN_TF_DOCS -->

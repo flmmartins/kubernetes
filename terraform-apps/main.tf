@@ -113,7 +113,7 @@ module "main-pg-cluster" {
 
   backup = {
     s3_endpoint = module.seaweedfs.s3_kubernetes_svc
-    schedule    = "0 23 * * *"
+    schedule    = "0 0 23 * * *"
   }
 
   create_backup_from_seaweedfs = {
