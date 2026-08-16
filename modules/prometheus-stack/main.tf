@@ -99,6 +99,7 @@ resource "helm_release" "this" {
       %{~endif~}
       prometheusSpec:
         retention: ${var.retention_days}
+        priorityClassName: ${var.priority_class}
         podMonitorSelectorNilUsesHelmValues: false
         podMonitorNamespaceSelector: {}
         serviceMonitorSelectorNilUsesHelmValues: false
@@ -313,6 +314,7 @@ resource "helm_release" "this" {
                 requests:
                   storage: ${var.alertmanager_storage_size}
     grafana:
+      priorityClassName: ${var.priority_class}
       grafana.ini:
         dataproxy:
           max_concurrent_query_limit: 5

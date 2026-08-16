@@ -83,6 +83,12 @@ variable "security_context" {
   default = null
 }
 
+variable "priority_class" {
+  description = "Pod priority class"
+  type        = string
+  default     = ""
+}
+
 # =============================================================================
 # Resource Variables
 # =============================================================================

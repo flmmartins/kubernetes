@@ -103,3 +103,9 @@ Later I realize that plex already had a /media path and these were conflicting w
 ## TV and mobile apps
 
 TV and mobile apps require the use of ADVERTISE_IP environment variable. At first I tried to use HTTPS but TV and mobile app seems to not accept port 443. In the end I endedup using reverse proxy IP and opening the Plex port. The ingress with HTTPS can only be used by browsers.
+
+# Transcoding
+When adapting to video formats Plex use a lot of resources. Some slower settings where configured to cap it:
+
+Transcoder quality: Prefer speed
+Maximum simultaneos: 1

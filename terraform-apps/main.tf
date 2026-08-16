@@ -59,7 +59,8 @@ module "kube_prometheus_stack" {
 
   grafana_url = local.grafana_url
 
-  gateway = var.gateway
+  gateway        = var.gateway
+  priority_class = "high"
 
   alertmanager_email = {
     to        = var.admin_email

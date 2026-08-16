@@ -66,6 +66,7 @@ No modules.
 | <a name="input_operator_memory_limit"></a> [operator\_memory\_limit](#input\_operator\_memory\_limit) | Operator Memory Limit | `string` | `"200Mi"` | no |
 | <a name="input_operator_memory_request"></a> [operator\_memory\_request](#input\_operator\_memory\_request) | Operator Memory Request | `string` | `"64Mi"` | no |
 | <a name="input_persistent_storage_class_name"></a> [persistent\_storage\_class\_name](#input\_persistent\_storage\_class\_name) | Storage class name for prometheus and alertmanager | `string` | n/a | yes |
+| <a name="input_priority_class"></a> [priority\_class](#input\_priority\_class) | Pod priority class | `string` | `""` | no |
 | <a name="input_prometheus_cpu_limit"></a> [prometheus\_cpu\_limit](#input\_prometheus\_cpu\_limit) | Prometheus CPU Limit | `string` | `"500m"` | no |
 | <a name="input_prometheus_cpu_request"></a> [prometheus\_cpu\_request](#input\_prometheus\_cpu\_request) | Prometheus CPU Request | `string` | `"300m"` | no |
 | <a name="input_prometheus_memory_limit"></a> [prometheus\_memory\_limit](#input\_prometheus\_memory\_limit) | Prometheus Memory Limit | `string` | `"1Gi"` | no |
